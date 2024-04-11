@@ -8,10 +8,12 @@ editor_options:
   chunk_output_type: console
 ---
 
-This is my project comparing two covariance decomposition methods, Generalized Binary Covariance Decomposition (GBCD) and Empirical Bayes Covariance Decomposition (EBCD), from the Stephens Lab.
-
-Simulations:
-Results for the [scRNA-seq Dataset Simulation](simulation-analysis.html). 
-
-Real Data Analysis:
-Results for the [HNSCC Data Analysis](hnscc-analysis.html)
+This is my project comparing two covariance decomposition methods, Generalized Binary Covariance Decomposition (GBCD) and Empirical Bayes Covariance Decomposition (EBCD), from the Stephens Lab.  
+  
+Simulations:  
+  
+* Results for the [scRNA-seq Dataset Simulation](simulation-analysis.html). 
+  
+Real Data Analysis:  
+  
+* Results for the [HNSCC Data Analysis](hnscc-analysis.html)

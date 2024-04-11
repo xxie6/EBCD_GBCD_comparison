@@ -1,0 +1,487 @@
+---
+title: "hnscc-analysis"
+author: "xxie6"
+date: "2024-02-29"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+The Stephens Lab has proposed two different ways of performing orthogonal matrix factorization. We aim to compare these two methods and apply them to single cell RNA sequencing data.  
+
+# Methods
+## GBCD
+The first method is called Generalized Binary Covariance Decomposition (GBCD). The GBCD model aims to produce the following decomposition:
+$$Y_{ij} \approx \sum_{k=1}^{K} L_{ik}F_{jk}$$
+
+where we make the following two assumptions:  
+  
+1. Memberships $L_{ik}$ are nonnegative and often nearly binary    
+2. The GEP signatures $F_{\cdot k}$ are mutually orthogonal   
+  
+Note that these two assumptions imply that  
+$$YY^{T} \approx LF^{T}FL^{T} = LDL^{T}$$
+  
+To fit the model, the GBCD method consists of the following steps:   
+   
+1. Finding $L$ and $D$ in the second expression by performing EBMF on $YY^{T}$  
+2. Estimating $F$ based off the first expression by performing EBMF on $Y$ with $L$ fixed (at which point we do not force the orthogonality assumption, so assumption two is a soft assumption)  
+
+## EBCD
+The second method is called Empirical Bayes Covariance Decomposition (EBCD). For EBCD, the model is
+$$X = ZL^{T} +E$$
+where $Z$ is a $N \times K$ orthogonal matrix and $L$ is $P \times K$ matrix over which we put a sparsity-inducing prior. (In regular PCA, we would also assume $L^{T}L$ is diagonal, but for sparse PCA, we replace that assumption with a sparsity penalization.) An equivalent represent for EBCD is
+$$X^{T}X \approx LL^{T}.$$
+  
+Note that in GBCD, we have $YY^{T} \approx LL^{T}$ and we assume $F$ is orthogonal. Therefore, $F$ maps to $Z$ in EBCD and $Y^{T}$ maps to $X$ in EBCD. So when applying EBCD, you may need to take the transpose of the original data matrix.  
+  
+To fit the model, the EBCD algorithm iterates the following sequence of steps:  
+1. Update $g_k$ and $q_k$ using an EBNM solver  
+2. Update $Z$ by setting $Z = Polar.U(X\bar{L})$  
+3. Update the precision, $\tau$  
+
+# Application to HNSCC Data
+In this section, we will apply both methods to single cell RNA sequencing data. We will compare the factorizations recovered from both methods, and we also will compare the run time. The dataset is a head and neck squamous cell carcinoma (hnscc) dataset. The data was collected by Puram et al. from primary tumors from 10 hnscc patients. The rows correspond to samples and the columns correspond to genes. Our data matrix is $2176 \times 17113$. 
+
+First we load the needed R packages:  
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+We also define some functions here.  
+This function produces a heatmap visualization of the GEP memberships:  
+```{r}
+loadings_visualization <- function(info, fit_L, sample.names, subject_col, subtype_col, subjects_subset = NULL){
+  if (is.null(subjects_subset) == FALSE){
+    anno <- data.frame(subject = info$subject[(info$subject %in% subjects_subset)],
+                   subtype = info$subtype[(info$subject %in% subjects_subset)])
+    anno_colors <- list(subject = subject_col[subjects_subset],
+                    subtype = subtype_col)
+  }
+  else{
+    anno <- data.frame(subject = info$subject,
+                   subtype = info$subtype)
+    anno_colors <- list(subject = subject_col,
+                    subtype = subtype_col)
+  }
+  rownames(anno) <- sample.names
+  cols <- colorRampPalette(c("gray96","red"))(50)
+  brks <- seq(min(fit_L), max(fit_L),length.out= 50)
+  rows <- order(anno$subject)
+  p <- pheatmap(fit_L[rows, -1], cluster_rows = FALSE, cluster_cols = FALSE,
+          show_rownames = FALSE, annotation_row = anno, annotation_names_row = FALSE,
+          annotation_colors = anno_colors, angle_col = 45, fontsize = 8, color = cols, breaks = brks, main = "")
+  print(p)
+}
+```
+  
+This function produces a volcano plot visualization of the GEPs and driving genes of each GEP:  
+```{r}
+volcano_plot_gbcd <- function(fit.gbcd, k){
+pdat <- data.frame(gene = rownames(fit.gbcd$F$lfc), 
+                   lfc  = fit.gbcd$F$lfc[,k], 
+                   z    = abs(fit.gbcd$F$z_score[,k]), 
+                   lfsr = fit.gbcd$F$lfsr[,k],
+                   stringsAsFactors = FALSE)
+pdat <- transform(pdat,lfsr = cut(lfsr, c(-1,0.001,0.01,0.05,Inf)))
+rows  <- with(pdat, which(!(abs(lfc) > quantile(abs(lfc),0.999) | (z > 10))))
+pdat[rows, "gene"] <- ""
+p <- ggplot(pdat, aes(x = lfc, y = z, color = lfsr, label = gene)) +
+  geom_point() + 
+  geom_text_repel(color = "black", size = 2.3, segment.color = "black",
+                  segment.size = 0.25, min.segment.length = 0,
+                  max.overlaps = Inf, na.rm = TRUE) +
+  scale_color_manual(values = c("coral","orange","gold","deepskyblue")) +
+  labs(x = "log-fold change", y = "|posterior z-score|") + 
+  theme_cowplot(font_size = 10)
+print(p)
+}
+```
+  
+This is a function to classify GEPs as patient-specific vs. shared:    
+```{r}
+gep_classification <- function(ebcd.L){
+  num.gep <- ncol(ebcd.L) - 1
+  gep.classifications <- rep('0', num.gep)
+  for (i in 2:num.gep){
+    table.k <- as.matrix(table(ebcd.L[,i] > 0.05, ebcd.L$subject))
+    ratio.k <- table.k[2,]/colSums(table.k) #proportion of cells in patient i that show expression in GEP k
+    max.ratio <- max(ratio.k[ratio.k!=max(ratio.k)])/max(ratio.k)
+    if (max.ratio > 0.2){
+      gep.classifications[(i-1)] <- 'shared'
+    }
+    else{
+      gep.classifications[(i-1)] <- 'patient-specific'
+    }
+  }
+  return(gep.classifications)
+}
+```
+  
+This function generates the tile plot visualization of a matrix:  
+```{r}
+# #Yusha's code for Figure 2C
+
+GEP_tile_plot <- function(F.pm, k.idx1){
+### load in lfc estimates for shared GEPs identified by gbcd
+  F.pm <- fit.gbcd$F$lfc[, k.idx1+1]
+  colnames(F.pm) <- paste0("GEP", (k.idx1))
+
+### make the effect size tile plots of the top 10 driving genes for each shared GEP
+  n <- 10
+  geps <- paste0("GEP", (k.idx1))
+  genes <- c()
+  for (gep in geps) {
+    f <- F.pm[, gep]
+    i <- head(order(f, decreasing = TRUE), n = n)
+    i <- setdiff(i, genes)
+    genes <- c(genes, i)
+  }
+  dat <- cbind(gene = rownames(F.pm)[genes], as.data.frame(F.pm[genes, geps]))
+  dat <- transform(dat, gene = factor(gene, gene))
+  rownames(dat) <- NULL
+  dat <- melt(dat)
+  names(dat) <- c("gene","gep","lfc")
+  dat <- transform(dat, gep = factor(gep, rev(geps)), lfc = lfc)
+  dat$lfc[dat$lfc > 10] <- 10
+  dat$lfc[dat$lfc < -10] <- -10
+  dat <- transform(dat, lfc = cut(lfc, breaks = c(-10, -5, -2, -1, -0.5, 0, 0.5, 1, 2, 5, 10)))
+  colors <- colorRampPalette(c("blue","white","red"))(10)
+  p_gbcd <- ggplot(dat, aes(x = gene, y = gep, fill = lfc)) + geom_tile() + scale_fill_manual(values = colors) +
+    theme_cowplot(font_size = 8) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = "", y = "", fill = "LFC")
+  print(p_gbcd)
+}
+```
+
+This RData file contains the hnscc dataset:  
+```{r}
+load("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/hnscc/hnscc.RData")
+```
+
+# GBCD Analysis
+  
+Yusha's GBCD results are stored in this RData file. We will load the results:  
+```{r}
+load("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/hnscc/hnscc_gbcd.RData")
+```
+  
+This is a heatmap visualizing the loadings for the GEPs:  
+```{r}
+loadings_visualization(info, fit.gbcd$L, rownames(fit.gbcd$L), subject_col, subtype_col)
+```
+  
+  
+## Observations
+From the loadings matrix, it looks like GBCD discovered 3 subtype-specific GEPs (one of which is also patient-specific), 7 patient-specific GEPs (including the subtype-specific GEP), and 19 shared GEPs. Yusha told me that she discarded some of the GEPs that either were correlated to size factor or did not appear to have a biological meaningful interpretation.
+  
+## Interpretation of GEPs
+From visual inspection, we see that some GEPs correspond to patient-specific effects. In addition, there are three GEPs which correspond to the three subtypes. Lastly, other GEPs corresponded to effects shared across multiple patients. Here is a full list of GEP interpretations:  
+  
+1. Classical subtype  
+2. Basal subtype   
+3. Atypical subtype/patient MEEI26 (two different colors correspond to MEEI26 because there are two different tumors from this patient)  
+4. patient MEEI17   
+5. a shared GEP (though this GEP is more dense in the classical and atypical subtypes)  
+6. shared GEP  
+7. patient MEEI25  
+8. shared GEP  
+9. patient MEEI6  
+10. shared GEP  
+11. patient MEEI18  
+12. shared GEP  
+13. shared GEP  
+14. shared GEP  
+15. shared GEP  
+16. shared GEP  
+17. shared GEP  
+18. shared GEP  
+19. shared GEP  
+20. shared GEP  
+21. shared GEP  
+22. shared GEP  
+23. shared GEP  
+24. shared GEP  
+25. patient MEEI5  
+26. shared GEP  
+27. patient MEEI22  
+28. shared GEP  
+  
+## Classification of GEPs as patient specific vs shared
+We have a quantitative method to classify GEPs as patient-specific vs. shared:  
+For a given GEP k,  
+1. Choose a small epsilon, e.g. 0.05 (after you normalize the range of loading values to [0,1]). We say that GEP k is expressed in cell $i$ if $l_{ik} > 0.05$.  
+2. Calculate the proportion of cells expressing this GEP k for each patient $n=1,...N$ which we denote by $\rho_1,...\rho_N$.  
+3. Across the $N$ patients, calculate the ratio of the second largest $\rho_n$ to the largest $\rho_n$. If this ratio is close to 0, it is considered patient-specific.  
+  
+Rationale: if a GEP is patient-specific, say, expressed only in patient n, that the proportion of cells expressing this GEP in any other patient should be much smaller than the proportion for patient n.   
+  
+```{r}
+gbcd.L <- data.frame(fit.gbcd$L)
+gbcd.L$subject <- info$sample.id
+gbcd.gep_classifications <- gep_classification(gbcd.L)
+gbcd.k.idx1 <- which(gbcd.gep_classifications == 'shared')
+gbcd.k.idx2 <- which(gbcd.gep_classifications == 'patient-specific')
+gbcd.k.idx <- c(gbcd.k.idx2, gbcd.k.idx1)
+```
+
+```{r}
+loadings_visualization(info, fit.gbcd$L[,c(1, gbcd.k.idx+1)], rownames(fit.gbcd$L), subject_col, subtype_col)
+```
+  
+## Visualization of factor matrix
+This is a tile plot visualization of the top 10 driving genes for each shared GEP. We are trying to visualize (a subset of) the factor matrix.  
+```{r}
+GEP_tile_plot(fit.gbcd$F$lfc, gbcd.k.idx1)
+```
+
+## Assessing the fit
+```{r}
+gbcd.fitted.values <- fit.gbcd$L %*% t(fit.gbcd$F$lfc)
+```
+
+```{r}
+samp.vals <- sample(c(1:prod(dim(Y))), size = 50000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(Y)[samp.vals]), y = c(gbcd.fitted.values)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+sum((Y-gbcd.fitted.values)^2)
+```
+
+# EBCD Analysis
+  
+I have the results from EBCD saved in a RData file:  
+```{r}
+load("~/Documents/PhD 3/Research/EBCD/ebcd_hnscc_full.RData")
+```
+  
+This is a heatmap visualizing the loadings for the GEPs. In GBCD, the loadings are scaled so that the maximum membership value for each GEP is 1. The EBCD method does not do this, so I apply the same scaling transformation to the loadings estimate from EBCD. This is a heatmap visualizing the scaled loadings for the GEPs:   
+```{r}
+ebcd.fit_full_L <- ebcd.fit_full$EL
+gep_colnames <- c('Baseline', paste('GEP', c(1:(ncol(ebcd.fit_full_L) - 1))))
+```
+  
+```{r}
+#scaled version
+ebcd.fit_full_L_scaled <- t(t(ebcd.fit_full_L)/apply(ebcd.fit_full_L,2, max))
+colnames(ebcd.fit_full_L_scaled) <- gep_colnames
+rownames(ebcd.fit_full_L_scaled) <- rownames(Y)
+
+loadings_visualization(info, ebcd.fit_full_L_scaled, rownames(Y), subject_col, subtype_col)
+```
+  
+## Observations 
+From the loadings matrix, it seems that EBCD uncovered two subtype-specific GEPs (one of which is also a patient-specific GEP), eight patient-specific GEPs, and 19 shared GEPs. Something interesting is EBCD uncovered one more patient-specific GEP than GBCD. Another interesting observation is EBCD uncovered one fewer subtype-specific GEP than GBCD. In addition, some of the shared GEPs from EBCD are most dense in one or two of the subtypes -- I'm not sure if this means that coupled subtypes are grouped together in some way or if there's some identifiability issues that led to this coupling. 
+
+## Interpretation of GEPs
+Here is a full list of GEP interpretations:  
+  
+1. patient MEEI20  
+2. Atypical subtype/patient MEEI26 (two different colors correspond to MEEI26 because there are two different tumors from this patient)  
+3. patient MEEI6  
+4. shared GEP  
+5. patient MEEI17  
+6. shared GEP  
+7. shared GEP (but it is most dense in the classical and atypical subtypes)  
+8. patient MEEI25  
+9. patient MEEI18  
+10. shared GEP  
+11. shared GEP (but it is most dense in the classical and atypical subtypes)  
+12. patient MEEI28  
+13. primarily classical subtype  
+14. shared GEP (but most dense in the basal subtype)  
+15. shared GEP  
+16. shared GEP  
+17. shared GEP  
+18. shared GEP  
+19. patient MEEI5  
+20. shared GEP  
+21. shared GEP  
+22. shared GEP (but it is most dense in the classical and atypical subtypes)  
+23. shared GEP  
+24. shared GEP  
+25. shared GEP  
+26. shared GEP  
+27. shared GEP  
+28. shared GEP  
+
+## Classification of GEPs as patient specific vs shared
+```{r}
+# ### specify the indices of shared and patient-specific GEPs respectively
+ebcd.L <- data.frame(ebcd.fit_full_L_scaled)
+ebcd.L$subject <- info$sample.id
+ebcd.gep_classifications <- gep_classification(ebcd.L)
+ebcd.k.idx1 <- which(ebcd.gep_classifications == 'shared')
+ebcd.k.idx2 <- which(ebcd.gep_classifications == 'patient-specific')
+ebcd.k.idx <- c(ebcd.k.idx2, ebcd.k.idx1)
+```
+
+Here is a visualization of the loadings matrix with the GEPs separated by patient-specific and shared:
+```{r}
+loadings_visualization(info, ebcd.fit_full_L_scaled[,c(1, (ebcd.k.idx+1))], rownames(Y), subject_col, subtype_col)
+```
+
+## Visualization of factor matrix
+
+The EBCD output returns the $Z$ estimate for an equivalent problem. However, to get the $Z$ estimate for the original problem, you must perform a transformation. I have the transformed Z saved in the file:
+```{r}
+Z <- readRDS("~/Documents/PhD 3/Research/EBCD/EBCD_hnscc_Z.rds")
+```
+  
+This is a tile plot visualization of the top 10 driving genes for each shared GEP. We are trying to visualize (a subset of) the factor matrix.  
+```{r}
+### load in lfc estimates for shared GEPs identified by gbcd
+GEP_tile_plot(Z, ebcd.k.idx1)
+```
+
+## Gene Set Enrichment Analysis of factors
+Lastly, we did gene set enrichment analysis on the GEPs from EBCD. Using gene lists, we run gene set enrichment analysis using code provided by Yusha. The results are saved in these rds files. We also have a visualization of the top 5 genesets that are over-represented in the driving genes of the GEP. These plots were created using Yusha's code; these are not the credible sets that SuSie outputs.     
+```{r}
+library(stringr)
+```
+
+```{r}
+#adapted from Yusha's code
+
+# idx <- 1
+# ### display the gene set enrichment analysis result for the GEP signature
+# dat.k <- readRDS(paste0("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/hnscc/gsea/GEP", idx, ".rds"))
+
+gsea_plot <- function(idx, dat.k){
+  dat.k <- dat.k[1:pmin(nrow(dat.k), 5),]
+  dat.k$cluster <- paste0("GEP", idx)
+  dat.k$nlog10p <- pmin(dat.k$nlog10pFishersExact, 15)
+  dat.k$description <- factor(dat.k$description, levels=dat.k$description)
+  p2 <- ggplot(dat.k, aes_string(x = "description", y = "cluster", size = "nlog10pFishersExact")) + scale_x_discrete(labels = function(x) str_wrap(x, width = 20))
+  p2 <- p2 + geom_point(colour = "red") + xlab(NULL) + ylab(NULL) + scale_size_continuous(range=c(2, 6)) + 
+  guides(size = guide_legend(order = 1, title = TeX(r"($-\log_{10}(P)$)"))) + ggtitle(paste0("Geneset Over-representation Analysis - GEP", idx)) +
+  theme(axis.text.x = element_text(size = 15, angle = 90, vjust = 0.5, hjust=1), legend.title = element_text(size = 18), plot.title = element_text(hjust = 0.5, size = 18), axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  print(p2)
+}
+```
+
+```{r}
+library(gtools)
+library(latex2exp)
+```
+  
+```{r}
+gsea.k.idx1 <- c(4,6,7,10,11,14,15,16,17,18,20,21,22,23,24,25,26,27,28) #shared GEPs
+files <- Sys.glob('~/Documents/PhD 3/Research/EBCD/EBCD_gsea/factor*', dirmark = FALSE)
+files <- gtools::mixedsort(files)
+for (k in 1:length(files)){
+  dat.k <- readRDS(files[k])
+  idx <- gsea.k.idx1[k]
+  gsea_plot(idx, dat.k)
+}
+```
+
+## Assessing the fit
+```{r}
+ebcd.fitted.values <- Z %*% t(ebcd.fit_full$EL)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(t(Y))[samp.vals]), y = c(ebcd.fitted.values)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+sum((t(Y)-ebcd.fitted.values)^2)
+```
+
+# Comparison of the outputs
+
+## Comparing the Loadings matrices
+```{r}
+loadings_visualization(info, fit.gbcd$L[,c(1, gbcd.k.idx+1)], rownames(fit.gbcd$L), subject_col, subtype_col)
+```
+
+```{r}
+loadings_visualization(info, ebcd.fit_full_L_scaled[,c(1, (ebcd.k.idx+1))], rownames(Y), subject_col, subtype_col)
+```
+
+## Computing correlation of the loadings estimates
+We first analyze the concordance between the loadings matrices from GBCD and EBCD. We compute the correlations between the columns of the GBCD loadings estimate and the columns of the EBCD loadings estimate.  
+```{r}
+correlation_matrix <- cor(fit.gbcd$L, ebcd.fit_full_L)
+```
+  
+For each column of the EBCD loadings estimate, we identify the corresponding column of the GBCD loadings estimate that is most highly correlated.  
+```{r}
+max_correlation2 <- apply(correlation_matrix, 2, FUN = max)
+return_gep <- function(x){
+  gep_index <- which.max(x)
+  if (gep_index == 1){
+    gep_name <- 'Baseline'
+  }
+  else{
+    gep_name <- paste('GEP',(gep_index - 1))
+  }
+  return(gep_name)
+}
+max_gbcd_gep <- apply(correlation_matrix, 2, FUN = return_gep)
+```
+
+```{r}
+gep_colnames <- c('Baseline', paste('GEP', c(1:(ncol(ebcd.fit_full_L) - 1))))
+correlation_info1.2 <- data.frame(max_gbcd_gep, max_correlation2, row.names = gep_colnames)
+print(correlation_info1.2[order(correlation_info1.2$max_correlation2, decreasing = TRUE), ])
+```
+
+## Computing correlations of the factor estimates
+Next, we analyze the concordance between the factor matrices from GBCD and EBCD. We follow the same steps.  
+```{r}
+factor_correlation_matrix <- cor(fit.gbcd$F$lfc, Z)
+```
+  
+For each column of the EBCD factors estimate, we identify the corresponding column of the GBCD factors estimate that is most highly correlated.  
+```{r}
+factor_max_correlation2 <- apply(factor_correlation_matrix, 2, FUN = max)
+max_gbcd_factor_gep <- apply(factor_correlation_matrix, 2, FUN = return_gep)
+```
+
+```{r}
+# gep_colnames <- c('Baseline', paste('GEP', c(1:(ncol(ebcd.fit_full_L) - 1))))
+correlation_info2.2 <- data.frame(max_gbcd_factor_gep, factor_max_correlation2, row.names = gep_colnames)
+print(correlation_info2.2[order(correlation_info2.2$factor_max_correlation2, decreasing = TRUE), ])
+```
+
+## Looking at least concordant GEPs
+The least correlated GEP signatures (with respect to the loadings) from the EBCD output are GEPs 10, 26, 23, 24, 20, 12, 15, 16, 27.  
+  
+These are the top significantly enriched gene sets for those GEPs:  
+1. GEP10 - Neutrophil degranulation  
+2. GEP26 - Genes up-regulated in response to alpha interferon proteins  
+3. GEP23 - Interferon alpha/beta signaling  
+4. GEP24 - Eukaryotic Translation Elongation  
+5. GEP20 - Genes regulated by NF-kB in response to TNF [GeneID = 7124]  
+6. GEP17 - Genes defining epithelial-mesechymal transition, as in wound healing, fibrosis and metastasis  
+7. GEP12 - Patient specific -- MEEI28 (didn't do gene set analysis on this)  
+8. GEP15 - Formation of the cornified envelope  
+9. GEP6 - Genes up-regulated in response to low oxygen levels (hypoxia)  
+10. GEP27 - Genes up-regulated in response to low oxygen levels (hypoxia) 
+
+
+
+
+
+
+
+

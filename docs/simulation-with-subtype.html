@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Annie Xie" />
+
+<meta name="date" content="2024-04-21" />
+
+<title>simulation-with-subtype</title>
+
+<script src="site_libs/header-attrs-2.26/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">EBCD_GBCD_comparison</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/xxie6/EBCD_GBCD_comparison">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">simulation-with-subtype</h1>
+<h4 class="author">Annie Xie</h4>
+<h4 class="date">2024-04-21</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-04-23
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>EBCD_GBCD_comparison/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240229code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240229)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240229code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240229)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongabsolute">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>File paths:</strong> absolute </a>
+</p>
+</div>
+<div id="strongFilepathsstrongabsolute" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine.
+Change the absolute path(s) below to the suggested relative path(s) to
+make your code more reproducible.
+</p>
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th style="text-align:left;">
+absolute
+</th>
+<th style="text-align:left;">
+relative
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+~/EBCD_GBCD_comparison/data/iter1_gbcd_rescale.RData
+</td>
+<td style="text-align:left;">
+data/iter1_gbcd_rescale.RData
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree8cdc950e9fb6c3db19693eb44c6063ee1867952dtargetblank8cdc950a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/8cdc950e9fb6c3db19693eb44c6063ee1867952d" target="_blank">8cdc950</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree8cdc950e9fb6c3db19693eb44c6063ee1867952dtargetblank8cdc950a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/8cdc950e9fb6c3db19693eb44c6063ee1867952d" target="_blank">8cdc950</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/simulation-normal-data.Rmd
+    Untracked:  data/iter1_gbcd_rescale.RData
+    Untracked:  data/iter1_normal_data.rds
+    Untracked:  data/iter1_normal_data_ebcd.rds
+    Untracked:  data/iter1_normal_data_ebcd_gbcd_init.RData
+    Untracked:  data/iter1_normal_data_gbcd.rds
+    Untracked:  data/iter1_normal_data_gbcd_rescale.RData
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/simulation-with-subtype.Rmd</code>) and HTML
+(<code>docs/simulation-with-subtype.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8cdc950e9fb6c3db19693eb44c6063ee1867952d/analysis/simulation-with-subtype.Rmd" target="_blank">8cdc950</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-04-23
+</td>
+<td>
+Add simulation with subtype factors
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The Stephens Lab has proposed two different ways of performing
+orthogonal matrix factorization, Generalized Binary Covariance
+Decomposition (GBCD) and Empirical Bayes Covariance Decomposition
+(EBCD). We aim to compare these two methods on simulated single cell RNA
+data.</p>
+</div>
+<div id="code-for-simulated-data" class="section level1">
+<h1>Code for Simulated Data</h1>
+<p>This is the code used to create the simulated dataset (This was taken
+from the simulations for the GBCD paper). In this simulated dataset, we
+have one shared GEP, two subtype GEPs, and 8 patient effects.</p>
+<pre class="r"><code>#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)</code></pre>
+<pre class="r"><code>##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+params &lt;- readRDS(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds&quot;)
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm &lt;- function(X){
+  ### calculate the cell-specific library size
+  clusters &lt;- quickCluster(X)
+  si &lt;- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat &lt;- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:20){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat &lt;- splatSimulate(params, batchCells = 3200, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X &lt;- counts(dat)
+  gene.info &lt;- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L &lt;- matrix(0, nrow=ncol(X), ncol=11)
+  L[1:1600, 1] &lt;- 1
+  L[1601:3200, 2] &lt;- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 3] &lt;- runif(600, min=0.4, max=2)
+  L[1:400, 4] &lt;- 1
+  L[401:800, 5] &lt;- 1
+  L[801:1200, 6] &lt;- 1
+  L[1201:1600, 7] &lt;- 1
+  L[1601:2000, 8] &lt;- 1
+  L[2001:2400, 9] &lt;- 1
+  L[2401:2800, 10] &lt;- 1
+  L[2801:3200, 11] &lt;- 1
+  
+  ### simulate F
+  F &lt;- matrix(0, nrow=nrow(X), ncol=11)
+  idx.gene &lt;- sort(which(rowSums(X!=0) &gt;= 300))
+  F[idx.gene[1:75], 1] &lt;- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[76:150], 2] &lt;- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[251:500], 3] &lt;- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
+  F[idx.gene[501:1000], 4] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1001:1500], 5] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1501:2000], 6] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2001:2500], 7] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2501:3000], 8] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[3001:3500], 9] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[3501:4000], 10] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[4001:4500], 11] &lt;- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor &gt; 1, ] &lt;- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod &lt;- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin &lt;- as(X.mod$mat, &quot;sparseMatrix&quot;) 
+  
+  ### remove genes with very low expression levels
+  idx.gene &lt;- rowSums(X.thin!=0) &gt;= 32
+  X.thin &lt;- X.thin[idx.gene,]
+  F &lt;- F[idx.gene,]
+  colnames(X.thin) &lt;- paste0(&quot;cell&quot;, 1:ncol(X.thin))
+  rownames(X.thin) &lt;- paste0(&quot;gene&quot;, 1:nrow(X.thin))
+  rownames(L) &lt;- colnames(X.thin)
+  colnames(L) &lt;- paste0(&quot;k&quot;, 1:ncol(L))
+  rownames(F) &lt;- rownames(X.thin)
+  colnames(F) &lt;- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat &lt;- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data &lt;- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data, file=paste0(&quot;~/Documents/PhD 3/Research/EBCD/simulation_data/iter&quot;, iter, &quot;.rds&quot;))
+  rm(data, X, X.mod, L, F)
+}</code></pre>
+</div>
+<div id="package-and-functions-for-analyses" class="section level1">
+<h1>Package and Functions for Analyses</h1>
+<pre class="r"><code>library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)</code></pre>
+<pre><code>Loading required package: magrittr</code></pre>
+<pre class="r"><code>library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)</code></pre>
+<pre><code>
+Attaching package: &#39;patchwork&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    align_plots</code></pre>
+<pre class="r"><code>library(fastTopics)
+source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
+<pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;){
+  ### define the color map
+  cols &lt;- colorRampPalette(c(&quot;gray96&quot;, &quot;red&quot;))(49)
+  brks &lt;- seq(min(L), max(L), length=50)
+  
+  plt &lt;- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}</code></pre>
+<pre class="r"><code>source(&quot;~/Documents/PhD 3/Research/EBCD/ebcd_functions.R&quot;)
+source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd_functions.R&quot;)</code></pre>
+</div>
+<div id="analysis-of-simulated-data" class="section level1">
+<h1>Analysis of Simulated Data</h1>
+<pre class="r"><code>### load in the simulated single cell data from this replicate
+iter &lt;- 1
+data &lt;- readRDS(paste0(&quot;~/Documents/PhD 3/Research/EBCD/simulation_data/iter&quot;, iter, &quot;.rds&quot;))</code></pre>
+<pre class="r"><code>plot_heatmap(data$L)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#note to self: maybe save this in file and load in
+observed.vals &lt;- data$Y %*% t(data$Y)/ncol(data$Y)</code></pre>
+<div id="gbcd-analysis" class="section level2">
+<h2>GBCD Analysis</h2>
+<div id="analysis" class="section level3">
+<h3>Analysis</h3>
+<p>This is the code to run the GBCD analysis.</p>
+<pre class="r"><code>fit.gbcd &lt;- flash_fit_cov_ebnmf(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE)</code></pre>
+<p>I have the results saved, so I will just load the results
+directly.</p>
+<pre class="r"><code>fit.gbcd &lt;- readRDS(paste0(&quot;~/Documents/PhD 3/Research/EBCD/simulation_output_gbcd/iter&quot;, iter, &quot;_gbcd.rds&quot;))</code></pre>
+<p>This is a plot of estimate for <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(fit.gbcd$L)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="rescale-gbcd-loadings-estimate" class="section level3">
+<h3>Rescale GBCD loadings estimate</h3>
+<p>I’m loading in previously saved results.</p>
+<pre class="r"><code>load(&quot;~/EBCD_GBCD_comparison/data/iter1_gbcd_rescale.RData&quot;)</code></pre>
+<p>This is the code to rescale the GBCD estimate. I’ve loaded in
+previously saved results.</p>
+<pre class="r"><code>fit.gbcd.rescale1 &lt;- flash_fit_cov_ebnmf_fit_laplace(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
+
+fit.gbcd.rescale2 &lt;- flash_fit_cov_ebnmf_fit_L(dat = fit.gbcd.rescale1$dat, fit.gbcd.rescale1$fit.cov, Y=data$Y, Kmax=16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1)</code></pre>
+<p><strong>LDF Method of Scaling:</strong></p>
+<pre class="r"><code>fit.gbcd.rescale.ldf &lt;- ldf(fit.gbcd.rescale2$fit.cov, type = &#39;i&#39;)
+
+fit.gbcd.rescale.L &lt;- fit.gbcd.rescale.ldf$L %*% diag(sqrt(fit.gbcd.rescale.ldf$D))
+
+thres &lt;- 0.9
+k.idx &lt;- which(fit.gbcd.rescale2$corr &gt; thres)
+fit.gbcd.rescale.L &lt;- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]</code></pre>
+</div>
+<div id="assess-fit" class="section level3">
+<h3>Assess Fit</h3>
+<p>This is a heatmap of the rescaled <span
+class="math inline">\(L\)</span>.</p>
+<pre class="r"><code>plot_heatmap(fit.gbcd.rescale.L)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gbcd.rescaled.fitted.vals &lt;- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L)</code></pre>
+<pre class="r"><code>sum((observed.vals - gbcd.rescaled.fitted.vals)^2)</code></pre>
+<pre><code>[1] 6406.447</code></pre>
+<p>This is code to plot (a sub-sampple of) fitted values vs. observed
+values:</p>
+<pre class="r"><code>set.seed(3952)
+samp.vals &lt;- sample(1:prod(dim(observed.vals)), size = 100000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gbcd.rescaled.withdiag.fitted.vals &lt;- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L) + diag(rep(fit.gbcd.rescale2$s2, nrow(fit.gbcd.rescale.L)))</code></pre>
+<pre class="r"><code>sum((observed.vals - gbcd.rescaled.withdiag.fitted.vals)^2)</code></pre>
+<pre><code>[1] 2613.399</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.withdiag.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="correlation-of-gbcd-estimate-to-true-loadings-matrix"
+class="section level3">
+<h3>Correlation of GBCD estimate to true loadings matrix</h3>
+<p>We compute the correlation of the GBCD estimate of the loadings
+matrix to the true loadings matrix.</p>
+<pre class="r"><code>correlation_GBCD_true &lt;- cor(fit.gbcd$L, data$L)
+colnames(correlation_GBCD_true) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;, paste(&#39;Patient&#39;, c(1:8)))</code></pre>
+<pre class="r"><code>correlation_GBCD_true</code></pre>
+<pre><code>         Subtype 1 GEP Subtype 2 GEP   Shared GEP    Patient 1    Patient 2
+Baseline -0.0124638935  0.0124638935  0.004365361  0.013190308 -0.025840737
+GEP1     -0.0177875685  0.0177875685  0.024244340  0.004692371 -0.010425927
+GEP2      0.0316046292 -0.0316046292 -0.022536671 -0.021162613  0.054256957
+GEP3      0.3755368158 -0.3755368158  0.031019343  0.989032842 -0.139896361
+GEP4     -0.3770691205  0.3770691205  0.012481628 -0.143830400 -0.142150115
+GEP5     -0.3722656782  0.3722656782 -0.007788740 -0.140391824 -0.139725011
+GEP6      0.3754516633 -0.3754516633  0.004930312 -0.140533267  0.987573656
+GEP7      0.3756791161 -0.3756791161 -0.015831537 -0.136669282 -0.142505121
+GEP8     -0.3762679469  0.3762679469  0.018052808 -0.142873107 -0.142032700
+GEP9      0.3770780395 -0.3770780395 -0.018239274 -0.138900922 -0.137385066
+GEP10    -0.3761428224  0.3761428224 -0.023947121 -0.144045039 -0.140389458
+GEP11     0.8253288271 -0.8253288271  0.017648501  0.251034943  0.428759717
+GEP12    -0.0006749492  0.0006749492  0.967689920  0.025568509  0.006539567
+GEP13    -0.7623670995  0.7623670995  0.013471905 -0.293915976 -0.284528754
+GEP14     0.5250885491 -0.5250885491  0.002664344  0.255028825  0.121747565
+           Patient 3    Patient 4     Patient 5     Patient 6    Patient 7
+Baseline -0.01384350  0.007650289 -0.0178170433 -0.0009190737  0.002397651
+GEP1     -0.01921782 -0.001940898 -0.0009783164 -0.0064974082 -0.012495029
+GEP2      0.01881676 -0.004129397  0.0087839718 -0.0005128460 -0.019549106
+GEP3     -0.14031620 -0.141061981 -0.1411614625 -0.1419042286 -0.142727300
+GEP4     -0.14178312 -0.142311294 -0.1438367750 -0.1357244191 -0.137968587
+GEP5     -0.14222761 -0.140468363  0.9866146874 -0.1422276067 -0.141234615
+GEP6     -0.13798121 -0.141429622 -0.1399506485 -0.1424600195 -0.143372165
+GEP7     -0.13814527  0.985293111 -0.1408682551 -0.1423320895 -0.142322674
+GEP8     -0.14200324 -0.141954618 -0.1373640137  0.9875385108 -0.142103779
+GEP9      0.98710392 -0.140729524 -0.1432101315 -0.1423300589 -0.142250353
+GEP10    -0.14213645 -0.142103547 -0.1420543229 -0.1358928935  0.987306242
+GEP11     0.12975521  0.438230029 -0.3003587119 -0.3191527015 -0.312223876
+GEP12    -0.02332613 -0.009802373 -0.0148087273  0.0227049305 -0.026428125
+GEP13    -0.29412219 -0.280023794  0.4361394990  0.1335571933  0.244692046
+GEP14     0.36278851  0.054294366 -0.1183144114 -0.2684311464 -0.220543136
+           Patient 8
+Baseline  0.03518210
+GEP1      0.04686303
+GEP2     -0.03650373
+GEP3     -0.14196531
+GEP4      0.98760471
+GEP5     -0.14033966
+GEP6     -0.14184673
+GEP7     -0.14245042
+GEP8     -0.13920705
+GEP9     -0.14229787
+GEP10    -0.14068453
+GEP11    -0.31604461
+GEP12     0.01955235
+GEP13     0.33820198
+GEP14    -0.18657057</code></pre>
+</div>
+<div id="interpretation-of-gbcd-geps" class="section level3">
+<h3>Interpretation of GBCD GEPs</h3>
+<p>Based off of the loadings, GEPs 3-10 correspond to patient effects.
+The GBCD method fit 6 shared GEPs (including the subtype GEPs) along
+with a baseline factor. GEP 12 has the highest correlation with the
+shared GEP from the true loadings matrix with a correlation value of
+0.968. GEP 11 has the highest correlation with the subtype 1 GEP (but it
+only has a correlation value of 0.825). GEP 13 has the highest
+correlation with the subtype 2 GEP (but it only has a correlation value
+of 0.762).</p>
+<p>One possible explanation for one of the other shared GEPs is
+correlation with size factor. We try to account for size factor by
+scaling the counts accordingly, but sometimes we still get a factor that
+correlates with size factor. In general, we don’t find these factors
+biologically meaningful.</p>
+<pre class="r"><code>size_factors &lt;- rowSums(data$Y)</code></pre>
+<pre class="r"><code>correlation_GBCD_size &lt;- cor(fit.gbcd$L[,c(2:3,15)], size_factors)</code></pre>
+<pre class="r"><code>correlation_GBCD_size</code></pre>
+<pre><code>            [,1]
+GEP1   0.8125249
+GEP2  -0.8720861
+GEP14 -0.4285058</code></pre>
+<p>GEP1 has a positive correlation with size factor with a correlation
+of 0.813. I would say this is a relatively high correlation. GEP2
+interestingly has a negative correlation with size factor, with a
+correlation of -0.872. GEP14 has a moderate negative correlation with
+size factor, with a correlation of -0.429.</p>
+</div>
+</div>
+<div id="ebcd-analysis" class="section level2">
+<h2>EBCD Analysis</h2>
+<p>I’m loading in previously saved results.</p>
+<pre class="r"><code>fit.ebcd &lt;- readRDS(paste0(&quot;~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter&quot;, iter, &quot;_ebcd.rds&quot;))</code></pre>
+<p>This is the code to run the EBCD analysis. I’ve already loaded in the
+saved results.</p>
+<pre class="r"><code>set.seed(295)
+fit.ebcd &lt;- ebcd(X = t(data$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
+<p>This is a plot of the scaled estimate of <span
+class="math inline">\(L\)</span>. This estimate is scaled such that the
+infinity norm for each column is 1, i.e. the maximum value for each
+column is 1.</p>
+<pre class="r"><code>plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ebcd.fitted.vals &lt;- fit.ebcd$EL %*% t(fit.ebcd$EL)</code></pre>
+<pre class="r"><code>sum((observed.vals - ebcd.fitted.vals)^2)</code></pre>
+<pre><code>[1] 6362.336</code></pre>
+<p>This is a plot of (a subset of) the fitted values vs. observed
+values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd$vec.obj)), y = fit.ebcd$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd$vec.obj)</code></pre>
+<pre><code>[1] 651</code></pre>
+<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix"
+class="section level3">
+<h3>Correlation of EBCD estimate to true loadings matrix</h3>
+<p>We compute the correlation of the EBCD estimate of the loadings
+matrix to the true loadings matrix.</p>
+<pre class="r"><code>correlation_EBCD_true &lt;- cor(fit.ebcd$EL, data$L)
+colnames(correlation_EBCD_true) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;, paste(&#39;Patient&#39;, c(1:8)))</code></pre>
+<pre class="r"><code>correlation_EBCD_true</code></pre>
+<pre><code>      Subtype 1 GEP Subtype 2 GEP   Shared GEP   Patient 1    Patient 2
+ [1,]  0.0088652122 -0.0088652122  0.003461209  0.01993213 -0.009037589
+ [2,] -0.0295082012  0.0295082012  0.040731871 -0.05797521  0.160096719
+ [3,] -0.9693426918  0.9693426918 -0.003053493 -0.36258387 -0.378829491
+ [4,] -0.3734408472  0.3734408472  0.009208791 -0.14119566 -0.142922292
+ [5,]  0.3755650713 -0.3755650713  0.029166405  0.99487653 -0.142358574
+ [6,] -0.0288325193  0.0288325193  0.002506601 -0.21025452 -0.219678087
+ [7,] -0.3679159355  0.3679159355 -0.024849143 -0.14228848 -0.144326338
+ [8,]  0.2362198799 -0.2362198799 -0.007909504 -0.12336079  0.588569155
+ [9,]  0.3767376592 -0.3767376592 -0.013293571 -0.13883553 -0.142397403
+[10,] -0.0049779763  0.0049779763 -0.019732168 -0.21569087 -0.220757182
+[11,] -0.0009916717  0.0009916717  0.947637710  0.02400038  0.000265526
+[12,]  0.1561827728 -0.1561827728  0.012064616  0.01250378 -0.172615660
+[13,] -0.3464166243  0.3464166243  0.004686701 -0.05751885 -0.194467618
+[14,] -0.0146424146  0.0146424146 -0.023566240  0.05480017 -0.128289571
+[15,] -0.3231344079  0.3231344079 -0.013802908 -0.04992972 -0.175971304
+          Patient 3    Patient 4    Patient 5   Patient 6    Patient 7
+ [1,] -0.0116952410  0.014203645 -0.028137679 -0.01321750 -0.003128166
+ [2,] -0.0972524089 -0.049481305  0.033829081  0.03673251 -0.029984574
+ [3,] -0.3788295110 -0.345265529  0.413012822  0.44302900  0.306241331
+ [4,] -0.1375649636 -0.142906575 -0.142922292 -0.14292229 -0.142922291
+ [5,] -0.1423583837 -0.142358554 -0.142358572 -0.14072740 -0.142356481
+ [6,]  0.5935595160 -0.207217584 -0.219678087  0.69765786 -0.219649471
+ [7,] -0.1252954571 -0.144326332 -0.144326338 -0.14432634  0.987350978
+ [8,] -0.0193099851 -0.088767486 -0.086343848 -0.07941480 -0.092637246
+ [9,] -0.1423898712  0.993196608 -0.142397388 -0.14238161 -0.142397402
+[10,]  0.6434124151 -0.214490360  0.647829590 -0.22075718 -0.209723937
+[11,] -0.0163101993 -0.009454969 -0.012370297  0.02361528 -0.024822400
+[12,]  0.3640093350  0.032228698 -0.170789899 -0.16721001  0.041836343
+[13,] -0.1961045807 -0.075641662  0.363042672  0.37576390 -0.110998285
+[14,]  0.0004262503  0.050925901 -0.001711783  0.06752395 -0.001416490
+[15,] -0.1917577649 -0.070874517  0.701558146  0.09517225 -0.152277436
+         Patient 8
+ [1,]  0.031080406
+ [2,]  0.004035194
+ [3,]  0.303225245
+ [4,]  0.993356367
+ [5,] -0.142358559
+ [6,] -0.214739627
+ [7,] -0.142461692
+ [8,] -0.098734998
+ [9,] -0.142397401
+[10,] -0.209822478
+[11,]  0.015076679
+[12,]  0.060037405
+[13,] -0.104075583
+[14,] -0.042258423
+[15,] -0.155919658</code></pre>
+</div>
+<div id="interpretation-of-ebcd-geps" class="section level3">
+<h3>Interpretation of EBCD GEPs</h3>
+<p>Based off of the loadings, GEPs 2-3, 5, and 9 correspond to patient
+effects. GEP 4 and GEP 10 both correspond to two patient effects that
+the output has coupled together. In addition, GEP 8 shows high loading
+value for patient 2 effects, but it also has loading values in other
+patients, so it is not solely a patient effect. The EBCD method fit 8
+shared GEPs (including the subtype GEP) along with a baseline factor.
+GEP10 has the highest correlation with the shared GEP from the true
+loadings matrix. GEP2 has the highest correlation with the subtype 2 GEP
+from the true loadings matrix. No GEPs have a very strong positive
+correlation with the subtype 1 GEP from the true loadings matrix;
+however, GEP2 has a high negative correlation with the subtype 2
+GEP.</p>
+<p>One possible explanation for one of the other shared GEPs is
+correlation with size factor. We try to account for size factor by
+scaling the counts accordingly, but sometimes we still get a factor that
+correlates with size factor. In general, we don’t find these factors
+biologically meaningful.</p>
+<pre class="r"><code>size_factors &lt;- rowSums(data$Y)</code></pre>
+<pre class="r"><code>correlation_EBCD_size &lt;- cor(fit.ebcd$EL[,c(2,11:15)], size_factors)</code></pre>
+<pre class="r"><code>correlation_EBCD_size</code></pre>
+<pre><code>            [,1]
+[1,]  0.77946786
+[2,]  0.07466812
+[3,]  0.48847387
+[4,]  0.35776674
+[5,] -0.78244335
+[6,] -0.11869433</code></pre>
+<p>GEP1 has a positive correlation with size factor with a correlation
+of 0.779. I would say this is a relatively high negative correlation.
+GEP13 has a negative correlation with size factor with a correlation of
+-0.782. I would say GEPs 10 and 14 don’t have a large correlation with
+size factor. GEPs 11 and 12 have more moderate correlations with size
+factor, but not as large as GEPs 1 and 13. Another explanation for the
+additional shared GEPs is they are artifacts from the Poisson model
+(with a shifted-log-transformation step to try to make the data
+approximately normal) from which the data is generated. This model does
+not exactly match the model that EBCD or GBCD is fitting. It might be
+worth it to run a simulation that uses data simulated from the EBCD
+model.</p>
+</div>
+</div>
+<div id="ebcd-analysis-with-true-number-of-factors"
+class="section level2">
+<h2>EBCD Analysis with true number of factors</h2>
+<p>In the previous EBCD analysis, I set the maximum number of factors to
+15 because that is the number of factors that GBCD fit. However, I
+wanted to try running EBCD with the true number of factors, 11, (plus a
+baseline factor) and see what the results look like. I am not convinced
+that using the correct number of factors will lead to an output that is
+more similar to the true loadings matrix (given that my previous
+analysis used a larger number of factors).</p>
+<p>I’m loading in previously saved results.</p>
+<pre class="r"><code>fit.ebcd_K12 &lt;- readRDS(paste0(&quot;~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter&quot;, iter, &quot;_ebcd_K12.rds&quot;))</code></pre>
+<p>This is the code to run the EBCD analysis. I’ve already loaded in the
+saved results.</p>
+<pre class="r"><code>set.seed(295)
+fit.ebcd_K12 &lt;- ebcd(X = t(data$Y), Kmax = 12, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
+<p>This is a plot of the scaled estimate of <span
+class="math inline">\(L\)</span>. This estimate is scaled such that the
+infinity norm for each column is 1, i.e. the maximum value for each
+column is 1.</p>
+<pre class="r"><code>plot_heatmap(t(t(fit.ebcd_K12$EL)/apply(fit.ebcd_K12$EL,2, max)))</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ebcd_K12.fitted.vals &lt;- fit.ebcd_K12$EL %*% t(fit.ebcd_K12$EL)</code></pre>
+<pre class="r"><code>sum((observed.vals - ebcd_K12.fitted.vals)^2)</code></pre>
+<pre><code>[1] 6090.539</code></pre>
+<p>This is a plot of (a subset of) the fitted values vs. observed
+values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd_K12.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd_K12.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_K12$vec.obj)), y = fit.ebcd_K12$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd_K12$vec.obj)</code></pre>
+<pre><code>[1] 2200</code></pre>
+<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-1"
+class="section level3">
+<h3>Correlation of EBCD estimate to true loadings matrix</h3>
+<p>We compute the correlation of the EBCD estimate of the loadings
+matrix to the true loadings matrix.</p>
+<pre class="r"><code>correlation_EBCD_K12_true &lt;- cor(fit.ebcd_K12$EL, data$L)
+colnames(correlation_EBCD_K12_true) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;, paste(&#39;Patient&#39;, c(1:8)))</code></pre>
+<pre class="r"><code>correlation_EBCD_K12_true</code></pre>
+<pre><code>      Subtype 1 GEP Subtype 2 GEP    Shared GEP   Patient 1   Patient 2
+ [1,] -0.0098184709  0.0098184709  9.884286e-03  0.01739304 -0.02033615
+ [2,]  0.3658094903 -0.3658094903  3.751741e-03 -0.14362878  0.98042519
+ [3,] -0.9581350016  0.9581350016 -2.640938e-03 -0.35235403 -0.36961091
+ [4,] -0.3725125054  0.3725125054  7.681368e-03 -0.14349718 -0.14349718
+ [5,]  0.3713331435 -0.3713331435  2.978077e-02  0.98656595 -0.14287454
+ [6,] -0.0352876863  0.0352876863 -7.826409e-05 -0.21418434 -0.21710864
+ [7,] -0.3705233829  0.3705233829 -2.429379e-02 -0.14423997 -0.14423997
+ [8,]  0.2663316362 -0.2663316362 -9.589054e-02  0.04750451  0.10547579
+ [9,]  0.3713763626 -0.3713763626 -1.386860e-02 -0.14112321 -0.14293001
+[10,] -0.0436472636  0.0436472636 -2.207087e-02 -0.21398176 -0.21706670
+[11,]  0.0005515318 -0.0005515318  9.488170e-01  0.02499595  0.00235528
+[12,]  0.1724443943 -0.1724443943 -1.142236e-02 -0.02945554 -0.16251126
+        Patient 3   Patient 4   Patient 5   Patient 6    Patient 7   Patient 8
+ [1,] -0.02316299  0.01126196 -0.01359969 -0.00204389 -0.002494132  0.03298184
+ [2,] -0.14011625 -0.14362819 -0.12677614 -0.13901826 -0.143628780 -0.14362878
+ [3,] -0.37448012 -0.35211890  0.47143281  0.46382463  0.251537054  0.26176946
+ [4,] -0.13269444 -0.14349718 -0.13883965 -0.14349718 -0.143497177  0.98901997
+ [5,] -0.13941392 -0.14287454 -0.13509034 -0.14056352 -0.142874542 -0.14287454
+ [6,]  0.59506385 -0.21712084 -0.21192773  0.69642237 -0.217120056 -0.21402462
+ [7,] -0.12745879 -0.14423997 -0.13907717 -0.14239270  0.985888540 -0.14423997
+ [8,]  0.18209949  0.06757579 -0.20051891 -0.14045464 -0.007832061 -0.05384998
+ [9,] -0.13919363  0.98471513 -0.13540146 -0.14020681 -0.142930010 -0.14293001
+[10,]  0.58212700 -0.21706700  0.71124840 -0.21706731 -0.214211631 -0.21398101
+[11,] -0.01635203 -0.01016537 -0.01328954  0.02296653 -0.025279312  0.01476848
+[12,]  0.45152233  0.00115589 -0.19375268 -0.19158583  0.059859495  0.06476760</code></pre>
+</div>
+<div id="interpretation-of-ebcd-geps-1" class="section level3">
+<h3>Interpretation of EBCD GEPs</h3>
+<p>Based off of the loadings, GEPs 1,3,4,6, and 8 correspond to patient
+effects. GEP 5 and GEP 9 both correspond to two patient effects that the
+output has coupled together. In addition, GEP 11 shows somewhat high
+loading values for patient 3 effects, but it also has loading values in
+other patients, so it is not solely a patient effect. The EBCD method
+fit 4 shared GEPs (including the subtype GEP) along with a baseline
+factor. GEP10 has the highest correlation with the shared GEP from the
+true loadings matrix. GEP2 has the highest correlation with the subtype
+2 GEP from the true loadings matrix. No GEPs have a very strong positive
+correlation with the subtype 1 GEP from the true loadings matrix;
+however, GEP2 has a high negative correlation with the subtype 2
+GEP.</p>
+<p>One possible explanation for one of the other shared GEPs is
+correlation with size factor. We try to account for size factor by
+scaling the counts accordingly, but sometimes we still get a factor that
+correlates with size factor. In general, we don’t find these factors
+biologically meaningful.</p>
+<pre class="r"><code>size_factors &lt;- rowSums(data$Y)</code></pre>
+<pre class="r"><code>correlation_EBCD_K12_size &lt;- cor(fit.ebcd$EL[,c(8,12)], size_factors)</code></pre>
+<pre class="r"><code>correlation_EBCD_K12_size</code></pre>
+<pre><code>           [,1]
+[1,] -0.6296063
+[2,]  0.4884739</code></pre>
+<p>Both GEP 7 and 11 have moderate magnitudes of correlation with size
+factor, but, to me, the values are not high enough to suggest that these
+GEPs arise from size factor variation.</p>
+</div>
+</div>
+<div id="correlation-between-gbcd-and-ebcd-loadings-estimates"
+class="section level2">
+<h2>Correlation between GBCD and EBCD loadings estimates</h2>
+<p>We analyze the concordance between the loadings matrices from GBCD
+and EBCD. We compute the correlations between the columns of the GBCD
+loadings estimate and the columns of the EBCD loadings estimate.</p>
+<pre class="r"><code>correlation_L_estimates &lt;- cor(fit.gbcd$L, fit.ebcd$EL)</code></pre>
+<p>For each column of the EBCD loadings estimate, we identify the
+corresponding column of the GBCD loadings estimate that is most highly
+correlated.</p>
+<pre class="r"><code>max_corr &lt;- apply(correlation_L_estimates, 2, FUN = max)
+return_gep &lt;- function(x){
+  gep_index &lt;- which.max(x)
+  if (gep_index == 1){
+    gep_name &lt;- &#39;Baseline&#39;
+  }
+  else{
+    gep_name &lt;- paste(&#39;GEP&#39;,(gep_index - 1))
+  }
+  return(gep_name)
+}
+max_gbcd_gep &lt;- apply(correlation_L_estimates, 2, FUN = return_gep)</code></pre>
+<pre class="r"><code>gep_colnames &lt;- c(&#39;Baseline&#39;, paste(&#39;GEP&#39;, c(1:(ncol(fit.ebcd$EL) - 1))))
+correlation_info &lt;- data.frame(max_gbcd_gep, max_corr, row.names = gep_colnames)
+print(correlation_info[order(correlation_info$max_corr, decreasing = TRUE), ])</code></pre>
+<pre><code>         max_gbcd_gep  max_corr
+Baseline     Baseline 0.9995392
+GEP 4           GEP 3 0.9955265
+GEP 8           GEP 7 0.9938514
+GEP 3           GEP 4 0.9932707
+GEP 6          GEP 10 0.9879623
+GEP 10         GEP 12 0.9753023
+GEP 1           GEP 1 0.8690042
+GEP 13          GEP 2 0.7909761
+GEP 2          GEP 13 0.7725065
+GEP 14          GEP 5 0.7125733
+GEP 5           GEP 8 0.6965679
+GEP 7           GEP 2 0.6817304
+GEP 9           GEP 5 0.6462756
+GEP 11          GEP 1 0.5288756
+GEP 12          GEP 8 0.4085584</code></pre>
+</div>
+<div id="comparing-gbcd-and-ebcd-observations" class="section level2">
+<h2>Comparing GBCD and EBCD: Observations</h2>
+<p>The GBCD and EBCD outputs have some qualitative differences that I
+think are unexpected. First, GBCD separates all of the patient effects
+into separate GEPs, which is what we expect. We expect EBCD to behave in
+a similar way; however (at least for the random seed I used), the EBCD
+result couples some of the patient effects together. This is not
+necessarily a bad thing; it just changes the interpretation of the
+factors. In addition, GBCD finds two GEPs related to subtypes – one for
+subtype 1 and another for subtype 2. On the other hand, EBCD only finds
+one GEP related to subtype. More specifically, it finds one for subtype
+2. I would say that ideally we would want to find a GEP for each
+subtype. This difference could potentially be due to EBCD converging to
+a local optimum. Matrix factorization problems also can have
+non-identifiability issues, so it could also be related to that.</p>
+</div>
+</div>
+<div id="experiment-use-gbcd-output-to-initialize-ebcd"
+class="section level1">
+<h1>Experiment: Use GBCD output to initialize EBCD</h1>
+<div id="hypothesis" class="section level2">
+<h2>Hypothesis</h2>
+<p>I hypothesize that the EBCD output with the GBCD initialization will
+be closer qualitatively to the GBCD output than the EBCD with greedy
+initialization output. For example, all of the patient effects will be
+represented in separate GEPs. In addition, there will a GEP for each
+subtype. I think that the initialization having these qualities will
+create an inductive bias that induces these qualities in the EBCD
+output.</p>
+</div>
+<div id="analysis-1" class="section level2">
+<h2>Analysis</h2>
+<p>This is the code to run the analysis. I will load in previously saved
+results.</p>
+<pre class="r"><code>Z.init &lt;- PolarU(fit.ebcd$A%*%fit.gbcd.rescale.L)
+fitted.Y &lt;- Z.init%*%t(fit.gbcd.rescale.L)
+tau.est &lt;- prod(dim(fit.ebcd$A)) / sum((fit.ebcd$A - fitted.Y)^2)
+ebcd_obj_init_rescaled &lt;- list(
+    A = fit.ebcd$A, N = fit.ebcd$N, nrowA = fit.ebcd$nrowA,
+    tau = tau.est, Z = Z.init, EL = fit.gbcd.rescale.L, ebnm_fn = ebnm::ebnm_generalized_binary
+  )</code></pre>
+<pre class="r"><code>fit.ebcd.gbcd.init_rescaled &lt;- ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 2500)</code></pre>
+<pre class="r"><code>load(&#39;~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter1_ebcd_gbcd_init.RData&#39;)</code></pre>
+<pre class="r"><code>#plot initialization
+plot_heatmap(fit.gbcd.rescale.L)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_heatmap(t(t(fit.gbcd.rescale.L)/apply(fit.gbcd.rescale.L,2, max)))</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_heatmap(t(t(fit.ebcd.gbcd.init_rescaled$EL)/apply(fit.ebcd.gbcd.init_rescaled$EL,2, max)))</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-64-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of backfit iterations that were needed to reach
+convergence</p>
+<pre class="r"><code>print(length(fit.ebcd.gbcd.init_rescaled$vec.obj))</code></pre>
+<pre><code>[1] 437</code></pre>
+<pre class="r"><code>plot_heatmap(ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 5)$EL)</code></pre>
+<pre class="r"><code>ebcd.gbcd.rescaled.init.fitted.vals &lt;- fit.ebcd.gbcd.init_rescaled$EL %*% t(fit.ebcd.gbcd.init_rescaled$EL)</code></pre>
+<pre class="r"><code>sum((observed.vals - ebcd.gbcd.rescaled.init.fitted.vals)^2)</code></pre>
+<pre><code>[1] 6118.539</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.gbcd.rescaled.init.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-69-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(2:length(fit.ebcd.gbcd.init_rescaled$vec.obj)), y = fit.ebcd.gbcd.init_rescaled$vec.obj[-1])) + geom_line()</code></pre>
+<p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-70-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="observations" class="section level2">
+<h2>Observations</h2>
+<p>The output from the EBCD backfit with the GBCD output as
+initialization has some qualitative differences from the
+greedy-initialization EBCD output. One difference is the patient effects
+are all separate; none of them are coupled like in the regular EBCD
+output. Something that was surprising to me is the EBCD backfit made the
+subtype GEPs more dense. Therefore, while there are still high loading
+values on the respective subtypes, it is harder to interpret the GEPs as
+subtype-specific. I wonder if EBCD is behaving unexpectedly due to the
+model misspecification – the data was generated under a Poisson model
+and then transformed to be approximately normal. Perhaps EBCD would
+behave as expected if normal noise was used in the data generation –
+that is something to test.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Ventura 13.6
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [5] ashr_2.2-63        flashier_1.0.7     magrittr_2.0.3     ebnm_1.1-2        
+ [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
+[13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.0      workflowr_1.7.1   
+
+loaded via a namespace (and not attached):
+ [1] pbapply_1.7-2      rlang_1.1.3        git2r_0.33.0       horseshoe_0.2.0   
+ [5] compiler_4.3.2     getPass_0.2-4      callr_3.7.6        vctrs_0.6.5       
+ [9] quantreg_5.97      quadprog_1.5-8     stringr_1.5.1      pkgconfig_2.0.3   
+[13] crayon_1.5.2       fastmap_1.1.1      mcmc_0.9-8         labeling_0.4.3    
+[17] utf8_1.2.4         promises_1.2.1     rmarkdown_2.26     ps_1.7.6          
+[21] MatrixModels_0.5-3 purrr_1.0.2        xfun_0.43          cachem_1.0.8      
+[25] trust_0.1-8        jsonlite_1.8.8     progress_1.2.3     highr_0.10        
+[29] later_1.3.2        parallel_4.3.2     prettyunits_1.2.0  R6_2.5.1          
+[33] bslib_0.7.0        stringi_1.8.3      SQUAREM_2021.1     jquerylib_0.1.4   
+[37] Rcpp_1.0.12        knitr_1.45         httpuv_1.6.15      splines_4.3.2     
+[41] tidyselect_1.2.1   rstudioapi_0.16.0  yaml_2.3.8         processx_3.8.4    
+[45] lattice_0.22-6     tibble_3.2.1       plyr_1.8.9         withr_3.0.0       
+[49] coda_0.19-4.1      evaluate_0.23      Rtsne_0.17         survival_3.5-8    
+[53] RcppParallel_5.1.7 pillar_1.9.0       whisker_0.4.1      plotly_4.10.4     
+[57] softImpute_1.4-1   generics_0.1.3     rprojroot_2.0.4    invgamma_1.1      
+[61] truncnorm_1.0-9    hms_1.1.3          munsell_0.5.1      scales_1.3.0      
+[65] glue_1.7.0         lazyeval_0.2.2     tools_4.3.2        data.table_1.15.4 
+[69] SparseM_1.81       fs_1.6.3           grid_4.3.2         tidyr_1.3.1       
+[73] MCMCpack_1.7-0     colorspace_2.1-0   deconvolveR_1.2-1  cli_3.6.2         
+[77] fansi_1.0.6        mixsqp_0.3-54      viridisLite_0.4.2  dplyr_1.1.4       
+[81] uwot_0.1.16        gtable_0.3.4       sass_0.4.9         digest_0.6.35     
+[85] farver_2.1.1       htmlwidgets_1.6.4  htmltools_0.5.8    lifecycle_1.0.4   
+[89] httr_1.4.7         MASS_7.3-60.0.1   </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

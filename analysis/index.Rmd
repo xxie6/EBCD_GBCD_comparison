@@ -12,7 +12,8 @@ This is my project comparing two covariance decomposition methods, Generalized B
   
 Simulations:  
   
-* Results for the [scRNA-seq Dataset Simulation](simulation-analysis.html). 
+* Results for the [scRNA-seq Dataset Simulation without subtypes](simulation-analysis.html). 
+* Results for the [scRNA-seq Dataset Simulation with subtypes](simulation-with-subtype.html)
   
 Real Data Analysis:  
   

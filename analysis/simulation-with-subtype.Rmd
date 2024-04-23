@@ -1,0 +1,534 @@
+---
+title: "simulation-with-subtype"
+author: "Annie Xie"
+date: "2024-04-21"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+The Stephens Lab has proposed two different ways of performing orthogonal matrix factorization, Generalized Binary Covariance Decomposition (GBCD) and Empirical Bayes Covariance Decomposition (EBCD). We aim to compare these two methods on simulated single cell RNA data.
+
+# Code for Simulated Data
+
+This is the code used to create the simulated dataset (This was taken from the simulations for the GBCD paper). In this simulated dataset, we have one shared GEP, two subtype GEPs, and 8 patient effects.
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:20){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, batchCells = 3200, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=11)
+  L[1:1600, 1] <- 1
+  L[1601:3200, 2] <- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  L[1:400, 4] <- 1
+  L[401:800, 5] <- 1
+  L[801:1200, 6] <- 1
+  L[1201:1600, 7] <- 1
+  L[1601:2000, 8] <- 1
+  L[2001:2400, 9] <- 1
+  L[2401:2800, 10] <- 1
+  L[2801:3200, 11] <- 1
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=11)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[1:75], 1] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[76:150], 2] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[251:500], 3] <- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
+  F[idx.gene[501:1000], 4] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1001:1500], 5] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1501:2000], 6] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2001:2500], 7] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2501:3000], 8] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[3001:3500], 9] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[3501:4000], 10] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[idx.gene[4001:4500], 11] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data, file=paste0("~/Documents/PhD 3/Research/EBCD/simulation_data/iter", iter, ".rds"))
+  rm(data, X, X.mod, L, F)
+}
+```
+
+# Package and Functions for Analyses
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = ""){
+  ### define the color map
+  cols <- colorRampPalette(c("gray96", "red"))(49)
+  brks <- seq(min(L), max(L), length=50)
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+source("~/Documents/PhD 3/Research/EBCD/gbcd_functions.R")
+```
+
+# Analysis of Simulated Data
+
+```{r}
+### load in the simulated single cell data from this replicate
+iter <- 1
+data <- readRDS(paste0("~/Documents/PhD 3/Research/EBCD/simulation_data/iter", iter, ".rds"))
+```
+
+```{r}
+plot_heatmap(data$L)
+```
+
+```{r}
+#note to self: maybe save this in file and load in
+observed.vals <- data$Y %*% t(data$Y)/ncol(data$Y)
+```
+
+## GBCD Analysis
+
+### Analysis
+This is the code to run the GBCD analysis.
+```{r, eval = FALSE}
+fit.gbcd <- flash_fit_cov_ebnmf(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE)
+```
+
+I have the results saved, so I will just load the results directly.
+```{r}
+fit.gbcd <- readRDS(paste0("~/Documents/PhD 3/Research/EBCD/simulation_output_gbcd/iter", iter, "_gbcd.rds"))
+```
+
+This is a plot of estimate for $L$:
+```{r}
+plot_heatmap(fit.gbcd$L)
+```
+
+### Rescale GBCD loadings estimate
+
+I'm loading in previously saved results.
+```{r}
+load("~/EBCD_GBCD_comparison/data/iter1_gbcd_rescale.RData")
+```
+
+This is the code to rescale the GBCD estimate. I've loaded in previously saved results.
+```{r, eval = FALSE}
+fit.gbcd.rescale1 <- flash_fit_cov_ebnmf_fit_laplace(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
+
+fit.gbcd.rescale2 <- flash_fit_cov_ebnmf_fit_L(dat = fit.gbcd.rescale1$dat, fit.gbcd.rescale1$fit.cov, Y=data$Y, Kmax=16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1)
+```
+
+**LDF Method of Scaling:**
+```{r, eval = FALSE}
+fit.gbcd.rescale.ldf <- ldf(fit.gbcd.rescale2$fit.cov, type = 'i')
+
+fit.gbcd.rescale.L <- fit.gbcd.rescale.ldf$L %*% diag(sqrt(fit.gbcd.rescale.ldf$D))
+
+thres <- 0.9
+k.idx <- which(fit.gbcd.rescale2$corr > thres)
+fit.gbcd.rescale.L <- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]
+```
+
+### Assess Fit
+This is a heatmap of the rescaled $L$.
+```{r}
+plot_heatmap(fit.gbcd.rescale.L)
+```
+
+```{r}
+gbcd.rescaled.fitted.vals <- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L)
+```
+
+```{r}
+sum((observed.vals - gbcd.rescaled.fitted.vals)^2)
+```
+
+This is code to plot (a sub-sampple of) fitted values vs. observed values:
+```{r}
+set.seed(3952)
+samp.vals <- sample(1:prod(dim(observed.vals)), size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+gbcd.rescaled.withdiag.fitted.vals <- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L) + diag(rep(fit.gbcd.rescale2$s2, nrow(fit.gbcd.rescale.L)))
+```
+
+```{r}
+sum((observed.vals - gbcd.rescaled.withdiag.fitted.vals)^2)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.withdiag.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+### Correlation of GBCD estimate to true loadings matrix
+
+We compute the correlation of the GBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_GBCD_true <- cor(fit.gbcd$L, data$L)
+colnames(correlation_GBCD_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP', paste('Patient', c(1:8)))
+```
+
+```{r}
+correlation_GBCD_true
+```
+
+### Interpretation of GBCD GEPs
+
+Based off of the loadings, GEPs 3-10 correspond to patient effects. The GBCD method fit 6 shared GEPs (including the subtype GEPs) along with a baseline factor. GEP 12 has the highest correlation with the shared GEP from the true loadings matrix with a correlation value of 0.968. GEP 11 has the highest correlation with the subtype 1 GEP (but it only has a correlation value of 0.825). GEP 13 has the highest correlation with the subtype 2 GEP (but it only has a correlation value of 0.762).
+
+One possible explanation for one of the other shared GEPs is correlation with size factor. We try to account for size factor by scaling the counts accordingly, but sometimes we still get a factor that correlates with size factor. In general, we don't find these factors biologically meaningful.
+
+```{r}
+size_factors <- rowSums(data$Y)
+```
+
+```{r}
+correlation_GBCD_size <- cor(fit.gbcd$L[,c(2:3,15)], size_factors)
+```
+
+```{r}
+correlation_GBCD_size
+```
+
+GEP1 has a positive correlation with size factor with a correlation of 0.813. I would say this is a relatively high correlation. GEP2 interestingly has a negative correlation with size factor, with a correlation of -0.872. GEP14 has a moderate negative correlation with size factor, with a correlation of -0.429.
+
+## EBCD Analysis
+
+I'm loading in previously saved results.
+```{r}
+fit.ebcd <- readRDS(paste0("~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter", iter, "_ebcd.rds"))
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd <- ebcd(X = t(data$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))
+```
+
+```{r}
+ebcd.fitted.vals <- fit.ebcd$EL %*% t(fit.ebcd$EL)
+```
+
+```{r}
+sum((observed.vals - ebcd.fitted.vals)^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd$vec.obj)), y = fit.ebcd$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd$vec.obj)
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_true <- cor(fit.ebcd$EL, data$L)
+colnames(correlation_EBCD_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP', paste('Patient', c(1:8)))
+```
+
+```{r}
+correlation_EBCD_true
+```
+
+### Interpretation of EBCD GEPs
+
+Based off of the loadings, GEPs 2-3, 5, and 9 correspond to patient effects. GEP 4 and GEP 10 both correspond to two patient effects that the output has coupled together. In addition, GEP 8 shows high loading value for patient 2 effects, but it also has loading values in other patients, so it is not solely a patient effect. The EBCD method fit 8 shared GEPs (including the subtype GEP) along with a baseline factor. GEP10 has the highest correlation with the shared GEP from the true loadings matrix. GEP2 has the highest correlation with the subtype 2 GEP from the true loadings matrix. No GEPs have a very strong positive correlation with the subtype 1 GEP from the true loadings matrix; however, GEP2 has a high negative correlation with the subtype 2 GEP. 
+
+One possible explanation for one of the other shared GEPs is correlation with size factor. We try to account for size factor by scaling the counts accordingly, but sometimes we still get a factor that correlates with size factor. In general, we don't find these factors biologically meaningful.
+
+```{r, eval = FALSE}
+size_factors <- rowSums(data$Y)
+```
+
+```{r}
+correlation_EBCD_size <- cor(fit.ebcd$EL[,c(2,11:15)], size_factors)
+```
+
+```{r}
+correlation_EBCD_size
+```
+
+GEP1 has a positive correlation with size factor with a correlation of 0.779. I would say this is a relatively high negative correlation. GEP13 has a negative correlation with size factor with a correlation of -0.782. I would say GEPs 10 and 14 don't have a large correlation with size factor. GEPs 11 and 12 have more moderate correlations with size factor, but not as large as GEPs 1 and 13. Another explanation for the additional shared GEPs is they are artifacts from the Poisson model (with a shifted-log-transformation step to try to make the data approximately normal) from which the data is generated. This model does not exactly match the model that EBCD or GBCD is fitting. It might be worth it to run a simulation that uses data simulated from the EBCD model.
+
+## EBCD Analysis with true number of factors
+
+In the previous EBCD analysis, I set the maximum number of factors to 15 because that is the number of factors that GBCD fit. However, I wanted to try running EBCD with the true number of factors, 11, (plus a baseline factor) and see what the results look like. I am not convinced that using the correct number of factors will lead to an output that is more similar to the true loadings matrix (given that my previous analysis used a larger number of factors).
+
+I'm loading in previously saved results.
+```{r}
+fit.ebcd_K12 <- readRDS(paste0("~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter", iter, "_ebcd_K12.rds"))
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd_K12 <- ebcd(X = t(data$Y), Kmax = 12, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd_K12$EL)/apply(fit.ebcd_K12$EL,2, max)))
+```
+
+```{r}
+ebcd_K12.fitted.vals <- fit.ebcd_K12$EL %*% t(fit.ebcd_K12$EL)
+```
+
+```{r}
+sum((observed.vals - ebcd_K12.fitted.vals)^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd_K12.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd_K12.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_K12$vec.obj)), y = fit.ebcd_K12$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd_K12$vec.obj)
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_K12_true <- cor(fit.ebcd_K12$EL, data$L)
+colnames(correlation_EBCD_K12_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP', paste('Patient', c(1:8)))
+```
+
+```{r}
+correlation_EBCD_K12_true
+```
+
+### Interpretation of EBCD GEPs
+
+Based off of the loadings, GEPs 1,3,4,6, and 8 correspond to patient effects. GEP 5 and GEP 9 both correspond to two patient effects that the output has coupled together. In addition, GEP 11 shows somewhat high loading values for patient 3 effects, but it also has loading values in other patients, so it is not solely a patient effect. The EBCD method fit 4 shared GEPs (including the subtype GEP) along with a baseline factor. GEP10 has the highest correlation with the shared GEP from the true loadings matrix. GEP2 has the highest correlation with the subtype 2 GEP from the true loadings matrix. No GEPs have a very strong positive correlation with the subtype 1 GEP from the true loadings matrix; however, GEP2 has a high negative correlation with the subtype 2 GEP. 
+
+One possible explanation for one of the other shared GEPs is correlation with size factor. We try to account for size factor by scaling the counts accordingly, but sometimes we still get a factor that correlates with size factor. In general, we don't find these factors biologically meaningful.
+
+```{r, eval = FALSE}
+size_factors <- rowSums(data$Y)
+```
+
+```{r}
+correlation_EBCD_K12_size <- cor(fit.ebcd$EL[,c(8,12)], size_factors)
+```
+
+```{r}
+correlation_EBCD_K12_size
+```
+
+Both GEP 7 and 11 have moderate magnitudes of correlation with size factor, but, to me, the values are not high enough to suggest that these GEPs arise from size factor variation.
+
+## Correlation between GBCD and EBCD loadings estimates
+
+We analyze the concordance between the loadings matrices from GBCD and EBCD. We compute the correlations between the columns of the GBCD loadings estimate and the columns of the EBCD loadings estimate.  
+```{r}
+correlation_L_estimates <- cor(fit.gbcd$L, fit.ebcd$EL)
+```
+  
+For each column of the EBCD loadings estimate, we identify the corresponding column of the GBCD loadings estimate that is most highly correlated.  
+```{r}
+max_corr <- apply(correlation_L_estimates, 2, FUN = max)
+return_gep <- function(x){
+  gep_index <- which.max(x)
+  if (gep_index == 1){
+    gep_name <- 'Baseline'
+  }
+  else{
+    gep_name <- paste('GEP',(gep_index - 1))
+  }
+  return(gep_name)
+}
+max_gbcd_gep <- apply(correlation_L_estimates, 2, FUN = return_gep)
+```
+
+```{r}
+gep_colnames <- c('Baseline', paste('GEP', c(1:(ncol(fit.ebcd$EL) - 1))))
+correlation_info <- data.frame(max_gbcd_gep, max_corr, row.names = gep_colnames)
+print(correlation_info[order(correlation_info$max_corr, decreasing = TRUE), ])
+```
+
+## Comparing GBCD and EBCD: Observations
+The GBCD and EBCD outputs have some qualitative differences that I think are unexpected. First, GBCD separates all of the patient effects into separate GEPs, which is what we expect. We expect EBCD to behave in a similar way; however (at least for the random seed I used), the EBCD result couples some of the patient effects together. This is not necessarily a bad thing; it just changes the interpretation of the factors. In addition, GBCD finds two GEPs related to subtypes -- one for subtype 1 and another for subtype 2. On the other hand, EBCD only finds one GEP related to subtype. More specifically, it finds one for subtype 2. I would say that ideally we would want to find a GEP for each subtype. This difference could potentially be due to EBCD converging to a local optimum. Matrix factorization problems also can have non-identifiability issues, so it could also be related to that.
+
+# Experiment: Use GBCD output to initialize EBCD
+
+## Hypothesis
+I hypothesize that the EBCD output with the GBCD initialization will be closer qualitatively to the GBCD output than the EBCD with greedy initialization output. For example, all of the patient effects will be represented in separate GEPs. In addition, there will a GEP for each subtype. I think that the initialization having these qualities will create an inductive bias that induces these qualities in the EBCD output.
+
+## Analysis
+
+This is the code to run the analysis. I will load in previously saved results.
+```{r, eval = FALSE}
+Z.init <- PolarU(fit.ebcd$A%*%fit.gbcd.rescale.L)
+fitted.Y <- Z.init%*%t(fit.gbcd.rescale.L)
+tau.est <- prod(dim(fit.ebcd$A)) / sum((fit.ebcd$A - fitted.Y)^2)
+ebcd_obj_init_rescaled <- list(
+    A = fit.ebcd$A, N = fit.ebcd$N, nrowA = fit.ebcd$nrowA,
+    tau = tau.est, Z = Z.init, EL = fit.gbcd.rescale.L, ebnm_fn = ebnm::ebnm_generalized_binary
+  )
+```
+
+```{r, eval = FALSE}
+fit.ebcd.gbcd.init_rescaled <- ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 2500)
+```
+
+```{r}
+load('~/Documents/PhD 3/Research/EBCD/simulation_output_ebcd/iter1_ebcd_gbcd_init.RData')
+```
+
+```{r}
+#plot initialization
+plot_heatmap(fit.gbcd.rescale.L)
+```
+
+```{r}
+plot_heatmap(t(t(fit.gbcd.rescale.L)/apply(fit.gbcd.rescale.L,2, max)))
+```
+
+```{r}
+plot_heatmap(t(t(fit.ebcd.gbcd.init_rescaled$EL)/apply(fit.ebcd.gbcd.init_rescaled$EL,2, max)))
+```
+
+This is the number of backfit iterations that were needed to reach convergence
+```{r}
+print(length(fit.ebcd.gbcd.init_rescaled$vec.obj))
+```
+
+```{r, eval = FALSE}
+plot_heatmap(ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 5)$EL)
+```
+
+```{r}
+ebcd.gbcd.rescaled.init.fitted.vals <- fit.ebcd.gbcd.init_rescaled$EL %*% t(fit.ebcd.gbcd.init_rescaled$EL)
+```
+
+```{r}
+sum((observed.vals - ebcd.gbcd.rescaled.init.fitted.vals)^2)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.gbcd.rescaled.init.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(2:length(fit.ebcd.gbcd.init_rescaled$vec.obj)), y = fit.ebcd.gbcd.init_rescaled$vec.obj[-1])) + geom_line()
+```
+
+## Observations
+The output from the EBCD backfit with the GBCD output as initialization has some qualitative differences from the greedy-initialization EBCD output. One difference is the patient effects are all separate; none of them are coupled like in the regular EBCD output. Something that was surprising to me is the EBCD backfit made the subtype GEPs more dense. Therefore, while there are still high loading values on the respective subtypes, it is harder to interpret the GEPs as subtype-specific. I wonder if EBCD is behaving unexpectedly due to the model misspecification -- the data was generated under a Poisson model and then transformed to be approximately normal. Perhaps EBCD would behave as expected if normal noise was used in the data generation -- that is something to test. 
+
+
+
+

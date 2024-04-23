@@ -183,7 +183,7 @@ plot_heatmap(fit.gbcd$L)
 
 I'm loading in previously saved results.
 ```{r}
-load("~/EBCD_GBCD_comparison/data/iter1_gbcd_rescale.RData")
+load("data/iter1_gbcd_rescale.RData")
 ```
 
 This is the code to rescale the GBCD estimate. I've loaded in previously saved results.

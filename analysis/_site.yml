@@ -12,7 +12,7 @@ navbar:
   right:
   - icon: fab fa-github
     text: Source code
-    href: https://github.com/myname/EBCD_GBCD_comparison
+    href: https://github.com/xxie6/EBCD_GBCD_comparison
 output:
   workflowr::wflow_html:
     toc: yes

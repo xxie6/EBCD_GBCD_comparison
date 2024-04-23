@@ -177,7 +177,7 @@ gbcd.fitted.vals <- fit.gbcd.patient.only$L %*% t(fit.gbcd.patient.only$L)
 sum((observed.vals - gbcd.fitted.vals)^2)
 ```
 
-This is code to plot (a sub-sampple of) fitted values vs. observed values:
+This is code to plot (a sub-sample of) fitted values vs. observed values:
 ```{r}
 set.seed(3952)
 samp.vals <- sample(1:prod(dim(observed.vals)), size = 100000)
@@ -242,10 +242,16 @@ ebcd.fitted.vals <- fit.ebcd.patient.only$EL %*% t(fit.ebcd.patient.only$EL)
 sum((observed.vals - ebcd.fitted.vals)^2)
 ```
 
-This is a plot of the fitted values vs. observed values:
+This is a plot of (a subset of) the fitted values vs. observed values:
 ```{r}
 ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
 ```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
 
 This is a plot of the progression of the objective function
 ```{r}

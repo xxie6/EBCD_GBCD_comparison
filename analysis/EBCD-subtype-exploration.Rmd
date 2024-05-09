@@ -1,0 +1,1239 @@
+---
+title: "EBCD-subtype-exploration"
+author: "Annie Xie"
+date: "2024-04-24"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+In this analysis, we aim to explore EBCD's behavior with regard to subtype-specific factors. This analysis was motivated by the observation that EBCD does not always find all of the subtype-specific factors. We are interested in discerning when EBCD uncovers all of the subtypes vs. only a subset of the subtypes.
+
+# Package and Functions for Analyses
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+#source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red")){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  brks <- seq(min(L), max(L), length=50)
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+```
+
+# Single Cell RNAseq Simulated Data with Subtype and Shared GEPs
+
+## Code for Single Cell RNAseq Simulated Data
+
+This is the code used to create the simulated dataset (This was modified from the simulations for the GBCD paper). In this simulated dataset, we have one shared GEP, two subtype GEPs.
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
+
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=3)
+  L[1:800, 1] <- 1
+  L[801:1600, 2] <- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=3)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[1:75], 1] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[76:150], 2] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[251:500], 3] <- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data.rds"))
+  rm(data, X, X.mod, L, F)
+}
+```
+
+## Visualization of the Data
+
+```{r}
+iter <- 1
+data <- readRDS(paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data.rds"))
+```
+
+```{r}
+plot_heatmap(data$L)
+```
+
+```{r}
+plot_heatmap(data$F)
+```
+
+```{r}
+observed.vals <- data$Y %*% t(data$Y)/ ncol(data$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals)
+```
+
+## EBCD Analysis
+
+### Hypothesis
+Ideally, we want EBCD to uncover (at least) three GEPs -- the shared GEP and two subtype-specific GEPs (one for each subtype). However, previous experience suggests that this may not happen. For example, EBCD may only find one of the two subtype GEPs. 
+
+### Analysis
+
+I'm loading in previously saved results.
+```{r}
+fit.ebcd <- readRDS("~/Desktop/EBCD_GBCD_comparison_data/iter1_subtype_only_ebcd.rds")
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd <- ebcd(X = t(data$Y), Kmax = 4, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))
+```
+
+```{r}
+transformed_Z <- transform_ebcd_Z(t(data$Y), fit.ebcd)
+```
+
+```{r}
+plot_heatmap(transformed_Z, colors_range = c('blue', 'red'))
+```
+
+```{r}
+#heatmap of the positive part of the factor matrix
+plot_heatmap(pmax(transformed_Z, 0))
+```
+
+```{r}
+#heatmap of the negative part of the factor matrix
+plot_heatmap(pmin(transformed_Z, 0), colors_range = c('red','gray96'))
+```
+
+```{r}
+ebcd.fitted.vals <- fit.ebcd$EL %*% t(fit.ebcd$EL)
+```
+
+```{r}
+plot_heatmap(ebcd.fitted.vals)
+```
+
+```{r}
+sum((observed.vals - ebcd.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals - ebcd.fitted.vals)^2) - sum((diag(observed.vals) - diag(ebcd.fitted.vals))^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd$vec.obj)), y = fit.ebcd$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd$vec.obj[length(fit.ebcd$vec.obj)]
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_true <- cor(fit.ebcd$EL, data$L)
+colnames(correlation_EBCD_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP')
+```
+
+```{r}
+correlation_EBCD_true
+```
+
+### Observations
+When I ran the analysis with `Kmax = 3`, the EBCD estimate did not include any subtype-specific GEPs, only shared GEPs. When I ran the analysis with `Kmax = 4`, the EBCD estimate had one factor which corresponded to the first sub-type, but no factors corresponding to the second subtype. I also tried the analysis with `Kmax=10`, and the EBCD estimate still only had the one factor corresponding to the first sub-type.  
+
+The EBCD estimate does still appear to fit the observed values well (this is with regards to the Gram matrix). I computed the correlation between the EBCD estimate and the true loadings matrix. The fourth factor has a high positive correlation with the Subtype 1 GEP in the true loadings matrix. Furthermore, the fourth factor has a high negative correlation with the Subtype 2 GEP in the true loadings matrix which makes sense because the Subtype 1 GEP is the flip of the Subtype 2 GEP. Lastly, the third factor has a high positive correlation with the Shared GEP from the true loadings matrix.
+
+Other possible explanations for one of the other shared GEPs is correlation with size factor or cellular detection rate. We try to account for size factor by scaling the counts accordingly, but sometimes we still get a factor that correlates with size factor. In general, we don't find these factors biologically meaningful.
+
+```{r}
+size_factors <- rowSums(data$Y)
+cdr <- rowMeans(data$Y != 0)
+```
+
+```{r}
+correlation_EBCD_size <- cor(fit.ebcd$EL, size_factors)
+correlation_EBCD_cdr <- cor(fit.ebcd$EL, cdr)
+```
+
+```{r}
+correlation_EBCD_size
+```
+
+```{r}
+correlation_EBCD_cdr
+```
+
+We can see that the first two factors are highly correlated with both size factor and cellular detection rate.
+
+## EBCD initialized with true loadings matrix
+
+### Hypothesis
+I'm curious how EBCD behaves if it is initialized with the true loadings matrix. I would hope that the EBCD estimate remains close to the true loadings matrix. However, given that the data is generated from a Poisson, and then normalized, I think it's possible that there is a bit of model misspecification when applying EBCD to this simulated data. As a result, even when initialized with the true loadings matrix, EBCD might find a solution that is qualitatively different, but still fits the data well. Another potential source of model misspecification is the variance assumption -- we assume the variance of the noise is constant across observations. 
+
+### Analysis
+
+This is the code to run the analysis. I will load in previously saved results.
+```{r, eval = FALSE}
+Z.init <- PolarU(fit.ebcd$A%*%data$L)
+fitted.Y <- Z.init%*%t(data$L)
+tau.est <- prod(dim(fit.ebcd$A)) / sum((fit.ebcd$A - fitted.Y)^2)
+ebcd_obj_init_true <- list(
+    A = fit.ebcd$A, N = fit.ebcd$N, nrowA = fit.ebcd$nrowA,
+    tau = tau.est, Z = Z.init, EL = data$L, ebnm_fn = ebnm::ebnm_generalized_binary
+  )
+```
+
+```{r, eval = FALSE}
+fit.ebcd.true.init <- ebcd_backfit(ebcd_obj_init_true, maxiter = 2500)
+```
+
+```{r}
+load('~/Desktop/EBCD_GBCD_comparison_data/iter1_subtype_only_ebcd_true_init.RData')
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd.true.init$EL)/apply(fit.ebcd.true.init$EL,2, max)))
+```
+
+```{r}
+ebcd.true.init.fitted.vals <- fit.ebcd.true.init$EL %*% t(fit.ebcd.true.init$EL)
+```
+
+```{r}
+sum((observed.vals - ebcd.true.init.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals - ebcd.true.init.fitted.vals)^2) - sum((diag(observed.vals) - diag(ebcd.true.init.fitted.vals))^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.true.init.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.true.init.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.true.init$vec.obj)), y = fit.ebcd.true.init$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd.true.init$vec.obj)
+```
+
+### Observations
+The EBCD backfit method made the subtype GEPs more dense and essentially turned them into fully shared GEPs. As a result, none of the factors in the EBCD output can be interpreted as subtype-specific. The estimate still fits the data well, so I'm not sure if this problem is just a hard problem for the EBCD method.
+
+# Experiment: Normal data with constant variance
+
+## Code to simulate data
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### simulate normal data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### load in previously simulated loading and factor matrices
+  dat <- readRDS(paste0("data/iter", iter, "_only_subtype_data.rds"))
+  
+  ### add normal noise
+  E <- matrix(rnorm(nrow(dat$L)*nrow(dat$F), mean = 0, sd = 1), ncol = nrow(dat$F))
+  Y = dat$L %*% t(dat$F) + E
+  
+  ### save the simulated data
+  data_norm <- list(Y = Y, L = dat$L, F = dat$F)
+  saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_normal_only_subtype_data.rds"))
+  rm(data_norm, Y, L, F, E)
+}
+```
+
+## Visualization of Data
+```{r}
+data_norm <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_only_subtype_data.rds')
+```
+
+```{r}
+plot_heatmap(data_norm$L)
+```
+
+```{r}
+plot_heatmap(data_norm$F)
+```
+
+```{r}
+observed.vals_norm <- data_norm$Y %*% t(data_norm$Y)/ ncol(data_norm$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals_norm)
+```
+
+## EBCD Analysis 
+
+### Hypothesis
+I suspect that EBCD should be able to recover the true loadings because this data was generated using normal noise, which matches EBCD's model assumptions. More specifically, for the EBCD estimate, I expect to find a factor for each subtype (two in total) and a factor corresponding to the shared GEP from the true loadings matrix. One observation is the two subtypes are more clear in the Gram matrix for this data compared to that of the data generated from Yusha's workflow. Therefore, I suspect it will be easier for EBCD to find the two subtype factors from this data. 
+
+### Analysis
+
+I'm loading in previously saved results.
+```{r}
+fit.ebcd_norm <- readRDS("~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_subtype_only_ebcd.rds")
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd_norm <- ebcd(X = t(data_norm$Y), Kmax = 5, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd_norm$EL)/apply(fit.ebcd_norm$EL,2, max)))
+```
+
+```{r}
+transformed_Z_norm <- transform_ebcd_Z(t(data_norm$Y), fit.ebcd_norm)
+```
+
+```{r}
+plot_heatmap(transformed_Z_norm, colors_range = c('blue', 'red'))
+```
+
+```{r}
+#heatmap of the positive part of the factor matrix
+plot_heatmap(pmax(transformed_Z_norm, 0))
+```
+
+```{r}
+#heatmap of the negative part of the factor matrix
+plot_heatmap(pmin(transformed_Z_norm, 0), colors_range = c('red','gray96'))
+```
+
+```{r}
+ebcd_norm.fitted.vals <- fit.ebcd_norm$EL %*% t(fit.ebcd_norm$EL)
+```
+
+```{r}
+sum((observed.vals_norm - ebcd_norm.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals_norm - ebcd_norm.fitted.vals)^2) - sum((diag(observed.vals_norm) - diag(ebcd_norm.fitted.vals))^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_norm))[samp.vals], y = c(ebcd_norm.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_norm)), y = diag(ebcd_norm.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_norm$vec.obj)), y = fit.ebcd_norm$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd_norm$vec.obj)
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_norm_true <- cor(fit.ebcd_norm$EL, data_norm$L)
+colnames(correlation_EBCD_norm_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP')
+```
+
+```{r}
+correlation_EBCD_norm_true
+```
+
+### Correlation of GEPs to size factor
+
+```{r}
+size_factors <- rowSums(data_norm$Y)
+```
+
+```{r}
+correlation_EBCD_norm_size <- cor(fit.ebcd_norm$EL, size_factors)
+```
+
+```{r}
+correlation_EBCD_norm_size
+```
+
+### Observations
+
+EBCD on the normal noise data was able to uncover columns from the true loadings matrix. Factor 1 has a high positive correlation with the shared GEP from the true loadings matrix. In addition, factors 2 and 4 have high positive correlations with subtype 1 and 2 factors, respectively. There are two additional factors which are primarily concentrated on the different subtypes, but they are more sparse and they have some additional positive loadings in other samples. It's possible that these factors correlate with size factor (or cellular detection rate, but in this case, the rate is 1 across all cells); however, neither of these factors are highly correlated with size factor.
+
+As I noted previously, the subtype characteristic was much more apparent in this dataset as opposed to the dataset previously analyzed. As a result, I think it was easier for EBCD to find the subtype factors in this dataset. I'm guessing this is related to the signal to noise ratio. Therefore, it might be worth trying varying signal-to-noise ratios in the simulated single cell RNAseq datasets. Another thing I am interested in is testing how well EBCD works when the noise is normal with non-constant variance. But I think I will test that in a different set of experiments.
+
+# Experiment: scRNA-seq data with only subtype GEPs (no shared GEP)
+
+In the previous simulation, I simulated data using two subtype factors plus one shared factor. In that setting, EBCD was only able to find one of the subtype factors. In this experiment, I simplify the the data generation by only including the subtype factors in the factor and loading matrix, i.e. we are getting rid of the shared factor. I am curious to see if EBCD will be able to identify both subtype factors in this setting.
+
+## Code to simulate data
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
+
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=2)
+  L[1:800, 1] <- 1
+  L[801:1600, 2] <- 1
+  #L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=2)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[1:1300], 1] <- pmax(rnorm(1300, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1301:2600], 2] <- pmax(rnorm(1300, log2(3), 0.5), log2(1.5))
+  #F[idx.gene[2601:3100], 3] <- pmax(rnorm(500, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data2 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data2, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data2.rds"))
+  rm(data2, X, X.mod, L, F)
+}
+```
+
+## Visualization of data
+
+```{r}
+data2 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data2.rds')
+```
+
+```{r}
+plot_heatmap(data2$L)
+```
+
+```{r}
+plot_heatmap(data2$F)
+```
+
+```{r}
+observed.vals2 <- data2$Y %*% t(data2$Y)/ ncol(data2$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals2)
+```
+
+## EBCD Analysis 
+
+### Hypothesis
+
+I hypothesize that EBCD will be able to recover both subtype factors from this dataset because the effect from the subtype seems to be more apparent in the Gram matrix. (In retrospect, this set up is similar to the set up where we only looked at patient effects, and EBCD worked in that setting. Therefore, we expect EBCD to also work in this setting.)
+
+### Analysis
+
+I will load in previously saved results.
+```{r}
+fit.ebcd2 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data2_ebcd.rds')
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd2 <- ebcd(X = t(data2$Y), Kmax = 5, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd2$EL)/apply(fit.ebcd2$EL,2, max)))
+```
+
+```{r}
+transformed_Z2 <- transform_ebcd_Z(t(data2$Y), fit.ebcd2)
+```
+
+```{r}
+plot_heatmap(transformed_Z2, colors_range = c('blue', 'red'))
+```
+
+```{r}
+#heatmap of the positive part of the factor matrix
+plot_heatmap(pmax(transformed_Z2, 0))
+```
+
+```{r}
+#heatmap of the negative part of the factor matrix
+plot_heatmap(pmin(transformed_Z2, 0), colors_range = c('red','gray96'))
+```
+
+```{r}
+ebcd2.fitted.vals <- fit.ebcd2$EL %*% t(fit.ebcd2$EL)
+```
+
+```{r}
+sum((observed.vals2 - ebcd2.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals2 - ebcd2.fitted.vals)^2) - sum((diag(observed.vals2) - diag(ebcd2.fitted.vals))^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd2.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd2.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd2$vec.obj)
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_true2 <- cor(fit.ebcd2$EL, data2$L)
+colnames(correlation_EBCD_true2) <- c('Subtype 1 GEP', 'Subtype 2 GEP')
+```
+
+```{r}
+correlation_EBCD_true2
+```
+
+### Observations
+
+In the EBCD loadings estimate, factor 2 had a high positive correlation with the subtype 1 factor from the true loadings matrix. In addition, factor 5 had a high positive correlation with the subtype 2 factor from the true loadings matrix. The first factor, to me, looks like a baseline factor since it has positive loadings on most of the samples. In addition, the code below shows that the first factor is highly correlated with size factor.
+
+```{r}
+cor(fit.ebcd2$EL[,1], rowSums(data2$Y))
+```
+
+In this setting, EBCD was able to find both subtype factors which suggests that it is capable of doing so. I am not sure why it struggles to find both when a shared factor is introduced into the loading and factor matrices. Perhaps it is related to the strength of the subtype effect versus the strength of the shared effect.
+
+I also wanted to note that I tried this experiment with a different factor matrix (but same loadings matrix) that kept the number of active genes in each factor of the factor matrix to 75. In those results, EBCD was able to recover the second subtype, but did not recover the first subtype. I'm guessing it's because of the signal to noise ratio. If you plot the Gram matrix, the subtype effect is not very evident, especially compared to the Gram matrix from this set up. Therefore, I'm guessing it is more difficult in general to pick up the subtype effects.
+
+# Experiment: Alter the factor matrix
+
+In this experiment, I will change the number of active genes (i.e. genes with non-zero values in the factor matrix). I think that altering this number should alter the strength of the subtype effects. My goal is to create a dataset where the subtype nature of the data is more clear in the Gram matrix, and thus hopefully EBCD can recover both subtype GEPs.
+
+## Code to simulate data
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
+
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=3)
+  L[1:800, 1] <- 1
+  L[801:1600, 2] <- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=3)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[1:1200], 1] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1201:2400], 2] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2401:3000], 3] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data3 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data3.rds"))
+  rm(data3, X, X.mod, L, F)
+}
+```
+
+## Visualization of data
+
+```{r}
+data3 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3.rds')
+```
+
+```{r}
+plot_heatmap(data3$L)
+```
+
+```{r}
+plot_heatmap(data3$F)
+```
+
+```{r}
+plot_heatmap(t(data3$F) %*% data3$F)
+```
+
+```{r}
+observed.vals3 <- data3$Y %*% t(data3$Y)/ ncol(data3$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals3)
+```
+
+## EBCD Analysis
+
+### Hypothesis
+
+I hypothesize that EBCD will be able to recover both subtype factors from this dataset because the effect from the subtype seems to be more apparent in the Gram matrix.
+
+### EBCD Analysis
+
+```{r}
+fit.ebcd3 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3_ebcd.rds')
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd3 <- ebcd(X = t(data3$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+
+```{r}
+plot_heatmap(t(t(fit.ebcd3$EL)/apply(fit.ebcd3$EL,2, max)))
+```
+
+```{r}
+transformed_Z3 <- transform_ebcd_Z(t(data3$Y), fit.ebcd3)
+```
+
+```{r}
+plot_heatmap(transformed_Z3, colors_range = c('blue', 'red'))
+```
+
+```{r}
+#heatmap of the positive part of the factor matrix
+plot_heatmap(pmax(transformed_Z3, 0))
+```
+
+```{r}
+#heatmap of the negative part of the factor matrix
+plot_heatmap(pmin(transformed_Z3, 0), colors_range = c('red','gray96'))
+```
+
+```{r}
+ebcd3.fitted.vals <- fit.ebcd3$EL %*% t(fit.ebcd3$EL)
+```
+
+```{r}
+sum((observed.vals3 - ebcd3.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals3 - ebcd3.fitted.vals)^2) - sum((diag(observed.vals3) - diag(ebcd3.fitted.vals))^2)
+```
+
+```{r, eval = FALSE, include = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals3)), length.out = ncol(observed.vals3))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals3))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals3))[samp.vals], y = c(ebcd3.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals3)), y = diag(ebcd3.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd3$vec.obj)), y = fit.ebcd3$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd3$vec.obj)
+```
+
+This is the objective function value attained:
+```{r}
+fit.ebcd3$vec.obj[length(fit.ebcd3$vec.obj)]
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_true3 <- cor(fit.ebcd3$EL, data3$L)
+colnames(correlation_EBCD_true3) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP')
+```
+
+```{r}
+correlation_EBCD_true3
+```
+
+### Observations
+I originally tried running EBCD with `Kmax = 6`, and the resulting estimate did not have a factor that strongly corresponded with subtype 2. However, when I increased `Kmax` to 10, the estimate did find a factor that corresponds with the subtype 2 factor from the true loadings matrix (the correlation value was 0.958). I guess this means that EBCD is able to find other factors (i.e. sources of variation) that increase the fit more than including the subtype 2 factor would. I wonder if this is related to the fact that the subtype 2 factor is the flip of the subtype 1 factor, and thus maybe including the second subtype factor is redundant. 
+
+Another thing I noticed is that the true factor matrix is nonnegative, but the estimated factor matrix usually contains negative values along with positive values. Therefore, I wonder if there's an identifiability issue happening where the baseline factor and one subtype factor is enough, because the effect of the second subtype can be subtracted.
+
+# Experiment: Add baseline factor
+
+Given that the first factor of the EBCD estimate is usually interpreted as a baseline, I wanted to see what would happen if I added an explicit baseline factor in the data generation process. I am curious to see if the incorporation of a baseline in the data will better match the EBCD assumptions, and thus make it easier to find both subtype factors.
+
+## Code to simulate data
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
+
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=4)
+  L[,1] <- 1
+  L[1:800, 2] <- 1
+  L[801:1600, 3] <- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 4] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=4)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[2601:3200], 1] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
+  # F[idx.gene[1:1200], 2] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
+  # F[idx.gene[1201:2400], 3] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
+  # F[idx.gene[2401:3000], 4] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1:1000], 2] <- pmax(rnorm(1000, log2(3), 0.5), log2(1.5))
+  F[idx.gene[1001:2000], 3] <- pmax(rnorm(1000, log2(3), 0.5), log2(1.5))
+  F[idx.gene[2001:2600], 4] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data4 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data4.rds"))
+  rm(data4, X, X.mod, L, F)
+}
+```
+
+## Visualization of data
+
+```{r}
+data4 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4.rds')
+```
+
+```{r}
+plot_heatmap(data4$L)
+```
+
+```{r}
+plot_heatmap(data4$F)
+```
+
+```{r}
+plot_heatmap(t(data4$F) %*% data4$F)
+```
+
+```{r}
+observed.vals4 <- data4$Y %*% t(data4$Y)/ ncol(data4$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals4)
+```
+
+## EBCD Analysis
+
+### Hypothesis
+
+I hypothesize that EBCD will be able to recover both subtype factors from this dataset since the incorporation of a baseline factor should better fit the assumptions of the greedy initialization.
+
+### EBCD Analysis
+
+```{r}
+fit.ebcd4 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4_ebcd.rds')
+```
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd4 <- ebcd(X = t(data4$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r}
+plot_heatmap(t(t(fit.ebcd4$EL)/apply(fit.ebcd4$EL,2, max)))
+```
+
+```{r}
+transformed_Z4 <- transform_ebcd_Z(t(data4$Y), fit.ebcd4)
+```
+
+```{r}
+plot_heatmap(transformed_Z4, colors_range = c('blue', 'red'))
+```
+
+```{r}
+#heatmap of the positive part of the factor matrix
+plot_heatmap(pmax(transformed_Z4, 0))
+```
+
+```{r}
+#heatmap of the negative part of the factor matrix
+plot_heatmap(pmin(transformed_Z4, 0), colors_range = c('red','gray96'))
+```
+
+```{r}
+ebcd4.fitted.vals <- fit.ebcd4$EL %*% t(fit.ebcd4$EL)
+```
+
+```{r}
+sum((observed.vals4 - ebcd4.fitted.vals)^2)
+```
+
+```{r}
+sum((observed.vals4 - ebcd4.fitted.vals)^2) - sum((diag(observed.vals4) - diag(ebcd4.fitted.vals))^2)
+```
+
+```{r, eval = FALSE, include = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals3)), length.out = ncol(observed.vals3))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals3))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals4))[samp.vals], y = c(ebcd4.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals4)), y = diag(ebcd4.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd4$vec.obj)), y = fit.ebcd4$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd4$vec.obj)
+```
+
+This is the objective function value attained:
+```{r}
+fit.ebcd4$vec.obj[length(fit.ebcd4$vec.obj)]
+```
+
+### Correlation of EBCD estimate to true loadings matrix
+
+We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix.
+```{r}
+correlation_EBCD_true4 <- cor(fit.ebcd4$EL, data4$L)
+colnames(correlation_EBCD_true4) <- c('Baseline', 'Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP')
+```
+
+```{r}
+correlation_EBCD_true4
+```
+
+### Observations
+To me, it seems like for this dataset, EBCD had an easier time finding factors that correspond to both subtypes. The EBCD estimate does find many additional factors that don't highly correspond to any of the columns from the true loadings matrix -- these could perhaps be artifacts from the fact that the data is drawn from a Poisson distribution and then normalized. 
+
+# Miscellaneous Experiments
+## Code for Single Cell RNAseq Simulated Data
+
+This is the code used to create the simulated dataset (This was modified from the simulations for the GBCD paper). In this simulated dataset, we have one shared GEP, two subtype GEPs.
+
+```{r, eval = FALSE}
+#simulation code
+library(Matrix)
+library(splatter)
+library(scran)
+library(seqgendiff)
+```
+
+```{r, eval = FALSE}
+##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
+### load in the Splatter model parameters estimated from one PDAC dataset
+#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
+
+params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds")
+
+### define the function to normalize and log transform the UMI counts
+fnc_norm <- function(X){
+  ### calculate the cell-specific library size
+  clusters <- quickCluster(X)
+  si <- calculateSumFactors(X, clusters=clusters)
+  
+  ### log transform and normalize single cell count data
+  norm.dat <- log(10*(median(si)*t(X)/si + 0.1))
+}
+
+
+### simulate single cell RNA-seq data
+for(iter in 1:1){
+  
+  ### set the seed
+  set.seed(iter)
+  
+  ### simulate a homoegenous population of cells
+  dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
+  X <- counts(dat)
+  gene.info <- as.data.frame(rowData(dat))
+  
+  ### simulate L
+  L <- matrix(0, nrow=ncol(X), ncol=2)
+  #L[,1] <- 1
+  L[1:800, 1] <- 1
+  L[801:1600, 2] <- 1
+  #L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=nrow(X), ncol=2)
+  idx.gene <- sort(which(rowSums(X!=0) >= 300))
+  F[idx.gene[1:75], 1] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[idx.gene[76:150], 2] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  #F[idx.gene[251:500], 1] <- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
+  F[gene.info$OutlierFactor > 1, ] <- 0
+  
+  ### simulate patterns of gene expression variation according to L and F using binomial thinning
+  X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
+  X.thin <- as(X.mod$mat, "sparseMatrix") 
+  
+  ### remove genes with very low expression levels
+  idx.gene <- rowSums(X.thin!=0) >= 32
+  X.thin <- X.thin[idx.gene,]
+  F <- F[idx.gene,]
+  colnames(X.thin) <- paste0("cell", 1:ncol(X.thin))
+  rownames(X.thin) <- paste0("gene", 1:nrow(X.thin))
+  rownames(L) <- colnames(X.thin)
+  colnames(L) <- paste0("k", 1:ncol(L))
+  rownames(F) <- rownames(X.thin)
+  colnames(F) <- colnames(L)
+  
+  ### normalize and log transform the UMI counts
+  norm.dat <- fnc_norm(X.thin)
+  
+  ### save the simulated data
+  data6 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
+  #saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data.rds"))
+  rm(X, X.mod, L, F)
+}
+```
+
+## Visualization of the Data
+
+```{r, eval = FALSE}
+plot_heatmap(data6$L)
+```
+
+```{r, eval = FALSE}
+plot_heatmap(data6$F)
+```
+
+```{r, eval = FALSE}
+observed.vals6 <- data6$Y %*% t(data6$Y)/ ncol(data6$Y)
+```
+
+```{r, eval = FALSE}
+plot_heatmap(observed.vals6)
+```
+
+## EBCD Analysis
+
+This is the code to run the EBCD analysis. I've already loaded in the saved results. 
+```{r, eval = FALSE}
+set.seed(295)
+fit.ebcd6 <- ebcd(X = t(data6$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
+```{r, eval = FALSE}
+plot_heatmap(t(t(fit.ebcd6$EL)/apply(fit.ebcd6$EL,2, max)))
+```

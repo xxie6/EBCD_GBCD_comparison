@@ -1,0 +1,125 @@
+---
+title: "EBCD-subtype-experiments"
+author: "Annie Xie"
+date: "2024-05-01"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+In this analysis, I run some experiments to explore when EBCD can find subtype GEPs and how reliably it can under various settings.
+
+# Package and Functions for Analyses
+
+```{r, eval = FALSE}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r, eval = FALSE}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red")){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  brks <- seq(min(L), max(L), length=50)
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r, eval = FALSE}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+```
+
+# Normal noise, varying standard deviation of noise
+
+## Hypothesis
+
+## Analysis
+```{r, eval = FALSE}
+generate_normal_data <- function(noise_sd){
+  ### simulate L
+  L <- matrix(0, nrow=1600, ncol=3)
+  L[1:800, 1] <- 1
+  L[801:1600, 2] <- 1
+  L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2)
+  
+  ### simulate F
+  F <- matrix(0, nrow=5000, ncol=3)
+  F[1:75, 1] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[76:150, 2] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
+  F[251:500, 3] <- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
+  
+  ### generate normal noise
+  E <- matrix(rnorm(1600*5000, mean = 0, sd = noise_sd), ncol = 5000)
+  
+  ### save the simulated data
+  data <- list(Y = L %*% t(F) + E, L = L, F = F)
+  return(data)
+}
+```
+
+```{r, eval = FALSE}
+generate_normal_datasets <- function(noise_sd, num_datasets){
+  dataset_list <- list()
+  for (i in 1:num_datasets){
+    set.seed(i)
+    dataset_list[[i]] <- generate_normal_data(noise_sd)
+  }
+  return(dataset_list)
+}
+```
+
+```{r, eval = FALSE}
+check_subtype_recovery <- function(true.fit, ebcd.fit){
+  corr_matrix <- cor(ebcd.fit$EL, true.fit$L[,c(1:2)]) # need first two columns to be subtype
+  max_corr <- apply(corr_matrix, 2, max)
+  return(as.numeric(max_corr > 0.9))
+}
+```
+
+```{r, eval = FALSE}
+compute_subtype_recovery_prop <- function(dataset_list, ebcdfit_list){
+  recovery_matrix <- matrix(rep(0, 2*length(dataset_list)), ncol = 2)
+  for (i in 1:length(dataset_list)){
+    recovery_matrix[i,] <- check_subtype_recovery(dataset_list[[i]], ebcdfit_list[[i]])
+  }
+  return(colMeans(recovery_matrix))
+}
+```
+
+
+```{r, eval = FALSE}
+noise_sds <- c(1,5,2,3)
+recovery_prop_sds <- matrix(rep(0, 2*length(noise_sds)), ncol = 2)
+for (j in 1:length(noise_sds)){
+  print(noise_sds[j])
+  dataset_list <- generate_normal_datasets(noise_sds[j], 10)
+  ebcdfit_list <- lapply(dataset_list, function(x){return(ebcd(X = t(x$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary))})
+  recovery_prop <- compute_subtype_recovery_prop(dataset_list, ebcdfit_list)
+  recovery_prop_sds[j,] <- recovery_prop
+}
+```
+
+## Visualization of Results
+
+## Observations
+

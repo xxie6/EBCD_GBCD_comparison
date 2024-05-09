@@ -157,8 +157,16 @@ plot_heatmap(data$L)
 ```
 
 ```{r}
+plot_heatmap(data$F)
+```
+
+```{r}
 #note to self: maybe save this in file and load in
 observed.vals <- data$Y %*% t(data$Y)/ncol(data$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals)
 ```
 
 ## GBCD Analysis

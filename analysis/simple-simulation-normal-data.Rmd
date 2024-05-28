@@ -1,0 +1,250 @@
+---
+title: "simple-simulation-normal-data"
+author: "Annie Xie"
+date: "2024-05-27"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we run a simple simulation to illustrate the difference in empirical results for EBCD and GBCD. 
+
+# Packages and Functions for Analyses
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red")){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  brks <- seq(min(L), max(L), length=50)
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+source("~/Documents/PhD 3/Research/EBCD/gbcd_functions.R")
+```
+
+# Data Generation
+
+```{r}
+generate_normal_data_patient <- function(noise_sd){
+  ### simulate L
+  LL <- matrix(0, nrow=800, ncol=7)
+  LL[,1] <- 1
+  LL[1:400, 2] <- 1
+  LL[401:800, 3] <- 1
+  LL[1:200,4] <- 1
+  LL[201:400, 5] <- 1
+  LL[401:600, 6] <- 1
+  LL[601:800, 7] <- 1
+  
+  ### simulate F
+  FF <- matrix(0, nrow=2100, ncol = 7)
+  FF[1:300,1] <- rnorm(300, mean = 0, sd = 1) 
+  FF[301:600,2] <- rnorm(300, mean = 0, sd = 1) 
+  FF[601:900,3] <- rnorm(300, mean = 0, sd = 1) 
+  FF[901:1200, 4] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1201:1500, 5] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1501:1800,6] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1801:2100, 7] <- rnorm(300, mean = 0, sd = 1) 
+  FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  ##FF <- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
+  
+  ### generate normal noise
+  E <- matrix(rnorm(800*2100, mean = 0, sd = noise_sd), ncol = 2100)
+  
+  ### save the simulated data
+  data <- list(Y = LL %*% t(FF) + E, LL = LL, FF = FF)
+  return(data)
+}
+```
+
+```{r}
+set.seed(2052)
+data_norm_patient <- generate_normal_data_patient(0.1)
+```
+
+## Visualizations of the data
+
+```{r}
+dim(data_norm_patient$Y)
+```
+
+```{r}
+plot_heatmap(data_norm_patient$LL)
+```
+
+```{r}
+plot_heatmap(data_norm_patient$FF, colors_range = c('blue','red'))
+```
+
+```{r}
+plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)
+```
+
+```{r}
+observed.vals_patient <- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals_patient)
+```
+
+# GBCD Analysis
+
+## Hypothesis
+I hypothesize that GBCD will be able to recover both subtype effects and all four patient effects.
+
+## Analysis
+
+```{r, include = FALSE}
+fit.gbcd <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/simple-sim-norm-data-gbcd-4patient.rds')
+```
+
+This is the code to run the GBCD analysis.
+```{r, eval = FALSE}
+fit.gbcd <- flash_fit_cov_ebnmf(Y = data_norm_patient$Y, Kmax = 10, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE)
+```
+
+This is a plot of estimate for $L$:
+```{r}
+plot_heatmap(fit.gbcd$L)
+```
+
+**Rescale GBCD loadings estimate:**
+
+This is the code to rescale the GBCD estimate. I've loaded in previously saved results.
+```{r, eval = FALSE}
+fit.gbcd.rescale1 <- flash_fit_cov_ebnmf_fit_laplace(Y = data_norm_patient$Y, Kmax = 10, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
+
+fit.gbcd.rescale2 <- flash_fit_cov_ebnmf_fit_L(dat = fit.gbcd.rescale1$dat, fit.gbcd.rescale1$fit.cov, Y=data$Y, Kmax=16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1)
+```
+
+**LDF Method of Scaling:**
+```{r, eval = FALSE}
+fit.gbcd.rescale.ldf <- ldf(fit.gbcd.rescale2$fit.cov, type = 'i')
+
+fit.gbcd.rescale.L <- fit.gbcd.rescale.ldf$L %*% diag(sqrt(fit.gbcd.rescale.ldf$D))
+
+thres <- 0.9
+k.idx <- which(fit.gbcd.rescale2$corr > thres)
+fit.gbcd.rescale.L <- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]
+```
+
+```{r, include = FALSE}
+fit.gbcd.rescale.L <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/simple-sim-norm-data-gbcd-rescale-4patient.rds')
+```
+
+```{r}
+plot_heatmap(fit.gbcd.rescale.L)
+```
+
+```{r}
+gbcd.rescaled.fitted.vals <- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L)
+```
+
+```{r}
+plot_heatmap(gbcd.rescaled.fitted.vals)
+```
+
+```{r}
+sum((observed.vals_patient - gbcd.rescaled.fitted.vals)^2) - sum((diag(observed.vals_patient) - diag(gbcd.rescaled.fitted.vals))^2)
+```
+
+This is code to plot (a sub-sampple of) fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals_patient)), length.out = ncol(observed.vals_patient))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals_patient))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient))[samp.vals], y = c(gbcd.rescaled.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient)), y = diag(gbcd.rescaled.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+GBCD is able to recover both subtype effects and all four patient effects.
+
+# EBCD Analysis
+
+## Hypothesis
+I hypothesize that EBCD should be able to recover both subtype effects and all four patient effects. However, previous experience working with EBCD has shown that it has not always been able to find the effects. Additionally, sometimes it groups patient effects together.
+
+## Analysis
+
+```{r, include = FALSE}
+fit.ebcd <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/simple-sim-norm-data-ebcd-4patient.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(368)
+fit.ebcd <- ebcd(X = t(data_norm_patient$Y), Kmax = 7, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+```{r}
+plot_heatmap(fit.ebcd$EL)
+```
+
+```{r}
+ebcd.fitted.vals <- fit.ebcd$EL %*% t(fit.ebcd$EL)
+```
+
+This is a plot of $LL^{T}$.
+```{r}
+plot_heatmap(ebcd.fitted.vals)
+```
+
+```{r}
+sum((observed.vals_patient - ebcd.fitted.vals)^2) - sum((diag(observed.vals_patient) - diag(ebcd.fitted.vals))^2)
+```
+
+This is a plot of (a subset of) the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals_patient)), length.out = ncol(observed.vals_patient))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals_patient))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+For this particular EBCD estimate, EBCD did not recover the second subtype effect.

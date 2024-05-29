@@ -403,7 +403,7 @@ samp.vals <- sample(off_diag_idx, size = 100000)
 ```
 
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.01")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.01")
 ```
 
 ```{r}
@@ -427,7 +427,7 @@ samp.vals <- sample(off_diag_idx, size = 100000)
 ```
 
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.05")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.05")
 ```
 
 ```{r}
@@ -451,7 +451,7 @@ samp.vals <- sample(off_diag_idx, size = 100000)
 ```
 
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.15")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15")
 ```
 
 ```{r}
@@ -475,7 +475,7 @@ samp.vals <- sample(off_diag_idx, size = 100000)
 ```
 
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.2")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.2")
 ```
 
 ```{r}
@@ -499,7 +499,7 @@ samp.vals <- sample(off_diag_idx, size = 100000)
 ```
 
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.5")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.5")
 ```
 
 ```{r}
@@ -609,7 +609,7 @@ sum((observed.vals_sd0.15 - ebcd.fitted.vals_sd0.15)^2) - sum((diag(observed.val
 
 This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
 ```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diangle entries for SD = 0.15")
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15")
 ```
 
 This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:

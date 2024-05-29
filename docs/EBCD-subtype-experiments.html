@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreebd79fd00072398f601b8f117bf630738597c6ab9targetblankbd79fd0a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreea5615f6c20d7961997092e78c9bacc529d77e30etargetblanka5615f6a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/bd79fd00072398f601b8f117bf630738597c6ab9" target="_blank">bd79fd0</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/a5615f6c20d7961997092e78c9bacc529d77e30e" target="_blank">a5615f6</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreebd79fd00072398f601b8f117bf630738597c6ab9targetblankbd79fd0a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreea5615f6c20d7961997092e78c9bacc529d77e30etargetblanka5615f6a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/bd79fd00072398f601b8f117bf630738597c6ab9" target="_blank">bd79fd0</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/a5615f6c20d7961997092e78c9bacc529d77e30e" target="_blank">a5615f6</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -610,6 +610,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/a5615f6c20d7961997092e78c9bacc529d77e30e/analysis/EBCD-subtype-experiments.Rmd" target="_blank">a5615f6</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+<td>
+Update text in normal data EBCD experiments
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/afe3300c1f81a8993aae31cfe2c24126de471c5d/docs/EBCD-subtype-experiments.html" target="_blank">afe3300</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1747,7 +1781,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals_sd0.01 &lt;- fit.ebcd_sd0.01$EL %*% t(fit.ebcd_sd0.01$EL)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.01&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.01&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-50-1">
@@ -1866,7 +1900,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals_sd0.05 &lt;- fit.ebcd_sd0.05$EL %*% t(fit.ebcd_sd0.05$EL)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.05&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.05&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-55-1">
@@ -1985,7 +2019,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals_sd0.15 &lt;- fit.ebcd_sd0.15$EL %*% t(fit.ebcd_sd0.15$EL)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.15&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.15&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-60-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-60-1">
@@ -2104,7 +2138,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals_sd0.2 &lt;- fit.ebcd_sd0.2$EL %*% t(fit.ebcd_sd0.2$EL)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.2&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.2&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-65-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-65-1">
@@ -2223,7 +2257,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals_sd0.5 &lt;- fit.ebcd_sd0.5$EL %*% t(fit.ebcd_sd0.5$EL)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.5&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.5&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-70-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-70-1">
@@ -2729,7 +2763,7 @@ entries of the observed values and fitted values.</p>
 <pre><code>[1] 0.2103414</code></pre>
 <p>This is a plot of (a subset of) the off-diagonal entries of the
 fitted values vs. observed values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diangle entries for SD = 0.15&quot;)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + labs(title=&quot;Subsample of Off Diagonal entries for SD = 0.15&quot;)</code></pre>
 <p><img src="figure/EBCD-subtype-experiments.Rmd/unnamed-chunk-89-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-89-1">

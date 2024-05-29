@@ -305,8 +305,7 @@ It appears that the loading estimate that EBCD converges to is something along t
 \end{bmatrix}
 \begin{bmatrix}
 2 & 1/\sqrt{2}\\
-\end{bmatrix}
-+
+\end{bmatrix} +
 \begin{bmatrix}
 0\\
 \sqrt{3/4}

@@ -296,7 +296,7 @@ Note that this loadings matrix has linearly dependent columns. Then $LL^{T}$ wou
 \begin{bmatrix}
 2 & 1\\
 1 & 2\\
-\begin{bmatrix}
+\end{bmatrix}
 
 It appears that the loading estimate that EBCD converges to is something along the lines of
 \begin{bmatrix}
@@ -315,7 +315,7 @@ It appears that the loading estimate that EBCD converges to is something along t
 0 & \sqrt{3/4}\\
 \end{bmatrix}
 
-(and perhaps it is breaking the second vector down even further). We think that this is happening because we are using the generalized binary prior which does not force the loading vectors to be binary; it just encourages it. On the other hand, we hypothesize that GBCD is able to recovery these binary loadings vectors because of its use of the laplace prior and then splitting -- this harkens back to ideas in Jason's thesis regarding the drift factorization and the divergence factorization.
+(and perhaps it is breaking the second vector down even further). We think that this is happening because we are using the generalized binary prior which does not force the loading vectors to be binary; it just encourages it. On the other hand, we hypothesize that GBCD is able to recovery these binary loadings vectors because of its use of the Laplace prior and then splitting -- this harkens back to ideas in Jason's thesis regarding the drift factorization and the divergence factorization.
 
 # Simulate data under EBCD model, vary standard deviation
 In the previous simulations, I chose the standard deviation of the noise such that the Gram matrix had a visible block structure. A block structure is expected due to the subtype effects modeled in the loadings matrix. For larger standard deviations, the Gram matrix does not have an apparent block structure. As the standard deviation decreases, the block structure in the Gram matrix becomes more apparent and/or clearer.

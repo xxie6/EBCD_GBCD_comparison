@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Annie Xie" />
+
+<meta name="date" content="2024-05-15" />
+
+<title>ridgeless-regression-comparison</title>
+
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">EBCD_GBCD_comparison</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/xxie6/EBCD_GBCD_comparison">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">ridgeless-regression-comparison</h1>
+<h4 class="author">Annie Xie</h4>
+<h4 class="date">2024-05-15</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-05-29
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>EBCD_GBCD_comparison/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240229code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240229)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240229code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240229)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree685ea553787448ed7d595ff9d035b025c6ae80d2targetblank685ea55a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/685ea553787448ed7d595ff9d035b025c6ae80d2" target="_blank">685ea55</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree685ea553787448ed7d595ff9d035b025c6ae80d2targetblank685ea55a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/685ea553787448ed7d595ff9d035b025c6ae80d2" target="_blank">685ea55</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/ridgeless-regression-comparison.Rmd</code>) and HTML
+(<code>docs/ridgeless-regression-comparison.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/685ea553787448ed7d595ff9d035b025c6ae80d2/analysis/ridgeless-regression-comparison.Rmd" target="_blank">685ea55</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+<td>
+Add ridgeless regression comparison
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The motivation for this analysis comes from a question that Jingshu
+asked during Joon’s dissertation defense. Joon was discussing the drift
+factorization which involves fitting an orthogonal matrix factorization
+to the matrix <span class="math inline">\(P\)</span> where <span
+class="math inline">\(P\)</span> is <span class="math inline">\(n \times
+p\)</span> and <span class="math inline">\(p &lt; n\)</span>. So we want
+to fit the following: <span class="math display">\[
+P = ZL^{T}.
+\]</span></p>
+<p>where <span class="math inline">\(Z\)</span> is <span
+class="math inline">\(n \times k\)</span> and <span
+class="math inline">\(L\)</span> is <span class="math inline">\(p \times
+k\)</span>. We want <span class="math inline">\(Z\)</span> to represent
+orthogonal sources of change, e.g. branches of a tree. It is possible
+that <span class="math inline">\(k &gt; p\)</span>. Jingshu asked
+whether in this setting, the solution for <span
+class="math inline">\(Z\)</span> is identifiable. It definitely is not
+in the case without the constraint. So alternate question to think about
+is does the orthogonal constraint make the solution identifiable?</p>
+<p>After further thought, we do not think it is identifiable. But then
+comes the question, how are we fitting <span
+class="math inline">\(Z\)</span>?</p>
+<p>The fact that EBCD was able to find an estimate in this
+over-specified setting was surprising to me. GBCD struggled to find an
+estimate in this case, and I wonder if it is because GBCD prefers to
+find a low rank approximation rather than an over-specified one.</p>
+<p>Matthew hypothesizes that the <code>Polar.U</code> function is
+performing something comparable to ridgeless regression.</p>
+<p>To explain the potential connection between ridgeless regression and
+the estimation of <span class="math inline">\(Z\)</span>, we first
+consider the regression formulation of the matrix factorization problem.
+In this section, I consider the EBMF formulation of matrix
+factorization, which is <span class="math inline">\(X = LF^{T}\)</span>.
+Consider fixing <span class="math inline">\(L\)</span> and wanting to
+estimate <span class="math inline">\(Z\)</span>. Then we can think of
+the matrix factorization problem as fitting <span
+class="math inline">\(p\)</span> regressions of the following form:
+<span class="math display">\[\begin{bmatrix}
+x_{1l}\\
+x_{2l}\\
+\dots\\
+x_{nl}
+\end{bmatrix} = l_1 \cdot f_{l1} + l_2 \cdot f_{l2} + \dots + l_k \cdot
+f_{lk}\]</span></p>
+<p>If the columns of <span class="math inline">\(L\)</span> are linearly
+independent, then the solution for <span
+class="math inline">\(F\)</span> would be <span
+class="math inline">\((L^{T}L)^{-1}L^{T}X\)</span>. However, if the
+columns of <span class="math inline">\(L\)</span> are linearly
+dependent, then this regression problem does not have a unique solution
+because <span class="math inline">\(L^{T}L\)</span> is not invertible.
+One way to get a solution though is to consider ridge regression. In
+ridge regression, the solution has the form <span
+class="math inline">\((L^{T}L + \lambda I)^{-1}L^{T}X\)</span>.</p>
+<p>Ridgeless regression describes what happens when you take <span
+class="math inline">\(\lambda \to 0\)</span>. One might expect that it
+would be equivalent to using no penalty at all. However, that is not
+true. The solution for ridgeless regression is the the minimum L2 norm
+solution among all the possible options that minimize the fit term.</p>
+<p>In this analysis, I attempt to compare the two methods and see if
+that is, in fact, what the <code>Polar.U</code> function is doing in
+this setting.</p>
+</div>
+<div id="packages-and-functions" class="section level1">
+<h1>Packages and Functions</h1>
+<pre class="r"><code>library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)</code></pre>
+<pre><code>
+Attaching package: &#39;patchwork&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    align_plots</code></pre>
+<pre class="r"><code>library(fastTopics)
+#source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
+<pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;)){
+  ### define the color map
+  cols &lt;- colorRampPalette(colors_range)(49)
+  brks &lt;- seq(min(L), max(L), length=50)
+  
+  plt &lt;- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}</code></pre>
+<pre class="r"><code>source(&quot;~/Documents/PhD 3/Research/EBCD/ebcd_functions.R&quot;)</code></pre>
+</div>
+<div id="simple-example" class="section level1">
+<h1>Simple Example</h1>
+To explore this, we consider a simple example. We consider the following
+loadings matrix:
+<span class="math display">\[\begin{bmatrix}
+1 &amp; 1 &amp; 0\\
+1 &amp; 0 &amp; 1\\
+\end{bmatrix}\]</span>
+<p>We also will generate a block structured factor matrix <span
+class="math inline">\(Z\)</span>, which is <span
+class="math inline">\(90 \times 3\)</span>. Our data will have the form
+<span class="math display">\[X = ZL^{T} + E\]</span> <span
+class="math display">\[E_{ij} \overset{i.i.d.}{\sim} N(0,
+1/\tau)\]</span></p>
+<div id="data-generation" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>generate_normal_data &lt;- function(noise_sd){
+  ### simulate L
+  LL &lt;- matrix(0, nrow=2, ncol=3)
+  LL[,1] &lt;- 1
+  LL[1, 2] &lt;- 1
+  LL[2, 3] &lt;- 1
+  
+  ### simulate F
+  FF &lt;- matrix(0, nrow=90, ncol = 3)
+  FF[1:30,1] &lt;- rnorm(30, mean = 0, sd = 1) 
+  FF[31:60,2] &lt;- rnorm(30, mean = 0, sd = 1) 
+  FF[61:90,3] &lt;- rnorm(30, mean = 0, sd = 1) 
+  FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  
+  ### generate normal noise
+  E &lt;- matrix(rnorm(90*2, mean = 0, sd = noise_sd), ncol = 2)
+  
+  ### save the simulated data
+  data &lt;- list(Y = FF %*% t(LL) + E, LL = LL, FF = FF)
+  return(data)
+}</code></pre>
+<pre class="r"><code>set.seed(2052)
+data_norm &lt;- generate_normal_data(0.01)</code></pre>
+<pre class="r"><code>dim(data_norm$Y)</code></pre>
+<pre><code>[1] 90  2</code></pre>
+<p>These are some visualizations of the simulated data. This is a
+heatmap of the loadings matrix.</p>
+<pre class="r"><code>plot_heatmap(data_norm$LL)</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the factor matrix.</p>
+<pre class="r"><code>plot_heatmap(data_norm$FF, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>.
+This is to check that it is orthogonal.</p>
+<pre class="r"><code>plot_heatmap(t(data_norm$FF) %*% data_norm$FF)</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals &lt;- t(data_norm$Y) %*% data_norm$Y/ncol(t(data_norm$Y))</code></pre>
+<p>This is a heatmap of the Gram matrix.</p>
+<pre class="r"><code>plot_heatmap(observed.vals)</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="polar.u-function" class="section level2">
+<h2>Polar.U Function</h2>
+<p>The EBCD algorithm updates <span class="math inline">\(Z\)</span>
+with the following update: <span class="math display">\[\hat{Z} =
+Polar.U(XL).\]</span> Using the true loadings matrix (and of course, the
+data), we compute the estimate for <span
+class="math inline">\(Z\)</span>.</p>
+<pre class="r"><code>Z.est &lt;- PolarU(data_norm$Y%*%data_norm$LL)</code></pre>
+<pre class="r"><code>plot_heatmap(Z.est, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="ridgeless-regression" class="section level2">
+<h2>Ridgeless Regression</h2>
+<p>To implement ridgeless regression, we implement ridge regression with
+a very small penalty, <span class="math inline">\(\epsilon\)</span>.
+Recall that for fixed <span class="math inline">\(L\)</span>, we can
+estimate <span class="math inline">\(Z\)</span> through regression
+problems. In this formulation, the regression problem is <span
+class="math display">\[\begin{bmatrix}
+x_{l1} &amp; x_{l2} &amp; \dots x_{lp}
+\end{bmatrix}^{T} = l_1 \cdot z_{l1} + \dots + l_k \cdot
+z_{lk}\]</span></p>
+<pre class="r"><code>ridge_estimate_Z &lt;- function(x_j, L, epsilon){
+  fit &lt;- glmnet::glmnet(L, x_j, alpha = 0, intercept = FALSE)
+  z_est &lt;- as.matrix(coef(fit, s = epsilon))[c(-1),]
+  names(z_est) &lt;- NULL
+  return(z_est)
+}</code></pre>
+<pre class="r"><code>Z_ridge_est &lt;- t(apply(data_norm$Y, 1, ridge_estimate_Z, L = data_norm$LL, epsilon = 10^(-10)))</code></pre>
+<pre class="r"><code>plot_heatmap(Z_ridge_est, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
+<p><img src="figure/ridgeless-regression-comparison.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="observations" class="section level2">
+<h2>Observations</h2>
+<p>Comparing the two estimates, it does not appear that the Polar.U
+function is doing something comparable to ridgeless regression. In
+particular, the ridgeless regression estimate is a lot more sparse than
+that of the Polar.U function. Also, the ridgeless regression estimate is
+rank 2 and not rank 3 – the first column of the estimate is all
+zero.</p>
+<p>During a recent discussion with Matthew, he told me that he no longer
+thinks that the Polar.U function is similar to ridgeless regression.
+Instead, he hypothesizes that EBCD may be getting stuck in a non-sparse
+solution. In particular, EBCD may be encouraged (via its iterative
+nature?) to find compact solutions where it only uses a subset of the
+allotted vectors to explain the sources of variation. Then it
+arbitrarily chooses other vectors that are orthogonal to the first
+subset to fill in the rest. In addition, if the learned prior is
+non-sparse, then it may be difficult for EBCD to get out of the
+non-sparse solution space.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.4.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
+ [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
+[13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
+
+loaded via a namespace (and not attached):
+ [1] pbapply_1.7-2        rlang_1.1.3          git2r_0.33.0        
+ [4] horseshoe_0.2.0      compiler_4.3.2       getPass_0.2-4       
+ [7] callr_3.7.6          vctrs_0.6.5          quantreg_5.97       
+[10] quadprog_1.5-8       stringr_1.5.1        shape_1.4.6.1       
+[13] pkgconfig_2.0.3      crayon_1.5.2         fastmap_1.2.0       
+[16] mcmc_0.9-8           utf8_1.2.4           promises_1.3.0      
+[19] rmarkdown_2.27       ps_1.7.6             MatrixModels_0.5-3  
+[22] purrr_1.0.2          glmnet_4.1-8         xfun_0.44           
+[25] cachem_1.1.0         trust_0.1-8          jsonlite_1.8.8      
+[28] progress_1.2.3       highr_0.11           later_1.3.2         
+[31] parallel_4.3.2       prettyunits_1.2.0    R6_2.5.1            
+[34] bslib_0.7.0          stringi_1.8.4        SQUAREM_2021.1      
+[37] jquerylib_0.1.4      iterators_1.0.14     Rcpp_1.0.12         
+[40] knitr_1.45           httpuv_1.6.15        splines_4.3.2       
+[43] tidyselect_1.2.1     rstudioapi_0.16.0    yaml_2.3.8          
+[46] codetools_0.2-20     processx_3.8.4       plyr_1.8.9          
+[49] lattice_0.22-6       tibble_3.2.1         withr_3.0.0         
+[52] coda_0.19-4.1        evaluate_0.23        Rtsne_0.17          
+[55] survival_3.6-4       RcppParallel_5.1.7   pillar_1.9.0        
+[58] whisker_0.4.1        foreach_1.5.2        plotly_4.10.4       
+[61] softImpute_1.4-1     generics_0.1.3       rprojroot_2.0.4     
+[64] invgamma_1.1         truncnorm_1.0-9      hms_1.1.3           
+[67] munsell_0.5.1        scales_1.3.0         glue_1.7.0          
+[70] scatterplot3d_0.3-44 lazyeval_0.2.2       tools_4.3.2         
+[73] data.table_1.15.4    SparseM_1.81         fs_1.6.4            
+[76] grid_4.3.2           tidyr_1.3.1          MCMCpack_1.7-0      
+[79] colorspace_2.1-0     deconvolveR_1.2-1    cli_3.6.2           
+[82] Polychrome_1.5.1     fansi_1.0.6          mixsqp_0.3-54       
+[85] viridisLite_0.4.2    dplyr_1.1.4          uwot_0.1.16         
+[88] gtable_0.3.5         sass_0.4.9           digest_0.6.35       
+[91] htmlwidgets_1.6.4    htmltools_0.5.8.1    lifecycle_1.0.4     
+[94] httr_1.4.7           MASS_7.3-60.0.1     </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

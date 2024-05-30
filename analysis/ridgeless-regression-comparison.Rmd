@@ -1,0 +1,191 @@
+---
+title: "ridgeless-regression-comparison"
+author: "Annie Xie"
+date: "2024-05-15"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+The motivation for this analysis comes from a question that Jingshu asked during Joon's dissertation defense. Joon was discussing the drift factorization which involves fitting an orthogonal matrix factorization to the matrix $P$ where $P$ is $n \times p$ and $p < n$. So we want to fit the following:
+$$
+P = ZL^{T}.
+$$
+
+where $Z$ is $n \times k$ and $L$ is $p \times k$. We want $Z$ to represent orthogonal sources of change, e.g. branches of a tree. It is possible that $k > p$. Jingshu asked whether in this setting, the solution for $Z$ is identifiable. It definitely is not in the case without the constraint. So alternate question to think about is does the orthogonal constraint make the solution identifiable?
+
+After further thought, we do not think it is identifiable. But then comes the question, how are we fitting $Z$? 
+
+The fact that EBCD was able to find an estimate in this over-specified setting was surprising to me. GBCD struggled to find an estimate in this case, and I wonder if it is because GBCD prefers to find a low rank approximation rather than an over-specified one.
+
+Matthew hypothesizes that the `Polar.U` function is performing something comparable to ridgeless regression. 
+
+To explain the potential connection between ridgeless regression and the estimation of $Z$, we first consider the regression formulation of the matrix factorization problem. In this section, I consider the EBMF formulation of matrix factorization, which is $X = LF^{T}$. Consider fixing $L$ and wanting to estimate $Z$. Then we can think of the matrix factorization problem as fitting $p$ regressions of the following form:
+$$\begin{bmatrix}
+x_{1l}\\
+x_{2l}\\ 
+\dots\\ 
+x_{nl}
+\end{bmatrix} = l_1 \cdot f_{l1} + l_2 \cdot f_{l2} + \dots + l_k \cdot f_{lk}$$
+
+If the columns of $L$ are linearly independent, then the solution for $F$ would be $(L^{T}L)^{-1}L^{T}X$. However, if the columns of $L$ are linearly dependent, then this regression problem does not have a unique solution because $L^{T}L$ is not invertible. One way to get a solution though is to consider ridge regression. In ridge regression, the solution has the form $(L^{T}L + \lambda I)^{-1}L^{T}X$. 
+
+Ridgeless regression describes what happens when you take $\lambda \to 0$. One might expect that it would be equivalent to using no penalty at all. However, that is not true. The solution for ridgeless regression is the the minimum L2 norm solution among all the possible options that minimize the fit term.
+
+In this analysis, I attempt to compare the two methods and see if that is, in fact, what the `Polar.U` function is doing in this setting.
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+#source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red")){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  brks <- seq(min(L), max(L), length=50)
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+```
+
+# Simple Example
+To explore this, we consider a simple example. We consider the following loadings matrix:
+\begin{bmatrix}
+1 & 1 & 0\\
+1 & 0 & 1\\
+\end{bmatrix}
+
+We also will generate a block structured factor matrix $Z$, which is $90 \times 3$. Our data will have the form
+$$X = ZL^{T} + E$$
+$$E_{ij} \overset{i.i.d.}{\sim} N(0, 1/\tau)$$
+
+## Data Generation
+
+```{r}
+generate_normal_data <- function(noise_sd){
+  ### simulate L
+  LL <- matrix(0, nrow=2, ncol=3)
+  LL[,1] <- 1
+  LL[1, 2] <- 1
+  LL[2, 3] <- 1
+  
+  ### simulate F
+  FF <- matrix(0, nrow=90, ncol = 3)
+  FF[1:30,1] <- rnorm(30, mean = 0, sd = 1) 
+  FF[31:60,2] <- rnorm(30, mean = 0, sd = 1) 
+  FF[61:90,3] <- rnorm(30, mean = 0, sd = 1) 
+  FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  
+  ### generate normal noise
+  E <- matrix(rnorm(90*2, mean = 0, sd = noise_sd), ncol = 2)
+  
+  ### save the simulated data
+  data <- list(Y = FF %*% t(LL) + E, LL = LL, FF = FF)
+  return(data)
+}
+```
+
+```{r}
+set.seed(2052)
+data_norm <- generate_normal_data(0.01)
+```
+
+```{r}
+dim(data_norm$Y)
+```
+
+These are some visualizations of the simulated data. This is a heatmap of the loadings matrix.
+```{r}
+plot_heatmap(data_norm$LL)
+```
+
+This is a heatmap of the factor matrix.
+```{r}
+plot_heatmap(data_norm$FF, colors_range = c('blue','red'))
+```
+
+This is a heatmap of $F^{T}F$. This is to check that it is orthogonal.
+```{r}
+plot_heatmap(t(data_norm$FF) %*% data_norm$FF)
+```
+
+```{r}
+observed.vals <- t(data_norm$Y) %*% data_norm$Y/ncol(t(data_norm$Y))
+```
+
+This is a heatmap of the Gram matrix.
+```{r}
+plot_heatmap(observed.vals)
+```
+
+## Polar.U Function
+
+The EBCD algorithm updates $Z$ with the following update:
+$$\hat{Z} = Polar.U(XL).$$
+Using the true loadings matrix (and of course, the data), we compute the estimate for $Z$.
+```{r}
+Z.est <- PolarU(data_norm$Y%*%data_norm$LL)
+```
+
+```{r}
+plot_heatmap(Z.est, colors_range = c('blue','red'))
+```
+
+## Ridgeless Regression
+To implement ridgeless regression, we implement ridge regression with a very small penalty, $\epsilon$. Recall that for fixed $L$, we can estimate $Z$ through regression problems. In this formulation, the regression problem is
+$$\begin{bmatrix}
+x_{l1} & x_{l2} & \dots x_{lp}
+\end{bmatrix}^{T} = l_1 \cdot z_{l1} + \dots + l_k \cdot z_{lk}$$
+
+```{r}
+ridge_estimate_Z <- function(x_j, L, epsilon){
+  fit <- glmnet::glmnet(L, x_j, alpha = 0, intercept = FALSE)
+  z_est <- as.matrix(coef(fit, s = epsilon))[c(-1),]
+  names(z_est) <- NULL
+  return(z_est)
+}
+```
+
+```{r}
+Z_ridge_est <- t(apply(data_norm$Y, 1, ridge_estimate_Z, L = data_norm$LL, epsilon = 10^(-10)))
+```
+
+```{r}
+plot_heatmap(Z_ridge_est, colors_range = c('blue','red'))
+```
+
+## Observations
+Comparing the two estimates, it does not appear that the Polar.U function is doing something comparable to ridgeless regression. In particular, the ridgeless regression estimate is a lot more sparse than that of the Polar.U function. Also, the ridgeless regression estimate is rank 2 and not rank 3 -- the first column of the estimate is all zero. 
+
+During a recent discussion with Matthew, he told me that he no longer thinks that the Polar.U function is similar to ridgeless regression. Instead, he hypothesizes that EBCD may be getting stuck in a non-sparse solution. In particular, EBCD may be encouraged (via its iterative nature?) to find compact solutions where it only uses a subset of the allotted vectors to explain the sources of variation. Then it arbitrarily chooses other vectors that are orthogonal to the first subset to fill in the rest. In addition, if the learned prior is non-sparse, then it may be difficult for EBCD to get out of the non-sparse solution space.
+
+
+
+
+
+

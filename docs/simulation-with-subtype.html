@@ -15,7 +15,7 @@
 
 <title>simulation-with-subtype</title>
 
-<script src="site_libs/header-attrs-2.26/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-05-01
+<strong>Last updated:</strong> 2024-06-12
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee192c9ebd15d50155fc59ec207bff888ed3e5fd1targetblanke192c9ea">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreeed5f96a52d2a464d631942478e713e57dde1d259targetblanked5f96aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e192c9ebd15d50155fc59ec207bff888ed3e5fd1" target="_blank">e192c9e</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/ed5f96a52d2a464d631942478e713e57dde1d259" target="_blank">ed5f96a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee192c9ebd15d50155fc59ec207bff888ed3e5fd1targetblanke192c9ea"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreeed5f96a52d2a464d631942478e713e57dde1d259targetblanked5f96aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e192c9ebd15d50155fc59ec207bff888ed3e5fd1" target="_blank">e192c9e</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/ed5f96a52d2a464d631942478e713e57dde1d259" target="_blank">ed5f96a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -556,18 +556,9 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
+    Ignored:    analysis/figure/
+    Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
-
-Untracked files:
-    Untracked:  analysis/EBCD-subtype-exploration.Rmd
-    Untracked:  code/EBCD subtype exploration full.Rmd
-    Untracked:  data/iter1_normal_only_subtype_data.rds
-    Untracked:  data/iter1_normal_subtype_only_ebcd.rds
-    Untracked:  data/iter1_only_subtype_data.rds
-    Untracked:  data/iter1_only_subtype_data2.rds
-    Untracked:  data/iter1_only_subtype_data2_ebcd.rds
-    Untracked:  data/iter1_subtype_only_ebcd.rds
-    Untracked:  data/iter1_subtype_only_ebcd_true_init.RData
 
 </code></pre>
 <p>
@@ -619,16 +610,50 @@ Message
 Rmd
 </td>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/e192c9ebd15d50155fc59ec207bff888ed3e5fd1/analysis/simulation-with-subtype.Rmd" target="_blank">e192c9e</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/ed5f96a52d2a464d631942478e713e57dde1d259/analysis/simulation-with-subtype.Rmd" target="_blank">ed5f96a</a>
 </td>
 <td>
 Annie Xie
 </td>
 <td>
-2024-05-01
+2024-06-12
 </td>
 <td>
-Made minor changes to simulation analyses
+Update modified analyses
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/analysis/simulation-with-subtype.Rmd" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+<td>
+Add normal and subtype simulations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/simulation-with-subtype.html" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+<td>
+Add normal and subtype simulations
 </td>
 </tr>
 <tr>
@@ -815,9 +840,8 @@ library(gridExtra)
 #library(Seurat)
 library(Matrix)
 library(ebnm)
-library(flashier)</code></pre>
-<pre><code>Loading required package: magrittr</code></pre>
-<pre class="r"><code>library(magrittr)
+library(flashier)
+library(magrittr)
 library(ashr)
 library(irlba)
 library(reshape2)
@@ -887,10 +911,84 @@ Annie Xie
 </div>
 <pre class="r"><code>plot_heatmap(data$F)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-8-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#note to self: maybe save this in file and load in
 observed.vals &lt;- data$Y %*% t(data$Y)/ncol(data$Y)</code></pre>
 <pre class="r"><code>plot_heatmap(observed.vals)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-10-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div id="gbcd-analysis" class="section level2">
 <h2>GBCD Analysis</h2>
 <div id="analysis" class="section level3">
@@ -904,11 +1002,48 @@ directly.</p>
 class="math inline">\(L\)</span>:</p>
 <pre class="r"><code>plot_heatmap(fit.gbcd$L)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-13-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="rescale-gbcd-loadings-estimate" class="section level3">
 <h3>Rescale GBCD loadings estimate</h3>
 <p>I’m loading in previously saved results.</p>
-<pre class="r"><code>load(&quot;data/iter1_gbcd_rescale.RData&quot;)</code></pre>
+<pre class="r"><code>load(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter1_gbcd_rescale.RData&quot;)</code></pre>
 <p>This is the code to rescale the GBCD estimate. I’ve loaded in
 previously saved results.</p>
 <pre class="r"><code>fit.gbcd.rescale1 &lt;- flash_fit_cov_ebnmf_fit_laplace(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
@@ -929,6 +1064,43 @@ fit.gbcd.rescale.L &lt;- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]<
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.gbcd.rescale.L)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-17-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>gbcd.rescaled.fitted.vals &lt;- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L)</code></pre>
 <pre class="r"><code>sum((observed.vals - gbcd.rescaled.fitted.vals)^2)</code></pre>
 <pre><code>[1] 6406.447</code></pre>
@@ -938,11 +1110,85 @@ values:</p>
 samp.vals &lt;- sample(1:prod(dim(observed.vals)), size = 100000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-21-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>gbcd.rescaled.withdiag.fitted.vals &lt;- fit.gbcd.rescale.L %*% t(fit.gbcd.rescale.L) + diag(rep(fit.gbcd.rescale2$s2, nrow(fit.gbcd.rescale.L)))</code></pre>
 <pre class="r"><code>sum((observed.vals - gbcd.rescaled.withdiag.fitted.vals)^2)</code></pre>
 <pre><code>[1] 2613.399</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(gbcd.rescaled.withdiag.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-24-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="correlation-of-gbcd-estimate-to-true-loadings-matrix"
 class="section level3">
@@ -1044,6 +1290,43 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-32-1">
+Past versions of unnamed-chunk-32-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-32-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-32-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ebcd.fitted.vals &lt;- fit.ebcd$EL %*% t(fit.ebcd$EL)</code></pre>
 <pre class="r"><code>sum((observed.vals - ebcd.fitted.vals)^2)</code></pre>
 <pre><code>[1] 6362.336</code></pre>
@@ -1075,6 +1358,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-35-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f618eb191b9fea17ca6926c1db2f2ff3aee7e5a8/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-35-1.png" target="_blank">f618eb1</a>
 </td>
 <td>
@@ -1092,9 +1386,83 @@ Annie Xie
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-36-1">
+Past versions of unnamed-chunk-36-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-36-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-36-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd$vec.obj)), y = fit.ebcd$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-37-1">
+Past versions of unnamed-chunk-37-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-37-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-37-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd$vec.obj)</code></pre>
@@ -1221,6 +1589,43 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd_K12$EL)/apply(fit.ebcd_K12$EL,2, max)))</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-46-1">
+Past versions of unnamed-chunk-46-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-46-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-46-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ebcd_K12.fitted.vals &lt;- fit.ebcd_K12$EL %*% t(fit.ebcd_K12$EL)</code></pre>
 <pre class="r"><code>sum((observed.vals - ebcd_K12.fitted.vals)^2)</code></pre>
 <pre><code>[1] 6090.539</code></pre>
@@ -1252,6 +1657,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-49-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f618eb191b9fea17ca6926c1db2f2ff3aee7e5a8/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-49-1.png" target="_blank">f618eb1</a>
 </td>
 <td>
@@ -1269,9 +1685,83 @@ Annie Xie
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd_K12.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-50-1">
+Past versions of unnamed-chunk-50-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-50-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-50-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_K12$vec.obj)), y = fit.ebcd_K12$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-51-1">
+Past versions of unnamed-chunk-51-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-51-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-51-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd_K12$vec.obj)</code></pre>
@@ -1453,6 +1943,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-64-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f618eb191b9fea17ca6926c1db2f2ff3aee7e5a8/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-64-1.png" target="_blank">f618eb1</a>
 </td>
 <td>
@@ -1468,8 +1969,82 @@ Annie Xie
 </div>
 <pre class="r"><code>plot_heatmap(t(t(fit.gbcd.rescale.L)/apply(fit.gbcd.rescale.L,2, max)))</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-65-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-65-1">
+Past versions of unnamed-chunk-65-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-65-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-65-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd.gbcd.init_rescaled$EL)/apply(fit.ebcd.gbcd.init_rescaled$EL,2, max)))</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-66-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-66-1">
+Past versions of unnamed-chunk-66-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-66-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-66-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of backfit iterations that were needed to reach
 convergence</p>
 <pre class="r"><code>print(length(fit.ebcd.gbcd.init_rescaled$vec.obj))</code></pre>
@@ -1480,8 +2055,82 @@ convergence</p>
 <pre><code>[1] 6118.539</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.gbcd.rescaled.init.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-71-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-71-1">
+Past versions of unnamed-chunk-71-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-71-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-71-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(2:length(fit.ebcd.gbcd.init_rescaled$vec.obj)), y = fit.ebcd.gbcd.init_rescaled$vec.obj[-1])) + geom_line()</code></pre>
 <p><img src="figure/simulation-with-subtype.Rmd/unnamed-chunk-72-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-72-1">
+Past versions of unnamed-chunk-72-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-72-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/simulation-with-subtype.Rmd/unnamed-chunk-72-1.png" target="_blank">845fd53</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-08
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="observations" class="section level2">
 <h2>Observations</h2>
@@ -1525,34 +2174,42 @@ attached base packages:
 
 other attached packages:
  [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
- [5] ashr_2.2-63        flashier_1.0.7     magrittr_2.0.3     ebnm_1.1-2        
+ [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
  [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
 [13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
 
 loaded via a namespace (and not attached):
- [1] pbapply_1.7-2      rlang_1.1.3        git2r_0.33.0       horseshoe_0.2.0   
- [5] compiler_4.3.2     getPass_0.2-4      callr_3.7.6        vctrs_0.6.5       
- [9] quantreg_5.97      quadprog_1.5-8     stringr_1.5.1      pkgconfig_2.0.3   
-[13] crayon_1.5.2       fastmap_1.1.1      mcmc_0.9-8         labeling_0.4.3    
-[17] utf8_1.2.4         promises_1.3.0     rmarkdown_2.26     ps_1.7.6          
-[21] MatrixModels_0.5-3 purrr_1.0.2        xfun_0.43          cachem_1.0.8      
-[25] trust_0.1-8        jsonlite_1.8.8     progress_1.2.3     highr_0.10        
-[29] later_1.3.2        parallel_4.3.2     prettyunits_1.2.0  R6_2.5.1          
-[33] bslib_0.7.0        stringi_1.8.3      SQUAREM_2021.1     jquerylib_0.1.4   
-[37] Rcpp_1.0.12        knitr_1.45         httpuv_1.6.15      splines_4.3.2     
-[41] tidyselect_1.2.1   rstudioapi_0.16.0  yaml_2.3.8         processx_3.8.4    
-[45] lattice_0.22-6     tibble_3.2.1       plyr_1.8.9         withr_3.0.0       
-[49] coda_0.19-4.1      evaluate_0.23      Rtsne_0.17         survival_3.6-4    
-[53] RcppParallel_5.1.7 pillar_1.9.0       whisker_0.4.1      plotly_4.10.4     
-[57] softImpute_1.4-1   generics_0.1.3     rprojroot_2.0.4    invgamma_1.1      
-[61] truncnorm_1.0-9    hms_1.1.3          munsell_0.5.1      scales_1.3.0      
-[65] glue_1.7.0         lazyeval_0.2.2     tools_4.3.2        data.table_1.15.4 
-[69] SparseM_1.81       fs_1.6.4           grid_4.3.2         tidyr_1.3.1       
-[73] MCMCpack_1.7-0     colorspace_2.1-0   deconvolveR_1.2-1  cli_3.6.2         
-[77] fansi_1.0.6        mixsqp_0.3-54      viridisLite_0.4.2  dplyr_1.1.4       
-[81] uwot_0.1.16        gtable_0.3.5       sass_0.4.9         digest_0.6.35     
-[85] farver_2.1.1       htmlwidgets_1.6.4  htmltools_0.5.8.1  lifecycle_1.0.4   
-[89] httr_1.4.7         MASS_7.3-60.0.1   </code></pre>
+ [1] pbapply_1.7-2        rlang_1.1.3          git2r_0.33.0        
+ [4] horseshoe_0.2.0      compiler_4.3.2       getPass_0.2-4       
+ [7] callr_3.7.6          vctrs_0.6.5          quantreg_5.97       
+[10] quadprog_1.5-8       stringr_1.5.1        pkgconfig_2.0.3     
+[13] crayon_1.5.2         fastmap_1.2.0        mcmc_0.9-8          
+[16] labeling_0.4.3       utf8_1.2.4           promises_1.3.0      
+[19] rmarkdown_2.27       ps_1.7.6             MatrixModels_0.5-3  
+[22] purrr_1.0.2          xfun_0.44            cachem_1.1.0        
+[25] trust_0.1-8          jsonlite_1.8.8       progress_1.2.3      
+[28] highr_0.11           later_1.3.2          parallel_4.3.2      
+[31] prettyunits_1.2.0    R6_2.5.1             bslib_0.7.0         
+[34] stringi_1.8.4        SQUAREM_2021.1       jquerylib_0.1.4     
+[37] Rcpp_1.0.12          knitr_1.45           httpuv_1.6.15       
+[40] splines_4.3.2        tidyselect_1.2.1     rstudioapi_0.16.0   
+[43] yaml_2.3.8           processx_3.8.4       plyr_1.8.9          
+[46] lattice_0.22-6       tibble_3.2.1         withr_3.0.0         
+[49] coda_0.19-4.1        evaluate_0.23        Rtsne_0.17          
+[52] survival_3.6-4       RcppParallel_5.1.7   pillar_1.9.0        
+[55] whisker_0.4.1        plotly_4.10.4        softImpute_1.4-1    
+[58] generics_0.1.3       rprojroot_2.0.4      invgamma_1.1        
+[61] truncnorm_1.0-9      hms_1.1.3            munsell_0.5.1       
+[64] scales_1.3.0         glue_1.7.0           scatterplot3d_0.3-44
+[67] lazyeval_0.2.2       tools_4.3.2          data.table_1.15.4   
+[70] SparseM_1.81         fs_1.6.4             grid_4.3.2          
+[73] tidyr_1.3.1          MCMCpack_1.7-0       colorspace_2.1-0    
+[76] deconvolveR_1.2-1    cli_3.6.2            Polychrome_1.5.1    
+[79] fansi_1.0.6          mixsqp_0.3-54        viridisLite_0.4.2   
+[82] dplyr_1.1.4          uwot_0.1.16          gtable_0.3.5        
+[85] sass_0.4.9           digest_0.6.35        farver_2.1.2        
+[88] htmlwidgets_1.6.4    htmltools_0.5.8.1    lifecycle_1.0.4     
+[91] httr_1.4.7           MASS_7.3-60.0.1     </code></pre>
 </div>
 </div>
 </div>

@@ -1,0 +1,627 @@
+---
+title: "EBCD-divergence-factorization"
+author: "Annie Xie"
+date: "2024-05-29"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we are interesting in testing EBCD's ability to recover divergence factorizations (as opposed to drift factorizations). The reason we are interested in divergence factorizations is because theoretically, the divergence factorization is easier to find than the drift factorization. Furthermore, the drift factorization can usually be easily read off from the divergence factorization.
+
+To find a divergence factorization, we just need to run EBCD with a point-Laplace prior.
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+#source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+```
+
+# Simulated data with subtype and patient effects
+
+In this section, we simulate data with subtype and patient effects. In particular, we add normal noise with standard deviation 0.05. Then, we test whether EBCD can recover the divergence factorization.
+
+## Data Generation
+
+```{r}
+generate_normal_data_patient <- function(noise_sd){
+  ### simulate L
+  LL <- matrix(0, nrow=800, ncol=7)
+  LL[,1] <- 1
+  LL[1:400, 2] <- 1
+  LL[401:800, 3] <- 1
+  LL[1:200,4] <- 1
+  LL[201:400, 5] <- 1
+  LL[401:600, 6] <- 1
+  LL[601:800, 7] <- 1
+  
+  ### simulate F
+  FF <- matrix(0, nrow=2100, ncol = 7)
+  FF[1:300,1] <- rnorm(300, mean = 0, sd = 1) 
+  FF[301:600,2] <- rnorm(300, mean = 0, sd = 1) 
+  FF[601:900,3] <- rnorm(300, mean = 0, sd = 1) 
+  FF[901:1200, 4] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1201:1500, 5] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1501:1800,6] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1801:2100, 7] <- rnorm(300, mean = 0, sd = 1) 
+  FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  ##FF <- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
+  
+  ### generate normal noise
+  E <- matrix(rnorm(800*2100, mean = 0, sd = noise_sd), ncol = 2100)
+  
+  ### save the simulated data
+  data <- list(Y = LL %*% t(FF) + E, LL = LL, FF = FF)
+  return(data)
+}
+```
+
+```{r}
+set.seed(2052)
+data_norm_patient <- generate_normal_data_patient(0.05)
+```
+
+```{r}
+dim(data_norm_patient$Y)
+```
+
+```{r}
+plot_heatmap(data_norm_patient$LL)
+```
+
+```{r}
+plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)
+```
+
+```{r}
+observed.vals_patient <- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals_patient)
+```
+
+## EBCD with Point-Laplace Prior
+
+### Hypothesis
+I hypothesize that EBCD with a point-Laplace prior should be able to find the divergence factorization. However, EBCD does seem to have some trouble finding sparse solutions, so maybe it will not be able to.
+
+### Analysis
+```{r, include = FALSE}
+fit.ebcd.laplace_patient <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_mid_noise.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.laplace_patient <- ebcd(X = t(data_norm_patient$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a plot of the estimate of $L$.
+```{r}
+plot_heatmap(fit.ebcd.laplace_patient$EL, colors_range = c('blue','red'))
+```
+
+```{r}
+plot_heatmap(cbind(pmax(fit.ebcd.laplace_patient$EL,0),pmax(-1*fit.ebcd.laplace_patient$EL,0) ))
+```
+
+```{r}
+ebcd.laplace.fitted.vals_patient <- fit.ebcd.laplace_patient$EL %*% t(fit.ebcd.laplace_patient$EL)
+```
+
+This is a plot of $LL^{T}$.
+```{r}
+plot_heatmap(ebcd.laplace.fitted.vals_patient)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals_patient - ebcd.laplace.fitted.vals_patient)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals_patient - ebcd.laplace.fitted.vals_patient)^2) - sum((diag(observed.vals_patient) - diag(ebcd.laplace.fitted.vals_patient))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals_patient)), length.out = ncol(observed.vals_patient))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals_patient))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient))[samp.vals], y = c(ebcd.laplace.fitted.vals_patient)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient)), y = diag(ebcd.laplace.fitted.vals_patient))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.laplace_patient$vec.obj)), y = fit.ebcd.laplace_patient$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd.laplace_patient$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd.laplace_patient$vec.obj[length(fit.ebcd.laplace_patient$vec.obj)]
+```
+
+### Observations
+It seems that in higher noise settings, EBCD struggles to find the divergence factorization. The loadings estimate does not appear to have the clear splits into positive and negative parts that we would expect in a divergence factorization. For example, in the third and fourth factor, we see a block of positive loadings, but the rest of the loadings are close to zero. There are no negative loadings to represent the other side of the split. Furthermore, there's no clear baseline factor, which is what we expect.
+
+Another interesting observation is the progression of the objective function. In the plot of objective function across the backfit iterations, we see that there are significant jumps. I showed this to Matthew, and he hypothesizes that the jumps correspond to the solution becoming sparser.
+
+# Exploration of the EBCD solution progression
+In this section, we are exploring the prgoression of the EBCD solution. In particular, we are interested in exploring Matthew's hypothesis that the solution gets sparser and whether the jumps in the objective function correspond to EBCD finding sparser solutions.
+
+## Simulation with sd = 0.05 (Above Data)
+
+### Progression of EBCD estimates
+```{r, include = FALSE}
+ebcd.fits <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_mid_noise_list.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.init <- ebcd_init(X = t(data_norm_patient$Y))
+fit.ebcd.obj <- ebcd_greedy(fit.ebcd.init, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+```{r, eval = FALSE}
+iteration_gap <- 100
+ebcd.fits <- list()
+ebcd.fits[[1]] <- fit.ebcd.obj
+for (i in 1:(2200/iteration_gap)){
+  ebcd.fits[[(i+1)]] <- ebcd_backfit(ebcd.fits[[i]], maxiter = iteration_gap)
+}
+```
+
+```{r, eval = FALSE}
+min_break <- min(sapply(ebcd.fits, function(x){return(min(x$EL))}))
+max_break <- max(sapply(ebcd.fits, function(x){return(max(x$EL))}))
+```
+
+```{r, eval = FALSE}
+library(ggplotify)
+```
+
+```{r, eval = FALSE}
+for (i in 1:length(ebcd.fits)){
+  plt <- plot_heatmap(ebcd.fits[[i]]$EL, colors_range = c('blue','red'), brks = seq(min_break, max_break, length=50))
+  plt <- as.ggplot(plt) + ggtitle(paste0('Iteration ', (i-1)*100))
+  ggsave(paste0('data/ebcd_iter', (i-1)*100, '_mid_noise.png'))
+}
+```
+
+```{r, eval = FALSE}
+library(tidyverse)
+library(magick)
+```
+
+```{r, eval = FALSE}
+png_files <- list.files("data",
+                        pattern = "\\_mid_noise.png$",
+                        recursive = FALSE,
+                        all.files = FALSE,
+                        full.names = TRUE)
+png_files <- stringr::str_sort(png_files, numeric = TRUE)
+
+png_files %>%
+  map(image_read) %>% # reads each path file
+  image_join() %>% # joins image
+  image_animate(fps = 1) %>% # animates
+  image_write("~/Desktop/EBCD_GBCD_comparison_data/ebcd_plots_mid_noise.gif")
+```
+
+This is a video of the progression of the solution:  
+<video width="500" height="420" controls>
+  <source src="assets/ebcd_plots_mid_noise.mp4" type="video/mp4">
+</video>
+
+### Observations
+I created a little movie that shows the EBCD solution at every 100 backfit iterations. It does appear that the solution is getting sparser. Furthermore, the timing of the jumps in the objective function do appear to correspond with the times when an additional block of the matrix is zeroed out (meaning the solution is getting sparser).
+
+One interesting observation is during the backfit, EBCD does find the divergence factorization that we are looking for. It finds it at around iteration 300. However, the backfit gradually makes this solution sparser, and eventually jumps to a sparser solution at around iteration 1400. This sparser solution has a higher objective function value, but it is not the solution we are looking for. I'm not exactly sure why EBCD has this behavior.
+
+## Simulation with sd = 0.01
+Here, we test simulated data where the noise standard deviation is 0.01 (less noise than what we looked at before).
+
+### Data Generation
+
+```{r, eval = FALSE, include = FALSE}
+generate_normal_data_patient <- function(noise_sd){
+  ### simulate L
+  LL <- matrix(0, nrow=800, ncol=7)
+  LL[,1] <- 1
+  LL[1:400, 2] <- 1
+  LL[401:800, 3] <- 1
+  LL[1:200,4] <- 1
+  LL[201:400, 5] <- 1
+  LL[401:600, 6] <- 1
+  LL[601:800, 7] <- 1
+  
+  ### simulate F
+  FF <- matrix(0, nrow=2100, ncol = 7)
+  FF[1:300,1] <- rnorm(300, mean = 0, sd = 1) 
+  FF[301:600,2] <- rnorm(300, mean = 0, sd = 1) 
+  FF[601:900,3] <- rnorm(300, mean = 0, sd = 1) 
+  FF[901:1200, 4] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1201:1500, 5] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1501:1800,6] <- rnorm(300, mean = 0, sd = 1) 
+  FF[1801:2100, 7] <- rnorm(300, mean = 0, sd = 1) 
+  FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  ##FF <- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
+  
+  ### generate normal noise
+  E <- matrix(rnorm(800*2100, mean = 0, sd = noise_sd), ncol = 2100)
+  
+  ### save the simulated data
+  data <- list(Y = LL %*% t(FF) + E, LL = LL, FF = FF)
+  return(data)
+}
+```
+
+```{r}
+set.seed(2052)
+data_norm_patient_sd0.01 <- generate_normal_data_patient(0.01)
+```
+
+```{r}
+dim(data_norm_patient_sd0.01$Y)
+```
+
+```{r}
+plot_heatmap(data_norm_patient_sd0.01$LL)
+```
+
+```{r}
+plot_heatmap(t(data_norm_patient_sd0.01$FF) %*% data_norm_patient_sd0.01$FF)
+```
+
+```{r}
+observed.vals_patient_sd0.01 <- data_norm_patient_sd0.01$Y %*% t(data_norm_patient_sd0.01$Y)/ ncol(data_norm_patient_sd0.01$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals_patient_sd0.01)
+```
+
+Note that the Gram matrix in this case shows stronger patient and subtype effects compared to the Gram matrix of the previous simulated dataset. This makes sense because we used a lower level of noise.
+
+### EBCD Analysis
+```{r, include = FALSE}
+fit.ebcd.laplace_patient_sd0.01 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_small_noise.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.laplace_patient_sd0.01 <- ebcd(X = t(data_norm_patient_sd0.01$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a plot of the estimate of $L$.
+```{r}
+plot_heatmap(fit.ebcd.laplace_patient_sd0.01$EL, colors_range = c('blue','red'))
+```
+
+```{r}
+ebcd.laplace.fitted.vals_patient_sd0.01 <- fit.ebcd.laplace_patient_sd0.01$EL %*% t(fit.ebcd.laplace_patient_sd0.01$EL)
+```
+
+This is a plot of $LL^{T}$.
+```{r}
+plot_heatmap(ebcd.laplace.fitted.vals_patient_sd0.01)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals_patient_sd0.01 - ebcd.laplace.fitted.vals_patient_sd0.01)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals_patient_sd0.01 - ebcd.laplace.fitted.vals_patient_sd0.01)^2) - sum((diag(observed.vals_patient_sd0.01) - diag(ebcd.laplace.fitted.vals_patient_sd0.01))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals_patient_sd0.01)), length.out = ncol(observed.vals_patient_sd0.01))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals_patient_sd0.01))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.01))[samp.vals], y = c(ebcd.laplace.fitted.vals_patient_sd0.01)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.01)), y = diag(ebcd.laplace.fitted.vals_patient_sd0.01))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.laplace_patient_sd0.01$vec.obj)), y = fit.ebcd.laplace_patient_sd0.01$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd.laplace_patient_sd0.01$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd.laplace_patient_sd0.01$vec.obj[length(fit.ebcd.laplace_patient_sd0.01$vec.obj)]
+```
+
+### Progression of EBCD estimate
+```{r, include = FALSE}
+ebcd.fits_sd0.01 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_small_noise_list.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.init <- ebcd_init(X = t(data_norm_patient_sd0.01$Y))
+fit.ebcd.obj <- ebcd_greedy(fit.ebcd.init, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+```{r, eval = FALSE}
+iteration_gap <- 500
+ebcd.fits_sd0.01 <- list()
+ebcd.fits_sd0.01[[1]] <- fit.ebcd.obj
+for (i in 1:(10000/iteration_gap)){
+  ebcd.fits_sd0.01[[(i+1)]] <- ebcd_backfit(ebcd.fits_sd0.01[[i]], maxiter = iteration_gap)
+}
+```
+
+```{r, eval = FALSE}
+min_break <- min(sapply(ebcd.fits_sd0.01, function(x){return(min(x$EL))}))
+max_break <- max(sapply(ebcd.fits_sd0.01, function(x){return(max(x$EL))}))
+```
+
+```{r, eval = FALSE}
+library(ggplotify)
+```
+
+```{r, eval = FALSE}
+for (i in 1:length(ebcd.fits_sd0.01)){
+  plt <- plot_heatmap(ebcd.fits_sd0.01[[i]]$EL, colors_range = c('blue','red'), brks = seq(min_break, max_break, length=50))
+  plt <- as.ggplot(plt) + ggtitle(paste0('Iteration ', (i-1)*500))
+  ggsave(paste0('data/ebcd_iter', (i-1)*500, '_small_noise.png'))
+}
+```
+
+```{r, eval = FALSE}
+library(tidyverse)
+library(magick)
+```
+
+```{r, eval = FALSE}
+png_files <- list.files("data",
+                        pattern = "\\_small_noise.png$",
+                        recursive = FALSE,
+                        all.files = FALSE,
+                        full.names = TRUE)
+png_files <- stringr::str_sort(png_files, numeric = TRUE)
+
+png_files %>%
+  map(image_read) %>% # reads each path file
+  image_join() %>% # joins image
+  image_animate(fps = 1) %>% # animates
+  image_write("~/Desktop/EBCD_GBCD_comparison_data/ebcd_plots_small_noise.gif")
+```
+
+This is a video of the progression of the solution:  
+<video width="500" height="420" controls>
+  <source src="assets/ebcd_plots_small_noise.mp4" type="video/mp4">
+</video>
+
+### Observations
+I created a little movie that shows the EBCD solution at every 500 backfit iterations. Matthew hypothesized that the EBCD solution was getting sparser, and this appears to be the case. In the final solution, two blocks of the matrix are essentially zeroed out, and these two blocks were not zero in the initial updates. Furthermore, the jump in the objective function at around 7400-7500 seems to correspond to the solution becoming more sparse.
+
+For this setting, the final solution is the divergence factorization that we are looking for. However, the backfitting algorithm still hasn't reached the convergence criterion. So it's possible that if I let the backfitting algorithm run for longer, the solution will continue to become more sparse (and thus move away from the desired divergence factorization).
+
+## Simulation with sd = 0.1
+Here, we test simulated data where the noise standard deviation is 0.1 (more noise than what we looked at before).
+
+### Data Generation
+```{r}
+set.seed(2052)
+data_norm_patient_sd0.1 <- generate_normal_data_patient(0.1)
+```
+
+```{r}
+dim(data_norm_patient_sd0.1$Y)
+```
+
+```{r}
+plot_heatmap(data_norm_patient_sd0.1$LL)
+```
+
+```{r}
+plot_heatmap(t(data_norm_patient_sd0.1$FF) %*% data_norm_patient_sd0.1$FF)
+```
+
+```{r}
+observed.vals_patient_sd0.1 <- data_norm_patient_sd0.1$Y %*% t(data_norm_patient_sd0.1$Y)/ ncol(data_norm_patient_sd0.1$Y)
+```
+
+```{r}
+plot_heatmap(observed.vals_patient_sd0.1)
+```
+
+### EBCD Analysis
+```{r, include = FALSE}
+fit.ebcd.laplace_patient_sd0.1 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_large_noise.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.laplace_patient_sd0.1 <- ebcd(X = t(data_norm_patient_sd0.1$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a plot of the estimate of $L$.
+```{r}
+plot_heatmap(fit.ebcd.laplace_patient_sd0.1$EL, colors_range = c('blue','red'))
+```
+
+```{r}
+ebcd.laplace.fitted.vals_patient_sd0.1 <- fit.ebcd.laplace_patient_sd0.1$EL %*% t(fit.ebcd.laplace_patient_sd0.1$EL)
+```
+
+This is a plot of $LL^{T}$.
+```{r}
+plot_heatmap(ebcd.laplace.fitted.vals_patient_sd0.1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals_patient_sd0.1 - ebcd.laplace.fitted.vals_patient_sd0.1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals_patient_sd0.1 - ebcd.laplace.fitted.vals_patient_sd0.1)^2) - sum((diag(observed.vals_patient_sd0.1) - diag(ebcd.laplace.fitted.vals_patient_sd0.1))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals_patient_sd0.1)), length.out = ncol(observed.vals_patient_sd0.1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals_patient_sd0.1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 100000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.1))[samp.vals], y = c(ebcd.laplace.fitted.vals_patient_sd0.1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.1)), y = diag(ebcd.laplace.fitted.vals_patient_sd0.1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.laplace_patient_sd0.1$vec.obj)), y = fit.ebcd.laplace_patient_sd0.1$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd.laplace_patient_sd0.1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd.laplace_patient_sd0.1$vec.obj[length(fit.ebcd.laplace_patient_sd0.1$vec.obj)]
+```
+
+### Progression of EBCD estimate
+```{r, include = FALSE}
+ebcd.fits_sd0.1 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/div_fac_ebcd_large_noise_list.rds')
+```
+
+```{r, eval = FALSE}
+set.seed(6287)
+fit.ebcd.init_sd0.1 <- ebcd_init(X = t(data_norm_patient_sd0.1$Y))
+fit.ebcd.obj_sd0.1 <- ebcd_greedy(fit.ebcd.init_sd0.1, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+```{r, eval = FALSE}
+iteration_gap_sd0.1 <- 25
+ebcd.fits_sd0.1 <- list()
+ebcd.fits_sd0.1[[1]] <- fit.ebcd.obj_sd0.1
+for (i in 1:(550/iteration_gap_sd0.1)){
+  ebcd.fits_sd0.1[[(i+1)]] <- ebcd_backfit(ebcd.fits_sd0.1[[i]], maxiter = iteration_gap_sd0.1)
+}
+```
+
+```{r, eval = FALSE}
+min_break <- min(sapply(ebcd.fits_sd0.1, function(x){return(min(x$EL))}))
+max_break <- max(sapply(ebcd.fits_sd0.1, function(x){return(max(x$EL))}))
+```
+
+```{r, eval = FALSE}
+library(ggplotify)
+```
+
+```{r, eval = FALSE}
+for (i in 1:length(ebcd.fits_sd0.1)){
+  plt <- plot_heatmap(ebcd.fits_sd0.1[[i]]$EL, colors_range = c('blue','red'), brks = seq(min_break, max_break, length=50))
+  plt <- as.ggplot(plt) + ggtitle(paste0('Iteration ', (i-1)*25))
+  ggsave(paste0('data/ebcd_iter', (i-1)*25, '_large_noise.png'))
+}
+```
+
+```{r, eval = FALSE}
+library(tidyverse)
+library(magick)
+```
+
+```{r, eval = FALSE}
+png_files <- list.files("data",
+                        pattern = "\\large_noise.png$",
+                        recursive = FALSE,
+                        all.files = FALSE,
+                        full.names = TRUE)
+png_files <- stringr::str_sort(png_files, numeric = TRUE)
+
+png_files %>%
+  map(image_read) %>% # reads each path file
+  image_join() %>% # joins image
+  image_animate(fps = 1) %>% # animates
+  image_write("~/Desktop/EBCD_GBCD_comparison_data/ebcd_plots_large_noise.gif")
+```
+
+This is a video of the progression of the solution:  
+<video width="500" height="420" controls>
+  <source src="assets/ebcd_plots_large_noise.mp4" type="video/mp4">
+</video>
+
+### Observations
+I created a little movie that shows the EBCD solution at every 25 backfit iterations. Again, it appears that the solution is getting sparser. However, we see the same problem that we saw with the first simulated dataset with noise sd = 0.05. At one point in the solution progression, we actually do find the divergence factorization. But EBCD then goes on to find a sparser solution that attains a higher objective function value. Therefore, the final solution does not look like the divergence factorization we desire.
+

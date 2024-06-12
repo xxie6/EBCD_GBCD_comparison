@@ -105,7 +105,7 @@ source("~/Documents/PhD 3/Research/EBCD/gbcd_functions.R")
 ```{r}
 ### load in the simulated single cell data from this replicate
 iter <- 1
-data <- readRDS(paste0("data/iter", iter, "_normal_data.rds"))
+data <- readRDS(paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_normal_data.rds"))
 ```
 
 This is a heatmap of the loadings matrix:
@@ -142,7 +142,7 @@ fit.gbcd <- flash_fit_cov_ebnmf(Y = data$Y, Kmax = 16, prior = ebnm::ebnm_genera
 
 I have the results saved, so I will just load the results directly.
 ```{r}
-fit.gbcd <- readRDS(paste0("data/iter", iter, "_normal_data_gbcd.rds"))
+fit.gbcd <- readRDS(paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_normal_data_gbcd.rds"))
 ```
 
 This is a plot of estimate for $L$:
@@ -169,7 +169,7 @@ plot_heatmap(fit.gbcd$L[,non_zero_factor_idx])
 
 I'm loading in previously saved results.
 ```{r}
-load("data/iter1_normal_data_gbcd_rescale.RData")
+load("~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_data_gbcd_rescale.RData")
 ```
 
 This is the code to rescale the GBCD estimate. I've loaded in previously saved results.
@@ -265,7 +265,7 @@ EBCD should be able to recover the true loadings matrix since the data was gener
 
 I'm loading in previously saved results.
 ```{r}
-fit.ebcd <- readRDS(paste0("data/iter", iter, "_normal_data_ebcd.rds"))
+fit.ebcd <- readRDS(paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_normal_data_ebcd.rds"))
 ```
 
 This is the code to run the EBCD analysis. I've already loaded in the saved results. 
@@ -389,7 +389,7 @@ fit.ebcd.gbcd.init_rescaled <- ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 25
 ```
 
 ```{r}
-load('data/iter1_normal_data_ebcd_gbcd_init.RData')
+load('~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_data_ebcd_gbcd_init.RData')
 ```
 
 ```{r}

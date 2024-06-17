@@ -24,3 +24,4 @@ I also have some analyses targeted at bettering understanding the behavior of th
   
 * Results for [testing generalized-binary-EBCD with a point-Laplace-EBCD initialization](EBCD-laplace-splitting.html)
 * Results for [testing point-Laplace-EBCD part 1](EBCD-divergence-factorization.html)
+* Results for [testing point-Laplace-EBCD part 2](EBCD-divergence-factorization-examples.html)

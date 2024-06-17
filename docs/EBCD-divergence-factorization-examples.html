@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Annie Xie" />
+
+<meta name="date" content="2024-06-12" />
+
+<title>EBCD-divergence-factorization-examples</title>
+
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">EBCD_GBCD_comparison</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/xxie6/EBCD_GBCD_comparison">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">EBCD-divergence-factorization-examples</h1>
+<h4 class="author">Annie Xie</h4>
+<h4 class="date">2024-06-12</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-06-17
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>EBCD_GBCD_comparison/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240229code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240229)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240229code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240229)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee662250654fa993786d7eae711d55961fd700b13targetblanke662250a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e662250654fa993786d7eae711d55961fd700b13" target="_blank">e662250</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee662250654fa993786d7eae711d55961fd700b13targetblanke662250a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e662250654fa993786d7eae711d55961fd700b13" target="_blank">e662250</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/EBCD-divergence-factorization-examples.Rmd</code>) and
+HTML (<code>docs/EBCD-divergence-factorization-examples.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/e662250654fa993786d7eae711d55961fd700b13/analysis/EBCD-divergence-factorization-examples.Rmd" target="_blank">e662250</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-17
+</td>
+<td>
+Add analysis containing more divergence factorization examples
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this analysis, we are interesting in testing EBCD’s ability to
+recover divergence factorizations (as opposed to drift factorizations).
+The reason we are interested in divergence factorizations is because
+theoretically, the divergence factorization is easier to find than the
+drift factorization. Furthermore, the drift factorization can
+(sometimes) be easily read off from the divergence factorization. The
+examples in this analysis are pulled from Jason’s thesis.</p>
+<p>Furthermore, for these examples we compare EBCD with flash-Cov (which
+fits the EBMF-Cov model). We want to assess differences in the solutions
+of these two methods.</p>
+</div>
+<div id="packages-and-functions" class="section level1">
+<h1>Packages and Functions</h1>
+<pre class="r"><code>library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)</code></pre>
+<pre><code>
+Attaching package: &#39;patchwork&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    align_plots</code></pre>
+<pre class="r"><code>library(fastTopics)
+#source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
+<pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;), brks = NULL){
+  ### define the color map
+  cols &lt;- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks &lt;- seq(min(L), max(L), length=50)
+  }
+  
+  plt &lt;- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}</code></pre>
+<pre class="r"><code>source(&quot;~/Documents/PhD 3/Research/EBCD/ebcd_functions.R&quot;)</code></pre>
+<pre class="r"><code>#adapted from code used in Jason&#39;s thesis
+
+plot_loadings &lt;- function(L_est, Pop){
+  n &lt;- nrow(L_est)
+  k &lt;- ncol(L_est)
+  Idx &lt;- rep(c(1:n), k)
+  Loading &lt;- c(L_est)
+  Factor &lt;- paste0(&#39;k=&#39;,c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib &lt;- data.frame(Idx, Loading, Factor, Pop)
+  plt &lt;- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = &quot;dashed&quot;) +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, &quot;lines&quot;))
+  plot(plt)
+}</code></pre>
+</div>
+<div id="example-1-balanced-tree" class="section level1">
+<h1>Example 1: Balanced Tree</h1>
+<p>In Example 1, we will simulate data from a balanced tree. Throughout
+this analysis, we will use the following notation: <span
+class="math inline">\(n_A\)</span>, <span
+class="math inline">\(n_B\)</span>, <span
+class="math inline">\(n_C\)</span>, and <span
+class="math inline">\(n_D\)</span> are the sample sizes for the four
+different populations. <span
+class="math inline">\(\sigma_{ABC}^2\)</span>, <span
+class="math inline">\(\sigma_{AB}^2\)</span>, <span
+class="math inline">\(\sigma_{CD}^2\)</span>, <span
+class="math inline">\(\sigma_A^2\)</span>, <span
+class="math inline">\(\sigma_B^2\)</span>, <span
+class="math inline">\(\sigma_C^2\)</span>, and <span
+class="math inline">\(\sigma_D^2\)</span> are the variances of the drift
+events. <span class="math inline">\(p\)</span> is the number of genes.
+<span class="math inline">\(\sigma_{\epsilon}^2\)</span> is the variance
+of the noise. We will use the same settings that Jason used in his
+thesis – <span class="math inline">\(n_A = n_B = n_C = n_D =
+40\)</span>, <span class="math inline">\(\sigma_{ABC}^2 = \sigma_{AB}^2
+= \sigma_{CD}^2 = \sigma_A^2 = \sigma_B^2 = \sigma_C^2 = \sigma_D^2 =
+2^2\)</span>, <span class="math inline">\(p=1000\)</span>, and <span
+class="math inline">\(\sigma_{\epsilon}^2 = 1\)</span>.</p>
+<div id="data-generation" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>sim_4pops &lt;- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n &lt;- sum(pop_sizes)
+  p &lt;- n_genes
+
+  FF &lt;- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd &lt;- svd(FF)
+    FF &lt;- FF_svd$u
+    FF &lt;- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL &lt;- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] &lt;- 1
+  LL[, 2] &lt;- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] &lt;- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] &lt;- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] &lt;- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] &lt;- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] &lt;- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat &lt;- matrix(nrow = n, ncol = 4)
+  divmat[, 1] &lt;- LL[, 1]
+  divmat[, 2] &lt;- LL[, 2] - LL[, 3]
+  divmat[, 3] &lt;- LL[, 4] - LL[, 5]
+  divmat[, 4] &lt;- LL[, 6] - LL[, 7]
+
+  E &lt;- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops &lt;- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}</code></pre>
+<pre class="r"><code>sim_data_4pop &lt;- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE)</code></pre>
+<p>This is a heatmap of the loadings matrix, <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(sim_data_4pop$LL)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
+<pre class="r"><code>plot_heatmap(t(sim_data_4pop$FF) %*% sim_data_4pop$FF)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals1 &lt;- sim_data_4pop$Y %*% t(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals1)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="ebcd-with-point-laplace-prior" class="section level2">
+<h2>EBCD with point-Laplace prior</h2>
+<div id="hypothesis" class="section level3">
+<h3>Hypothesis</h3>
+<p>I hypothesize that EBCD will be able to recover the divergence
+factorization. However, in my experience, EBCD will sometimes jump to
+sparser solutions that attain a higher objective function value.</p>
+</div>
+<div id="analysis" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd1 &lt;- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd1$EL), abs(min(fit.ebcd1$EL)))
+plot_heatmap(fit.ebcd1$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(fit.ebcd1$EL,0),pmax(-1*fit.ebcd1$EL,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(fit.ebcd1$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ebcd.laplace.fitted.vals1 &lt;- fit.ebcd1$EL %*% t(fit.ebcd1$EL)</code></pre>
+<p>This is a plot of <span
+class="math inline">\(\hat{L}\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals1)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2)</code></pre>
+<pre><code>[1] 253.8915</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1))^2)</code></pre>
+<pre><code>[1] 101.5824</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(ebcd.laplace.fitted.vals1))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd1$vec.obj)</code></pre>
+<pre><code>[1] 10000</code></pre>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]</code></pre>
+<pre><code>[1] -226901.6</code></pre>
+</div>
+<div id="checking-progression-of-ebcd-solution" class="section level3">
+<h3>Checking Progression of EBCD Solution</h3>
+<p>To investigate the progression of the EBCD solution, I compute the
+EBCD solution after only 5000 backfit iterations (compared to 10000
+backfit iterations).</p>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd1_niter5000 &lt;- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd1_niter5000$EL), abs(min(fit.ebcd1_niter5000$EL)))
+plot_heatmap(fit.ebcd1_niter5000$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ebcd.laplace.fitted.vals1_niter5000 &lt;- fit.ebcd1_niter5000$EL %*% t(fit.ebcd1_niter5000$EL)</code></pre>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2)</code></pre>
+<pre><code>[1] 217.7909</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1_niter5000))^2)</code></pre>
+<pre><code>[1] 65.39639</code></pre>
+</div>
+<div id="observations" class="section level3">
+<h3>Observations</h3>
+<p>The EBCD solution does not resemble the divergence factorization that
+we are looking for. Factor 4 is more sparse than what we would expect in
+the divergence factorization. Furthermore, the baseline factor does not
+have a constant loading across all the samples – there is a block of
+samples with a lower loading value. In Factor 2, it appears that for the
+same block of samples, the corresponding loading values are being shrunk
+towards zero. The EBCD solution still provides a good fit to the
+data.</p>
+<p>Looking at the progression of the objective function, we see that
+there is a jump towards the end. I checked the EBCD solution after 5000
+backfit iterations, and this solution looks more like the divergence
+factorization we desire. This means that EBCD is able to find another
+solution that obtains a higher objective function value.</p>
+<p>Another interesting observation is the EBCD solution after 5000
+backfit iterations has a better fit to the data than the EBCD solution
+after 10000 backfit iterations.</p>
+<p>Given that EBCD finds other solutions that achieve good fits and
+obtain higher objective function values, I am unsure if the problem is
+just difficult or if the objective function is not a good one.</p>
+</div>
+</div>
+<div id="ebmf-cov-with-point-laplace-prior" class="section level2">
+<h2>EBMF-Cov with point-Laplace prior</h2>
+<p>For comparison, I want to run flashier with the point-Laplace prior
+on the loadings on the covariance matrix – I will refer to this as
+EBMF-Cov with point-Laplace prior. (Note that this is one of the steps
+in GBCD.)</p>
+<div id="hypothesis-1" class="section level3">
+<h3>Hypothesis</h3>
+<p>I hypothesize the flashier will be able to find the divergence
+factorization.</p>
+</div>
+<div id="analysis-1" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>flash_cov_fit1 &lt;- flash_init(data = observed.vals1, var_type = 0) %&gt;%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %&gt;%
+  flash_backfit()</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Wrapping up...
+Done.
+Backfitting 4 factors (tolerance: 3.81e-04)...
+  Difference between iterations is within 1.0e+04...
+  Difference between iterations is within 1.0e+03...
+  Difference between iterations is within 1.0e+02...
+  Difference between iterations is within 1.0e+01...
+  Difference between iterations is within 1.0e+00...
+  Difference between iterations is within 1.0e-01...
+  Difference between iterations is within 1.0e-02...
+  Difference between iterations is within 1.0e-03...
+Wrapping up...
+Done.</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(flash_cov_fit1$L_pm), abs(min(flash_cov_fit1$L_pm)))
+plot_heatmap(flash_cov_fit1$L_pm, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(flash_cov_fit1$L_pm,0),pmax(-1*flash_cov_fit1$L_pm,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(flash_cov_fit1$L_pm, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>flash.laplace.fitted.vals1 &lt;- flash_cov_fit1$L_pm %*% t(flash_cov_fit1$L_pm)</code></pre>
+<p>This is a plot of <span
+class="math inline">\(\hat{L}\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(flash.laplace.fitted.vals1)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - flash.laplace.fitted.vals1)^2)</code></pre>
+<pre><code>[1] 204.5601</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - flash.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.laplace.fitted.vals1))^2)</code></pre>
+<pre><code>[1] 37.3649</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(flash.laplace.fitted.vals1))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>flash_cov_fit1$elbo</code></pre>
+<pre><code>[1] 19301.85</code></pre>
+</div>
+<div id="observations-1" class="section level3">
+<h3>Observations</h3>
+<p>We see that flashier is able to recover a factorization that
+resembles the desired divergence factorization. The first factor
+represents a baseline. One thing to note is the baseline has negative
+loadings and not positive loadings. However, the sign difference doesn’t
+really matter if you break up the matrix into positive parts and the
+absolute value of the negative parts. The second factor has a block of
+positive loadings and a block of negative loadings, corresponding to the
+AB-CD split. The third factor has a large block of zero loadings, plus a
+block of positive loadings and a block of negative loadings
+corresponding to the A-B split. The fourth factor has similar structure,
+corresponding to the C-D split.</p>
+<p>Another observation is the solution from EBMF-Cov has a better fit to
+the data than the solution from EBCD.</p>
+<p>I am unsure why EBMF-Cov recovered the divergence factorization and
+EBCD did not.</p>
+</div>
+</div>
+</div>
+<div id="example-2-unbalanced-tree" class="section level1">
+<h1>Example 2: Unbalanced Tree</h1>
+<p>In Example 2, we will simulate data from an unbalanced tree. We will
+use the following settings – <span class="math inline">\(n_A = n_B = n_C
+= n_D = 40\)</span>, <span class="math inline">\(\sigma_{ABC}^2 = 10; \
+\sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2,
+\sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]\)</span>, <span
+class="math inline">\(p=10000\)</span>, and <span
+class="math inline">\(\sigma_{\epsilon}^2 = 1\)</span>.</p>
+<div id="data-generation-1" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>#pop_size &lt;- round(runif(4, min = 20, max = 80))
+set.seed(2759)
+pop_size &lt;- rep(40, 4)
+branch_sd &lt;- c(10, runif(6, min = 1, max = 6))
+pop_size</code></pre>
+<pre><code>[1] 40 40 40 40</code></pre>
+<pre class="r"><code>branch_sd</code></pre>
+<pre><code>[1] 10.000000  1.909695  2.832827  4.215251  5.960734  2.436259  2.371553</code></pre>
+<pre class="r"><code>sim_data2_4pop &lt;- sim_4pops(pop_sizes = pop_size,
+                           branch_sds = branch_sd,
+                           indiv_sd = 1,
+                           n_genes = 10000,
+                           constrain_F = TRUE)</code></pre>
+<p>This is a heatmap of the loadings matrix, <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(sim_data2_4pop$LL)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
+<pre class="r"><code>plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals2 &lt;- sim_data2_4pop$Y %*% t(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals2)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="ebcd-with-point-laplace-prior-1" class="section level2">
+<h2>EBCD with point-Laplace prior</h2>
+<div id="hypothesis-2" class="section level3">
+<h3>Hypothesis</h3>
+<p>I think EBCD should be able to find the divergence factorization.
+However, I also think that the imbalance in drift variances might lead
+to identifiability issues.</p>
+</div>
+<div id="analysis-2" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd2 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 50000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2$EL), abs(min(fit.ebcd2$EL)))
+plot_heatmap(fit.ebcd2$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(fit.ebcd2$EL,0),pmax(-1*fit.ebcd2$EL,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(fit.ebcd2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ebcd.laplace.fitted.vals2 &lt;- fit.ebcd2$EL %*% t(fit.ebcd2$EL)</code></pre>
+<p>This is a plot of <span class="math inline">\(\hat{L}
+\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals2)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2)</code></pre>
+<pre><code>[1] 175.3998</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(ebcd.laplace.fitted.vals2))^2)</code></pre>
+<pre><code>[1] 23.31126</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd.laplace.fitted.vals2))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-58-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-59-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd2$vec.obj)</code></pre>
+<pre><code>[1] 50000</code></pre>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]</code></pre>
+<pre><code>[1] -2252959</code></pre>
+</div>
+<div id="checking-progression-of-ebcd-solution-1"
+class="section level3">
+<h3>Checking Progression of EBCD Solution</h3>
+<p>To investigate the progression of the EBCD solution, I compute the
+EBCD solution after 5000 backfit iterations (compared to 50000 backfit
+iterations).</p>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd2_niter5000 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2_niter5000$EL), abs(min(fit.ebcd2_niter5000$EL)))
+plot_heatmap(fit.ebcd2_niter5000$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="observations-2" class="section level3">
+<h3>Observations</h3>
+<p>I think the EBCD estimate looks sparser than what we would expect
+from a divergence factorization. For example, in the loadings plot for
+<span class="math inline">\(k=2\)</span>, we see that the loadings for
+population A are zero (or are very close to zero) when ideally they
+should be positive. Furthermore, for <span
+class="math inline">\(k=3\)</span>, the loadings for population <span
+class="math inline">\(B\)</span> are zero when ideally they should be
+negative. However, for an unbalanced tree, it is difficult to know what
+the magnitudes of the loadings should be. So it is possible that these
+loadings are meant to be that small. But based off of what I read in
+Jason’s thesis, I’m leaning towards the conclusion that the estimate is
+sparser than we desire.</p>
+</div>
+</div>
+<div id="ebmf-cov-with-point-laplace-prior-1" class="section level2">
+<h2>EBMF-Cov with point-Laplace prior</h2>
+<p>Again, I want to compare the results of EBCD with the point-Laplace
+prior with the results of EBMF-Cov with the point-Laplace prior.</p>
+<div id="hypothesis-3" class="section level3">
+<h3>Hypothesis</h3>
+<p>I hypothesize that EBMF-Cov should be able to find solution that
+looks like a divergence factorization.</p>
+</div>
+<div id="analysis-3" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>flash_cov_fit2 &lt;- flash_init(data = observed.vals2, var_type = 0) %&gt;%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %&gt;%
+  flash_backfit()</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Wrapping up...
+Done.
+Backfitting 4 factors (tolerance: 3.81e-04)...
+  Difference between iterations is within 1.0e+04...
+  Difference between iterations is within 1.0e+03...
+  Difference between iterations is within 1.0e+02...
+  Difference between iterations is within 1.0e+01...
+  Difference between iterations is within 1.0e+00...
+  Difference between iterations is within 1.0e-01...
+  Difference between iterations is within 1.0e-02...
+  Difference between iterations is within 1.0e-03...
+Wrapping up...
+Done.</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(flash_cov_fit2$L_pm), abs(min(flash_cov_fit2$L_pm)))
+plot_heatmap(flash_cov_fit2$L_pm, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-65-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(flash_cov_fit2$L_pm,0),pmax(-1*flash_cov_fit2$L_pm,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-66-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(flash_cov_fit2$L_pm, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-67-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>flash.laplace.fitted.vals2 &lt;- flash_cov_fit2$L_pm %*% t(flash_cov_fit2$L_pm)</code></pre>
+<p>This is a plot of <span class="math inline">\(\hat{L}
+\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(flash.laplace.fitted.vals2)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-69-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - flash.laplace.fitted.vals2)^2)</code></pre>
+<pre><code>[1] 46488.65</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - flash.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(flash.laplace.fitted.vals2))^2)</code></pre>
+<pre><code>[1] 45868.31</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(flash.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-73-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(flash.laplace.fitted.vals2))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-74-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>flash_cov_fit2$elbo</code></pre>
+<pre><code>[1] 19342.42</code></pre>
+</div>
+<div id="observations-3" class="section level3">
+<h3>Observations</h3>
+<p>In this case, EBMF-Cov’s estimate for factors 2-4 is similar to the
+estimate from EBCD (for factors 2-4). One difference is the baseline
+estimate for EBCD has all positive loadings while the baseline estimate
+for EBMF-Cov has all negative loadings. To me, the loadings estimate
+looks similar to the loadings estimate Jason had from using EBMF with
+the divergence priors.</p>
+<p>Another observation is that the EBMF-Cov estimates didn’t fit the
+data very well. They fit much worse than EBCD in this setting. In the
+plot of the fitted vs. observed values of the off-diagonal entries, we
+see that many of the points do not lie on the <span
+class="math inline">\(y=x\)</span> line.</p>
+<p>Given that both methods struggled to find an interpretable divergence
+factorization in this setting, I think this example problem may be
+difficult to solve.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.4.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
+ [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
+[13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
+
+loaded via a namespace (and not attached):
+ [1] pbapply_1.7-2        rlang_1.1.3          git2r_0.33.0        
+ [4] horseshoe_0.2.0      compiler_4.3.2       getPass_0.2-4       
+ [7] callr_3.7.6          vctrs_0.6.5          quantreg_5.97       
+[10] quadprog_1.5-8       stringr_1.5.1        pkgconfig_2.0.3     
+[13] crayon_1.5.2         fastmap_1.2.0        mcmc_0.9-8          
+[16] labeling_0.4.3       utf8_1.2.4           promises_1.3.0      
+[19] rmarkdown_2.27       ps_1.7.6             MatrixModels_0.5-3  
+[22] purrr_1.0.2          xfun_0.44            cachem_1.1.0        
+[25] trust_0.1-8          jsonlite_1.8.8       progress_1.2.3      
+[28] highr_0.11           later_1.3.2          parallel_4.3.2      
+[31] prettyunits_1.2.0    R6_2.5.1             bslib_0.7.0         
+[34] stringi_1.8.4        SQUAREM_2021.1       jquerylib_0.1.4     
+[37] Rcpp_1.0.12          knitr_1.45           httpuv_1.6.15       
+[40] splines_4.3.2        tidyselect_1.2.1     rstudioapi_0.16.0   
+[43] yaml_2.3.8           processx_3.8.4       plyr_1.8.9          
+[46] lattice_0.22-6       tibble_3.2.1         withr_3.0.0         
+[49] coda_0.19-4.1        evaluate_0.23        Rtsne_0.17          
+[52] survival_3.6-4       RcppParallel_5.1.7   pillar_1.9.0        
+[55] whisker_0.4.1        plotly_4.10.4        softImpute_1.4-1    
+[58] generics_0.1.3       rprojroot_2.0.4      invgamma_1.1        
+[61] truncnorm_1.0-9      hms_1.1.3            munsell_0.5.1       
+[64] scales_1.3.0         glue_1.7.0           scatterplot3d_0.3-44
+[67] lazyeval_0.2.2       tools_4.3.2          data.table_1.15.4   
+[70] SparseM_1.81         fs_1.6.4             grid_4.3.2          
+[73] tidyr_1.3.1          MCMCpack_1.7-0       colorspace_2.1-0    
+[76] deconvolveR_1.2-1    cli_3.6.2            Polychrome_1.5.1    
+[79] fansi_1.0.6          mixsqp_0.3-54        viridisLite_0.4.2   
+[82] dplyr_1.1.4          uwot_0.1.16          gtable_0.3.5        
+[85] sass_0.4.9           digest_0.6.35        farver_2.1.2        
+[88] htmlwidgets_1.6.4    htmltools_0.5.8.1    lifecycle_1.0.4     
+[91] httr_1.4.7           MASS_7.3-60.0.1     </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

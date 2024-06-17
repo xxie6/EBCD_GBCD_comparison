@@ -1,0 +1,556 @@
+---
+title: "EBCD-divergence-factorization-examples"
+author: "Annie Xie"
+date: "2024-06-12"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we are interesting in testing EBCD's ability to recover divergence factorizations (as opposed to drift factorizations). The reason we are interested in divergence factorizations is because theoretically, the divergence factorization is easier to find than the drift factorization. Furthermore, the drift factorization can (sometimes) be easily read off from the divergence factorization. The examples in this analysis are pulled from Jason's thesis.
+
+Furthermore, for these examples we compare EBCD with flash-Cov (which fits the EBMF-Cov model). We want to assess differences in the solutions of these two methods.
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+#source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+# Example 1: Balanced Tree
+In Example 1, we will simulate data from a balanced tree. Throughout this analysis, we will use the following notation: $n_A$, $n_B$, $n_C$, and $n_D$ are the sample sizes for the four different populations. $\sigma_{ABC}^2$, $\sigma_{AB}^2$, $\sigma_{CD}^2$, $\sigma_A^2$, $\sigma_B^2$, $\sigma_C^2$, and $\sigma_D^2$ are the variances of the drift events. $p$ is the number of genes. $\sigma_{\epsilon}^2$ is the variance of the noise. We will use the same settings that Jason used in his thesis -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = \sigma_{AB}^2 = \sigma_{CD}^2 = \sigma_A^2 = \sigma_B^2 = \sigma_C^2 = \sigma_D^2 = 2^2$, $p=1000$, and $\sigma_{\epsilon}^2 = 1$.
+
+## Data Generation
+```{r}
+sim_4pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+
+  FF <- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat <- matrix(nrow = n, ncol = 4)
+  divmat[, 1] <- LL[, 1]
+  divmat[, 2] <- LL[, 2] - LL[, 3]
+  divmat[, 3] <- LL[, 4] - LL[, 5]
+  divmat[, 4] <- LL[, 6] - LL[, 7]
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}
+```
+
+```{r}
+sim_data_4pop <- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_4pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(t(sim_data_4pop$FF) %*% sim_data_4pop$FF)
+```
+
+```{r}
+observed.vals1 <- sim_data_4pop$Y %*% t(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## EBCD with point-Laplace prior
+
+### Hypothesis
+I hypothesize that EBCD will be able to recover the divergence factorization. However, in my experience, EBCD will sometimes jump to sparser solutions that attain a higher objective function value. 
+
+### Analysis
+```{r}
+set.seed(6287)
+fit.ebcd1 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd1$EL), abs(min(fit.ebcd1$EL)))
+plot_heatmap(fit.ebcd1$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(fit.ebcd1$EL,0),pmax(-1*fit.ebcd1$EL,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.laplace.fitted.vals1 <- fit.ebcd1$EL %*% t(fit.ebcd1$EL)
+```
+
+This is a plot of $\hat{L}\hat{L}^{T}$.
+```{r}
+plot_heatmap(ebcd.laplace.fitted.vals1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(ebcd.laplace.fitted.vals1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
+```
+
+### Checking Progression of EBCD Solution
+To investigate the progression of the EBCD solution, I compute the EBCD solution after only 5000 backfit iterations (compared to 10000 backfit iterations).
+
+```{r}
+set.seed(6287)
+fit.ebcd1_niter5000 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd1_niter5000$EL), abs(min(fit.ebcd1_niter5000$EL)))
+plot_heatmap(fit.ebcd1_niter5000$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+```{r}
+ebcd.laplace.fitted.vals1_niter5000 <- fit.ebcd1_niter5000$EL %*% t(fit.ebcd1_niter5000$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1_niter5000))^2)
+```
+
+### Observations
+The EBCD solution does not resemble the divergence factorization that we are looking for. Factor 4 is more sparse than what we would expect in the divergence factorization. Furthermore, the baseline factor does not have a constant loading across all the samples -- there is a block of samples with a lower loading value. In Factor 2, it appears that for the same block of samples, the corresponding loading values are being shrunk towards zero. The EBCD solution still provides a good fit to the data. 
+
+Looking at the progression of the objective function, we see that there is a jump towards the end. I checked the EBCD solution after 5000 backfit iterations, and this solution looks more like the divergence factorization we desire. This means that EBCD is able to find another solution that obtains a higher objective function value.
+
+Another interesting observation is the EBCD solution after 5000 backfit iterations has a better fit to the data than the EBCD solution after 10000 backfit iterations.
+
+Given that EBCD finds other solutions that achieve good fits and obtain higher objective function values, I am unsure if the problem is just difficult or if the objective function is not a good one.
+
+## EBMF-Cov with point-Laplace prior
+For comparison, I want to run flashier with the point-Laplace prior on the loadings on the covariance matrix -- I will refer to this as EBMF-Cov with point-Laplace prior. (Note that this is one of the steps in GBCD.)
+
+### Hypothesis
+I hypothesize the flashier will be able to find the divergence factorization.
+
+### Analysis
+```{r}
+flash_cov_fit1 <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %>%
+  flash_backfit()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_fit1$L_pm), abs(min(flash_cov_fit1$L_pm)))
+plot_heatmap(flash_cov_fit1$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(flash_cov_fit1$L_pm,0),pmax(-1*flash_cov_fit1$L_pm,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit1$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.laplace.fitted.vals1 <- flash_cov_fit1$L_pm %*% t(flash_cov_fit1$L_pm)
+```
+
+This is a plot of $\hat{L}\hat{L}^{T}$.
+```{r}
+plot_heatmap(flash.laplace.fitted.vals1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.laplace.fitted.vals1))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(flash.laplace.fitted.vals1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit1$elbo
+```
+
+### Observations
+We see that flashier is able to recover a factorization that resembles the desired divergence factorization. The first factor represents a baseline. One thing to note is the baseline has negative loadings and not positive loadings. However, the sign difference doesn't really matter if you break up the matrix into positive parts and the absolute value of the negative parts. The second factor has a block of positive loadings and a block of negative loadings, corresponding to the AB-CD split. The third factor has a large block of zero loadings, plus a block of positive loadings and a block of negative loadings corresponding to the A-B split. The fourth factor has similar structure, corresponding to the C-D split.
+
+Another observation is the solution from EBMF-Cov has a better fit to the data than the solution from EBCD.
+
+I am unsure why EBMF-Cov recovered the divergence factorization and EBCD did not.
+
+# Example 2: Unbalanced Tree
+In Example 2, we will simulate data from an unbalanced tree. We will use the following settings -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = 10; \ \sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2, \sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]$, $p=10000$, and $\sigma_{\epsilon}^2 = 1$.
+
+## Data Generation
+
+```{r}
+#pop_size <- round(runif(4, min = 20, max = 80))
+set.seed(2759)
+pop_size <- rep(40, 4)
+branch_sd <- c(10, runif(6, min = 1, max = 6))
+pop_size
+branch_sd
+```
+
+```{r}
+sim_data2_4pop <- sim_4pops(pop_sizes = pop_size,
+                           branch_sds = branch_sd,
+                           indiv_sd = 1,
+                           n_genes = 10000,
+                           constrain_F = TRUE)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data2_4pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)
+```
+
+```{r}
+observed.vals2 <- sim_data2_4pop$Y %*% t(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals2)
+```
+
+## EBCD with point-Laplace prior
+
+### Hypothesis
+I think EBCD should be able to find the divergence factorization. However, I also think that the imbalance in drift variances might lead to identifiability issues.
+
+### Analysis
+```{r}
+set.seed(6287)
+fit.ebcd2 <- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 50000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd2$EL), abs(min(fit.ebcd2$EL)))
+plot_heatmap(fit.ebcd2$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(fit.ebcd2$EL,0),pmax(-1*fit.ebcd2$EL,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.laplace.fitted.vals2 <- fit.ebcd2$EL %*% t(fit.ebcd2$EL)
+```
+
+This is a plot of $\hat{L} \hat{L}^{T}$.
+```{r}
+plot_heatmap(ebcd.laplace.fitted.vals2)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(ebcd.laplace.fitted.vals2))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd.laplace.fitted.vals2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd2$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]
+```
+
+### Checking Progression of EBCD Solution
+To investigate the progression of the EBCD solution, I compute the EBCD solution after 5000 backfit iterations (compared to 50000 backfit iterations).
+
+```{r}
+set.seed(6287)
+fit.ebcd2_niter5000 <- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd2_niter5000$EL), abs(min(fit.ebcd2_niter5000$EL)))
+plot_heatmap(fit.ebcd2_niter5000$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+### Observations
+I think the EBCD estimate looks sparser than what we would expect from a divergence factorization. For example, in the loadings plot for $k=2$, we see that the loadings for population A are zero (or are very close to zero) when ideally they should be positive. Furthermore, for $k=3$, the loadings for population $B$ are zero when ideally they should be negative. However, for an unbalanced tree, it is difficult to know what the magnitudes of the loadings should be. So it is possible that these loadings are meant to be that small. But based off of what I read in Jason's thesis, I'm leaning towards the conclusion that the estimate is sparser than we desire.
+
+## EBMF-Cov with point-Laplace prior
+Again, I want to compare the results of EBCD with the point-Laplace prior with the results of EBMF-Cov with the point-Laplace prior.
+
+### Hypothesis
+I hypothesize that EBMF-Cov should be able to find solution that looks like a divergence factorization. 
+
+### Analysis
+```{r}
+flash_cov_fit2 <- flash_init(data = observed.vals2, var_type = 0) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %>%
+  flash_backfit()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_fit2$L_pm), abs(min(flash_cov_fit2$L_pm)))
+plot_heatmap(flash_cov_fit2$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(flash_cov_fit2$L_pm,0),pmax(-1*flash_cov_fit2$L_pm,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit2$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.laplace.fitted.vals2 <- flash_cov_fit2$L_pm %*% t(flash_cov_fit2$L_pm)
+```
+
+This is a plot of $\hat{L} \hat{L}^{T}$.
+```{r}
+plot_heatmap(flash.laplace.fitted.vals2)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals2 - flash.laplace.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals2 - flash.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(flash.laplace.fitted.vals2))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(flash.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(flash.laplace.fitted.vals2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit2$elbo
+```
+
+### Observations
+In this case, EBMF-Cov's estimate for factors 2-4 is similar to the estimate from EBCD (for factors 2-4). One difference is the baseline estimate for EBCD has all positive loadings while the baseline estimate for EBMF-Cov has all negative loadings. To me, the loadings estimate looks similar to the loadings estimate Jason had from using EBMF with the divergence priors. 
+
+Another observation is that the EBMF-Cov estimates didn't fit the data very well. They fit much worse than EBCD in this setting. In the plot of the fitted vs. observed values of the off-diagonal entries, we see that many of the points do not lie on the $y=x$ line.
+
+Given that both methods struggled to find an interpretable divergence factorization in this setting, I think this example problem may be difficult to solve. 

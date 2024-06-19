@@ -78,7 +78,8 @@ generate_normal_data_patient <- function(noise_sd){
   FF[1201:1500, 5] <- rnorm(300, mean = 0, sd = 1) 
   FF[1501:1800,6] <- rnorm(300, mean = 0, sd = 1) 
   FF[1801:2100, 7] <- rnorm(300, mean = 0, sd = 1) 
-  FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  FF <- scale(FF,center = FALSE,scale = TRUE)/sqrt(nrow(FF) - 1)
+  #FF <- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
   ##FF <- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
   
   ### generate normal noise
@@ -104,11 +105,11 @@ plot_heatmap(data_norm_patient$LL)
 ```
 
 ```{r}
-plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)
+plot_heatmap(crossprod(data_norm_patient$FF))
 ```
 
 ```{r}
-observed.vals_patient <- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
+observed.vals_patient <- tcrossprod(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
 ```
 
 ```{r}
@@ -140,7 +141,7 @@ plot_heatmap(cbind(pmax(fit.ebcd.laplace_patient$EL,0),pmax(-1*fit.ebcd.laplace_
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals_patient <- fit.ebcd.laplace_patient$EL %*% t(fit.ebcd.laplace_patient$EL)
+ebcd.laplace.fitted.vals_patient <- tcrossprod(fit.ebcd.laplace_patient$EL)
 ```
 
 This is a plot of $LL^{T}$.
@@ -319,11 +320,11 @@ plot_heatmap(data_norm_patient_sd0.01$LL)
 ```
 
 ```{r}
-plot_heatmap(t(data_norm_patient_sd0.01$FF) %*% data_norm_patient_sd0.01$FF)
+plot_heatmap(crossprod(data_norm_patient_sd0.01$FF))
 ```
 
 ```{r}
-observed.vals_patient_sd0.01 <- data_norm_patient_sd0.01$Y %*% t(data_norm_patient_sd0.01$Y)/ ncol(data_norm_patient_sd0.01$Y)
+observed.vals_patient_sd0.01 <- tcrossprod(data_norm_patient_sd0.01$Y)/ ncol(data_norm_patient_sd0.01$Y)
 ```
 
 ```{r}
@@ -348,7 +349,7 @@ plot_heatmap(fit.ebcd.laplace_patient_sd0.01$EL, colors_range = c('blue','red'))
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals_patient_sd0.01 <- fit.ebcd.laplace_patient_sd0.01$EL %*% t(fit.ebcd.laplace_patient_sd0.01$EL)
+ebcd.laplace.fitted.vals_patient_sd0.01 <- tcrossprod(fit.ebcd.laplace_patient_sd0.01$EL)
 ```
 
 This is a plot of $LL^{T}$.
@@ -483,11 +484,11 @@ plot_heatmap(data_norm_patient_sd0.1$LL)
 ```
 
 ```{r}
-plot_heatmap(t(data_norm_patient_sd0.1$FF) %*% data_norm_patient_sd0.1$FF)
+plot_heatmap(crossprod(data_norm_patient_sd0.1$FF))
 ```
 
 ```{r}
-observed.vals_patient_sd0.1 <- data_norm_patient_sd0.1$Y %*% t(data_norm_patient_sd0.1$Y)/ ncol(data_norm_patient_sd0.1$Y)
+observed.vals_patient_sd0.1 <- tcrossprod(data_norm_patient_sd0.1$Y)/ ncol(data_norm_patient_sd0.1$Y)
 ```
 
 ```{r}
@@ -510,7 +511,7 @@ plot_heatmap(fit.ebcd.laplace_patient_sd0.1$EL, colors_range = c('blue','red'))
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals_patient_sd0.1 <- fit.ebcd.laplace_patient_sd0.1$EL %*% t(fit.ebcd.laplace_patient_sd0.1$EL)
+ebcd.laplace.fitted.vals_patient_sd0.1 <- tcrossprod(fit.ebcd.laplace_patient_sd0.1$EL)
 ```
 
 This is a plot of $LL^{T}$.

@@ -229,31 +229,36 @@ fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
 ```
 
 ### Checking Progression of EBCD Solution
-To investigate the progression of the EBCD solution, I compute the EBCD solution after only 5000 backfit iterations (compared to 10000 backfit iterations).
+To investigate the progression of the EBCD solution, I compute the EBCD solution after only 2000 backfit iterations (compared to 10000 backfit iterations).
 
 ```{r}
 set.seed(6287)
-fit.ebcd1_niter5000 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)
+fit.ebcd1_niter2000 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 2000, ebnm_fn = ebnm::ebnm_point_laplace)
 ```
 
 This is a heatmap of the estimate of $L$, $\hat{L}$:
 ```{r}
-max_abs_val <- max(max(fit.ebcd1_niter5000$EL), abs(min(fit.ebcd1_niter5000$EL)))
-plot_heatmap(fit.ebcd1_niter5000$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+max_abs_val <- max(max(fit.ebcd1_niter2000$EL), abs(min(fit.ebcd1_niter2000$EL)))
+plot_heatmap(fit.ebcd1_niter2000$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd1_niter2000$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals1_niter5000 <- fit.ebcd1_niter5000$EL %*% t(fit.ebcd1_niter5000$EL)
+ebcd.laplace.fitted.vals1_niter2000 <- fit.ebcd1_niter2000$EL %*% t(fit.ebcd1_niter2000$EL)
 ```
 
 This is the L2 norm of the difference between the observed values and the fitted values.
 ```{r}
-sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2)
+sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter2000)^2)
 ```
 
 This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
 ```{r}
-sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter5000)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1_niter5000))^2)
+sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter2000)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1_niter2000))^2)
 ```
 
 ### Observations

@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-05-29
+<strong>Last updated:</strong> 2024-06-19
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreec0db70944881da03bcb1f2c1ae0b349ac9e727b9targetblankc0db709a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree79ded73895399749ad78c45a49b1627780971681targetblank79ded73a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/c0db70944881da03bcb1f2c1ae0b349ac9e727b9" target="_blank">c0db709</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/79ded73895399749ad78c45a49b1627780971681" target="_blank">79ded73</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreec0db70944881da03bcb1f2c1ae0b349ac9e727b9targetblankc0db709a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree79ded73895399749ad78c45a49b1627780971681targetblank79ded73a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/c0db70944881da03bcb1f2c1ae0b349ac9e727b9" target="_blank">c0db709</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/79ded73895399749ad78c45a49b1627780971681" target="_blank">79ded73</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -559,8 +559,9 @@ Ignored files:
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
 
-Untracked files:
-    Untracked:  analysis/ridgeless-regression-comparison.Rmd
+Unstaged changes:
+    Modified:   analysis/EBCD-divergence-factorization-examples.Rmd
+    Modified:   analysis/EBCD-divergence-factorization.Rmd
 
 </code></pre>
 <p>
@@ -607,6 +608,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/79ded73895399749ad78c45a49b1627780971681/analysis/EBCD-laplace-splitting.Rmd" target="_blank">79ded73</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-19
+</td>
+<td>
+Made edits to code
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/EBCD-laplace-splitting.html" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -712,7 +747,8 @@ class="section level2">
   FF[1:600,1] &lt;- rnorm(600, mean = 0, sd = 1) 
   FF[601:1200,2] &lt;- rnorm(600, mean = 0, sd = 1) 
   FF[1201:1800,3] &lt;- rnorm(600, mean = 0, sd = 1) 
-  FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  FF &lt;- scale(FF,center = FALSE,scale = TRUE)/sqrt(nrow(FF) - 1)
+  #FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
   ##FF &lt;- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
   
   ### generate normal noise
@@ -730,17 +766,165 @@ data_norm &lt;- generate_normal_data(0.01)</code></pre>
 heatmap of the loadings matrix.</p>
 <pre class="r"><code>plot_heatmap(data_norm$LL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-7-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(data_norm$FF, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-8-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>.
 This is to check that it is orthogonal.</p>
-<pre class="r"><code>plot_heatmap(t(data_norm$FF) %*% data_norm$FF)</code></pre>
+<pre class="r"><code>plot_heatmap(crossprod(data_norm$FF))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>observed.vals &lt;- data_norm$Y %*% t(data_norm$Y)/ ncol(data_norm$Y)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-9-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>observed.vals &lt;- tcrossprod(data_norm$Y)/ ncol(data_norm$Y)</code></pre>
 <p>This is a heatmap of the Gram matrix.</p>
 <pre class="r"><code>plot_heatmap(observed.vals)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-11-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="ebcd-with-point-laplace-prior" class="section level3">
 <h3>EBCD with Point-Laplace Prior</h3>
@@ -750,10 +934,84 @@ fit.ebcd.laplace &lt;- ebcd(X = t(data_norm$Y), Kmax = 2)</code></pre>
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd.laplace$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ebcd.laplace.fitted.vals &lt;- fit.ebcd.laplace$EL %*% t(fit.ebcd.laplace$EL)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-13-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ebcd.laplace.fitted.vals &lt;- tcrossprod(fit.ebcd.laplace$EL)</code></pre>
 <p>This is a plot of <span class="math inline">\(LL^{T}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-15-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference between the observed values and
 the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.laplace.fitted.vals)^2)</code></pre>
@@ -770,13 +1028,124 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals))), diag_idx)
 samp.vals &lt;- sample(off_diag_idx, size = 100000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.laplace.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-19-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.laplace.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-20-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.laplace$vec.obj)), y = fit.ebcd.laplace$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-21-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd.laplace$vec.obj)</code></pre>
@@ -820,7 +1189,8 @@ class="section level2">
   FF[1201:1500, 5] &lt;- rnorm(300, mean = 0, sd = 1) 
   FF[1501:1800,6] &lt;- rnorm(300, mean = 0, sd = 1) 
   FF[1801:2100, 7] &lt;- rnorm(300, mean = 0, sd = 1) 
-  FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  FF &lt;- scale(FF,center = FALSE,scale = TRUE)/sqrt(nrow(FF) - 1)
+  #FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
   ##FF &lt;- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
   
   ### generate normal noise
@@ -836,11 +1206,122 @@ data_norm_patient &lt;- generate_normal_data_patient(0.01)</code></pre>
 <pre><code>[1]  800 2100</code></pre>
 <pre class="r"><code>plot_heatmap(data_norm_patient$LL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
+Past versions of unnamed-chunk-27-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-27-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-27-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>plot_heatmap(crossprod(data_norm_patient$FF))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>observed.vals_patient &lt;- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-28-1">
+Past versions of unnamed-chunk-28-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-28-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-28-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>observed.vals_patient &lt;- tcrossprod(data_norm_patient$Y)/ ncol(data_norm_patient$Y)</code></pre>
 <pre class="r"><code>plot_heatmap(observed.vals_patient)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-30-1">
+Past versions of unnamed-chunk-30-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-30-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-30-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="ebcd-with-point-laplace-prior-1" class="section level3">
 <h3>EBCD with Point-Laplace Prior</h3>
@@ -850,10 +1331,84 @@ fit.ebcd.laplace_patient &lt;- ebcd(X = t(data_norm_patient$Y), Kmax = 4, maxite
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd.laplace_patient$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ebcd.laplace.fitted.vals_patient &lt;- fit.ebcd.laplace_patient$EL %*% t(fit.ebcd.laplace_patient$EL)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-32-1">
+Past versions of unnamed-chunk-32-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-32-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-32-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ebcd.laplace.fitted.vals_patient &lt;- tcrossprod(fit.ebcd.laplace_patient$EL)</code></pre>
 <p>This is a plot of <span class="math inline">\(LL^{T}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals_patient)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-34-1">
+Past versions of unnamed-chunk-34-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-34-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-34-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference between the observed values and
 the fitted values.</p>
 <pre class="r"><code>sum((observed.vals_patient - ebcd.laplace.fitted.vals_patient)^2)</code></pre>
@@ -870,13 +1425,124 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals_patient))), diag_idx)
 samp.vals &lt;- sample(off_diag_idx, size = 100000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient))[samp.vals], y = c(ebcd.laplace.fitted.vals_patient)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-38-1">
+Past versions of unnamed-chunk-38-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-38-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-38-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient)), y = diag(ebcd.laplace.fitted.vals_patient))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-39-1">
+Past versions of unnamed-chunk-39-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-39-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-39-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd.laplace_patient$vec.obj)), y = fit.ebcd.laplace_patient$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-40-1">
+Past versions of unnamed-chunk-40-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-40-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-40-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd.laplace_patient$vec.obj)</code></pre>
@@ -972,7 +1638,8 @@ class="section level1">
   FF[1:600,1] &lt;- rnorm(600, mean = 0, sd = 1) 
   FF[601:1200,2] &lt;- rnorm(600, mean = 0, sd = 1) 
   FF[1201:1800,3] &lt;- rnorm(600, mean = 0, sd = 1) 
-  FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  FF &lt;- scale(FF,center = FALSE,scale = TRUE)/sqrt(nrow(FF) - 1)
+  #FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
   ##FF &lt;- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
   
   ### generate normal noise
@@ -990,17 +1657,165 @@ data_norm &lt;- generate_normal_data(0.01)</code></pre>
 heatmap of the loadings matrix.</p>
 <pre class="r"><code>plot_heatmap(data_norm$LL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-47-1">
+Past versions of unnamed-chunk-47-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-47-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-47-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(data_norm$FF, colors_range = c(&#39;blue&#39;,&#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-48-1">
+Past versions of unnamed-chunk-48-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-48-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-48-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>.
 This is to check that it is orthogonal.</p>
-<pre class="r"><code>plot_heatmap(t(data_norm$FF) %*% data_norm$FF)</code></pre>
+<pre class="r"><code>plot_heatmap(crossprod(data_norm$FF))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>observed.vals &lt;- data_norm$Y %*% t(data_norm$Y)/ ncol(data_norm$Y)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-49-1">
+Past versions of unnamed-chunk-49-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-49-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-49-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>observed.vals &lt;- tcrossprod(data_norm$Y)/ ncol(data_norm$Y)</code></pre>
 <p>This is a heatmap of the Gram matrix.</p>
 <pre class="r"><code>plot_heatmap(observed.vals)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-51-1">
+Past versions of unnamed-chunk-51-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-51-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-51-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="hypothesis" class="section level2">
 <h2>Hypothesis</h2>
@@ -1018,18 +1833,166 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-53-1">
+Past versions of unnamed-chunk-53-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-53-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-53-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>plot_heatmap(fit.ebcd$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-54-1">
+Past versions of unnamed-chunk-54-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-54-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-54-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>sqrt(apply(fit.ebcd$EL, 2, function(x){return(sum(x^2))}))</code></pre>
 <pre><code>[1] 0.01421584 0.47161592 0.66666389 0.47116433</code></pre>
 <pre class="r"><code>transformed_Z &lt;- transform_ebcd_Z(t(data_norm$Y), fit.ebcd)</code></pre>
 <p>This is a plot of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(transformed_Z, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ebcd.fitted.vals &lt;- fit.ebcd$EL %*% t(fit.ebcd$EL)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-57-1">
+Past versions of unnamed-chunk-57-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-57-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-57-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ebcd.fitted.vals &lt;- tcrossprod(fit.ebcd$EL)</code></pre>
 <p>This is a plot of <span class="math inline">\(LL^{T}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(ebcd.fitted.vals)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-59-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-59-1">
+Past versions of unnamed-chunk-59-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-59-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-59-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference between the observed values and
 the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.fitted.vals)^2)</code></pre>
@@ -1046,13 +2009,124 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals))), diag_idx)
 samp.vals &lt;- sample(off_diag_idx, size = 100000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals))[samp.vals], y = c(ebcd.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-63-1">
+Past versions of unnamed-chunk-63-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-63-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-63-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals)), y = diag(ebcd.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-64-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-64-1">
+Past versions of unnamed-chunk-64-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-64-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-64-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd$vec.obj)), y = fit.ebcd$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-65-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-65-1">
+Past versions of unnamed-chunk-65-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-65-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-65-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd$vec.obj)</code></pre>
@@ -1094,7 +2168,8 @@ class="section level1">
   FF[1201:1500, 5] &lt;- rnorm(300, mean = 0, sd = 1) 
   FF[1501:1800,6] &lt;- rnorm(300, mean = 0, sd = 1) 
   FF[1801:2100, 7] &lt;- rnorm(300, mean = 0, sd = 1) 
-  FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
+  FF &lt;- scale(FF,center = FALSE,scale = TRUE)/sqrt(nrow(FF) - 1)
+  #FF &lt;- t(t(FF)/apply(FF,2, function(x){return(sqrt(sum(x^2)))}))
   ##FF &lt;- matrix(rnorm(3 * 2100, sd = 1), ncol = 3)
   
   ### generate normal noise
@@ -1110,11 +2185,122 @@ data_norm_patient &lt;- generate_normal_data_patient(0.01)</code></pre>
 <pre><code>[1]  800 2100</code></pre>
 <pre class="r"><code>plot_heatmap(data_norm_patient$LL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-71-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-71-1">
+Past versions of unnamed-chunk-71-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-71-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-71-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>plot_heatmap(crossprod(data_norm_patient$FF))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-72-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>observed.vals_patient &lt;- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-72-1">
+Past versions of unnamed-chunk-72-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-72-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-72-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>observed.vals_patient &lt;- tcrossprod(data_norm_patient$Y)/ ncol(data_norm_patient$Y)</code></pre>
 <pre class="r"><code>plot_heatmap(observed.vals_patient)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-74-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-74-1">
+Past versions of unnamed-chunk-74-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-74-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-74-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="hypothesis-1" class="section level2">
 <h2>Hypothesis</h2>
@@ -1135,21 +2321,206 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd_patient$EL)/apply(fit.ebcd_patient$EL,2, max)))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-76-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-76-1">
+Past versions of unnamed-chunk-76-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-76-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-76-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the unscaled estimate of <span
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd_patient$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-77-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-77-1">
+Past versions of unnamed-chunk-77-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-77-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-77-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the factor matrix.</p>
 <pre class="r"><code>transformed_Z_patient &lt;- transform_ebcd_Z(t(data_norm_patient$Y), fit.ebcd_patient)</code></pre>
 <pre class="r"><code>plot_heatmap(transformed_Z_patient, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-79-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ebcd.fitted.vals_patient &lt;- fit.ebcd_patient$EL %*% t(fit.ebcd_patient$EL)</code></pre>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-79-1">
+Past versions of unnamed-chunk-79-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-79-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-79-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ebcd.fitted.vals_patient &lt;- tcrossprod(fit.ebcd_patient$EL)</code></pre>
 <p>This is a plot of <span class="math inline">\(LL^{T}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(ebcd.fitted.vals_patient)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-81-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-81-1">
+Past versions of unnamed-chunk-81-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-81-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-81-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the Gram matrix.</p>
 <pre class="r"><code>plot_heatmap(observed.vals_patient)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-82-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-82-1">
+Past versions of unnamed-chunk-82-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-82-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-82-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>sum((observed.vals_patient - ebcd.fitted.vals_patient)^2)</code></pre>
 <pre><code>[1] 7.025129e-05</code></pre>
 <pre class="r"><code>sum((observed.vals_patient - ebcd.fitted.vals_patient)^2) - sum((diag(observed.vals_patient) - diag(ebcd.fitted.vals_patient))^2)</code></pre>
@@ -1162,13 +2533,124 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals_patient))), diag_idx)
 samp.vals &lt;- sample(off_diag_idx, size = 100000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient))[samp.vals], y = c(ebcd.fitted.vals_patient)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-86-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-86-1">
+Past versions of unnamed-chunk-86-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-86-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-86-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient)), y = diag(ebcd.fitted.vals_patient))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-87-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-87-1">
+Past versions of unnamed-chunk-87-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-87-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-87-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_patient$vec.obj)), y = fit.ebcd_patient$vec.obj)) + geom_line()</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-88-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-88-1">
+Past versions of unnamed-chunk-88-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-88-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-88-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd_patient$vec.obj)</code></pre>
@@ -1222,6 +2704,43 @@ non-sparse, it is difficult to get to a sparse solution.</p>
 <p>This is the initialization used for EBCD.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd_patient.init$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-91-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-91-1">
+Past versions of unnamed-chunk-91-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-91-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-91-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the EBCD estimate after backfitting for 1 iteration.</p>
 <pre class="r"><code>fit.ebcd_patient_iter1 &lt;- ebcd_backfit(fit.ebcd_patient.init, maxiter = 1)</code></pre>
 <p>This is a plot of the scaled estimate of <span
@@ -1230,10 +2749,84 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd_patient_iter1$EL)/apply(fit.ebcd_patient_iter1$EL,2, max)))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-93-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-93-1">
+Past versions of unnamed-chunk-93-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-93-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-93-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the unscaled estimate of <span
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd_patient_iter1$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-94-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-94-1">
+Past versions of unnamed-chunk-94-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-94-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-94-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the EBCD estimate after backfitting for 2 iterations.</p>
 <pre class="r"><code>fit.ebcd_patient_iter2 &lt;- ebcd_backfit(fit.ebcd_patient.init, maxiter = 2)</code></pre>
 <p>This is a plot of the scaled estimate of <span
@@ -1242,10 +2835,84 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd_patient_iter2$EL)/apply(fit.ebcd_patient_iter2$EL,2, max)))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-96-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-96-1">
+Past versions of unnamed-chunk-96-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-96-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-96-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the unscaled estimate of <span
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd_patient_iter2$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-97-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-97-1">
+Past versions of unnamed-chunk-97-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-97-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-97-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the EBCD estimate after backfitting for 10 iterations.</p>
 <pre class="r"><code>fit.ebcd_patient_iter10 &lt;- ebcd_backfit(fit.ebcd_patient.init, maxiter = 10)</code></pre>
 <p>This is a plot of the scaled estimate of <span
@@ -1254,10 +2921,84 @@ infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd_patient_iter10$EL)/apply(fit.ebcd_patient_iter10$EL,2, max)))</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-99-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-99-1">
+Past versions of unnamed-chunk-99-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-99-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-99-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the unscaled estimate of <span
 class="math inline">\(L\)</span>.</p>
 <pre class="r"><code>plot_heatmap(fit.ebcd_patient_iter10$EL)</code></pre>
 <p><img src="figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-100-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-100-1">
+Past versions of unnamed-chunk-100-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-100-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/f2315f0981d89f2a64892e11686fd3bfec9ab70b/docs/figure/EBCD-laplace-splitting.Rmd/unnamed-chunk-100-1.png" target="_blank">f2315f0</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-05-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div id="observations-4" class="section level3">
 <h3>Observations</h3>
 <p>Looking at the initialization, the subtype effects do not have
@@ -1285,7 +3026,7 @@ LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlap
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/Chicago
+time zone: America/New_York
 tzcode source: internal
 
 attached base packages:

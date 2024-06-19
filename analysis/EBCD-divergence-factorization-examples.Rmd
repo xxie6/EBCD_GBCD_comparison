@@ -264,9 +264,9 @@ sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter2000)^2) - sum((diag(observ
 ### Observations
 The EBCD solution does not resemble the divergence factorization that we are looking for. Factor 4 is more sparse than what we would expect in the divergence factorization. Furthermore, the baseline factor does not have a constant loading across all the samples -- there is a block of samples with a lower loading value. In Factor 2, it appears that for the same block of samples, the corresponding loading values are being shrunk towards zero. The EBCD solution still provides a good fit to the data. 
 
-Looking at the progression of the objective function, we see that there is a jump towards the end. I checked the EBCD solution after 5000 backfit iterations, and this solution looks more like the divergence factorization we desire. This means that EBCD is able to find another solution that obtains a higher objective function value.
+Looking at the progression of the objective function, we see that there is a jump towards the end. I checked the EBCD solution after 2000 backfit iterations, and this solution looks more like the divergence factorization we desire. This means that EBCD is able to find another solution that obtains a higher objective function value.
 
-Another interesting observation is the EBCD solution after 5000 backfit iterations has a better fit to the data than the EBCD solution after 10000 backfit iterations.
+Another interesting observation is the EBCD solution after 2000 backfit iterations has a better fit to the data than the EBCD solution after 10000 backfit iterations.
 
 Given that EBCD finds other solutions that achieve good fits and obtain higher objective function values, I am unsure if the problem is just difficult or if the objective function is not a good one.
 

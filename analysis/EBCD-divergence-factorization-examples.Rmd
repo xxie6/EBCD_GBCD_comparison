@@ -48,7 +48,7 @@ plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks 
 ```
 
 ```{r}
-source("~/Documents/PhD 3/Research/EBCD/ebcd_functions.R")
+source("code/ebcd_functions.R")
 ```
 
 ```{r}

@@ -138,11 +138,11 @@ plot_heatmap(sim_data_4pop$LL)
 
 This is a heatmap of $F^{T}F$:
 ```{r}
-plot_heatmap(t(sim_data_4pop$FF) %*% sim_data_4pop$FF)
+plot_heatmap(crossprod(sim_data_4pop$FF))
 ```
 
 ```{r}
-observed.vals1 <- sim_data_4pop$Y %*% t(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
+observed.vals1 <- tcrossprod(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
 ```
 
 This is a heatmap of the Gram matrix, $XX^{T}/p$:
@@ -156,7 +156,11 @@ plot_heatmap(observed.vals1)
 I hypothesize that EBCD will be able to recover the divergence factorization. However, in my experience, EBCD will sometimes jump to sparser solutions that attain a higher objective function value. 
 
 ### Analysis
-```{r}
+```{r, include = FALSE}
+fit.ebcd1 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/ebcd_balanced_tree.rds')
+```
+
+```{r, eval = FALSE}
 set.seed(6287)
 fit.ebcd1 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
 ```
@@ -178,7 +182,7 @@ plot_loadings(fit.ebcd1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D',
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals1 <- fit.ebcd1$EL %*% t(fit.ebcd1$EL)
+ebcd.laplace.fitted.vals1 <- tcrossprod(fit.ebcd1$EL)
 ```
 
 This is a plot of $\hat{L}\hat{L}^{T}$.
@@ -231,7 +235,11 @@ fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
 ### Checking Progression of EBCD Solution
 To investigate the progression of the EBCD solution, I compute the EBCD solution after only 2000 backfit iterations (compared to 10000 backfit iterations).
 
-```{r}
+```{r, include = FALSE}
+fit.ebcd1_niter2000 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/ebcd_niter2000_balanced_tree.rds')
+```
+
+```{r, eval = FALSE}
 set.seed(6287)
 fit.ebcd1_niter2000 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 2000, ebnm_fn = ebnm::ebnm_point_laplace)
 ```
@@ -248,7 +256,7 @@ plot_loadings(fit.ebcd1_niter2000$EL, c(rep('A', 40), rep('B', 40), rep('C', 40)
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals1_niter2000 <- fit.ebcd1_niter2000$EL %*% t(fit.ebcd1_niter2000$EL)
+ebcd.laplace.fitted.vals1_niter2000 <- tcrossprod(fit.ebcd1_niter2000$EL)
 ```
 
 This is the L2 norm of the difference between the observed values and the fitted values.
@@ -260,6 +268,11 @@ This is the L2 norm of the difference between the off-diagonal entries of the ob
 ```{r}
 sum((observed.vals1 - ebcd.laplace.fitted.vals1_niter2000)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1_niter2000))^2)
 ```
+
+This is a video of the progression of the solution. To create this video, I plotted a heatmap of the loadings estimate after every 500 backfit iterations. Purple corresponds to zero.
+<video width="500" height="420" controls>
+  <source src="assets/ebcd_plots_balanced_tree.mp4" type="video/mp4">
+</video>
 
 ### Observations
 The EBCD solution does not resemble the divergence factorization that we are looking for. Factor 4 is more sparse than what we would expect in the divergence factorization. Furthermore, the baseline factor does not have a constant loading across all the samples -- there is a block of samples with a lower loading value. In Factor 2, it appears that for the same block of samples, the corresponding loading values are being shrunk towards zero. The EBCD solution still provides a good fit to the data. 
@@ -300,7 +313,7 @@ plot_loadings(flash_cov_fit1$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), r
 ```
 
 ```{r}
-flash.laplace.fitted.vals1 <- flash_cov_fit1$L_pm %*% t(flash_cov_fit1$L_pm)
+flash.laplace.fitted.vals1 <- tcrossprod(flash_cov_fit1$L_pm)
 ```
 
 This is a plot of $\hat{L}\hat{L}^{T}$.
@@ -380,7 +393,7 @@ plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)
 ```
 
 ```{r}
-observed.vals2 <- sim_data2_4pop$Y %*% t(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)
+observed.vals2 <- tcrossprod(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)
 ```
 
 This is a heatmap of the Gram matrix, $XX^{T}/p$:
@@ -394,7 +407,11 @@ plot_heatmap(observed.vals2)
 I think EBCD should be able to find the divergence factorization. However, I also think that the imbalance in drift variances might lead to identifiability issues.
 
 ### Analysis
-```{r}
+```{r, include = FALSE}
+fit.ebcd2 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/ebcd_unbalanced_tree.rds')
+```
+
+```{r, eval = FALSE}
 set.seed(6287)
 fit.ebcd2 <- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 50000, ebnm_fn = ebnm::ebnm_point_laplace)
 ```
@@ -416,7 +433,7 @@ plot_loadings(fit.ebcd2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D',
 ```
 
 ```{r}
-ebcd.laplace.fitted.vals2 <- fit.ebcd2$EL %*% t(fit.ebcd2$EL)
+ebcd.laplace.fitted.vals2 <- tcrossprod(fit.ebcd2$EL)
 ```
 
 This is a plot of $\hat{L} \hat{L}^{T}$.
@@ -469,7 +486,11 @@ fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]
 ### Checking Progression of EBCD Solution
 To investigate the progression of the EBCD solution, I compute the EBCD solution after 5000 backfit iterations (compared to 50000 backfit iterations).
 
-```{r}
+```{r, include = FALSE}
+fit.ebcd2_niter5000 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/ebcd_niter5000_unbalanced_tree.rds')
+```
+
+```{r, eval = FALSE}
 set.seed(6287)
 fit.ebcd2_niter5000 <- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)
 ```
@@ -513,7 +534,7 @@ plot_loadings(flash_cov_fit2$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), r
 ```
 
 ```{r}
-flash.laplace.fitted.vals2 <- flash_cov_fit2$L_pm %*% t(flash_cov_fit2$L_pm)
+flash.laplace.fitted.vals2 <- tcrossprod(flash_cov_fit2$L_pm)
 ```
 
 This is a plot of $\hat{L} \hat{L}^{T}$.

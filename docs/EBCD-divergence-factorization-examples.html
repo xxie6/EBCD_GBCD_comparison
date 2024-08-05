@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-06-20
+<strong>Last updated:</strong> 2024-08-05
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreef348d157708136d1fe301b55f97e6bff3830f1c1targetblankf348d15a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree820e6c233b1f14c2d92392cbdc07eb79e462077btargetblank820e6c2a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/f348d157708136d1fe301b55f97e6bff3830f1c1" target="_blank">f348d15</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/820e6c233b1f14c2d92392cbdc07eb79e462077b" target="_blank">820e6c2</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreef348d157708136d1fe301b55f97e6bff3830f1c1targetblankf348d15a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree820e6c233b1f14c2d92392cbdc07eb79e462077btargetblank820e6c2a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/f348d157708136d1fe301b55f97e6bff3830f1c1" target="_blank">f348d15</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/820e6c233b1f14c2d92392cbdc07eb79e462077b" target="_blank">820e6c2</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -558,6 +558,9 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
+
+Untracked files:
+    Untracked:  analysis/driftr-comparison.Rmd
 
 </code></pre>
 <p>
@@ -604,6 +607,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/820e6c233b1f14c2d92392cbdc07eb79e462077b/analysis/EBCD-divergence-factorization-examples.Rmd" target="_blank">820e6c2</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-08-05
+</td>
+<td>
+Add EBMF-Cov with EBCD initialization
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/6d70d635efa71696eca735e4d6c5411ef9d5de3f/docs/EBCD-divergence-factorization-examples.html" target="_blank">6d70d63</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1536,7 +1573,7 @@ EBMF-Cov with point-Laplace prior. (Note that this is one of the steps
 in GBCD.)</p>
 <div id="hypothesis-1" class="section level3">
 <h3>Hypothesis</h3>
-<p>I hypothesize the flashier will be able to find the divergence
+<p>I hypothesize flashier will be able to find the divergence
 factorization.</p>
 </div>
 <div id="analysis-1" class="section level3">
@@ -1891,34 +1928,95 @@ the data than the solution from EBCD.</p>
 EBCD did not.</p>
 </div>
 </div>
+<div id="ebmf-cov-with-ebcd-initialization" class="section level2">
+<h2>EBMF-Cov with EBCD initialization</h2>
+<p>In comparing these two methods, we are interested in ascertaining
+whether differences in results are due to differences in the objective
+functions or differences in the convergence properties. In the context
+of this example, we want to know if EBCD gives a different result than
+EBMF-Cov because of a difference between their objective functions or
+because one of them is getting stuck in a local optima. One observation
+from the EBCD result is during the backfit, it does find something
+similar to the divergence factorization, but then moves away from this
+solution. We want to test the solution from EBMF-Cov when initialized
+with the EBCD solution. If the result is similar to the divergence
+factorization, then that suggests that the objective functions are
+different and finding different types of solutions. If the result is
+similar to the EBCD solution, that may suggest that EBCD is, in fact,
+finding a “better” solution.</p>
+<div id="analysis-2" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>flash_cov_ebcd_init &lt;- flash_init(data = observed.vals1, var_type = 0) %&gt;%
+  flash_factors_init(init = list(fit.ebcd1$EL, fit.ebcd1$EL), ebnm_fn = ebnm::ebnm_point_laplace) %&gt;%
+  flash_backfit()</code></pre>
+<pre><code>Backfitting 4 factors (tolerance: 3.81e-04)...
+  Difference between iterations is within 1.0e+02...
+  Difference between iterations is within 1.0e+01...
+  Difference between iterations is within 1.0e+00...
+  Difference between iterations is within 1.0e-01...
+  Difference between iterations is within 1.0e-02...
+  Difference between iterations is within 1.0e-03...
+Wrapping up...
+Done.</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(flash_cov_ebcd_init$L_pm), abs(min(flash_cov_ebcd_init$L_pm)))
+plot_heatmap(flash_cov_ebcd_init$L_pm, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-46-1">
+Past versions of unnamed-chunk-46-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-46-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-46-1.png" target="_blank">8bfb880</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-19
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-46-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="example-2-unbalanced-tree" class="section level1">
-<h1>Example 2: Unbalanced Tree</h1>
-<p>In Example 2, we will simulate data from an unbalanced tree. We will
-use the following settings – <span class="math inline">\(n_A = n_B = n_C
-= n_D = 40\)</span>, <span class="math inline">\(\sigma_{ABC}^2 = 10; \
-\sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2,
-\sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]\)</span>, <span
-class="math inline">\(p=10000\)</span>, and <span
-class="math inline">\(\sigma_{\epsilon}^2 = 1\)</span>.</p>
-<div id="data-generation-1" class="section level2">
-<h2>Data Generation</h2>
-<pre class="r"><code>#pop_size &lt;- round(runif(4, min = 20, max = 80))
-set.seed(2759)
-pop_size &lt;- rep(40, 4)
-branch_sd &lt;- c(10, runif(6, min = 1, max = 6))
-pop_size</code></pre>
-<pre><code>[1] 40 40 40 40</code></pre>
-<pre class="r"><code>branch_sd</code></pre>
-<pre><code>[1] 10.000000  1.909695  2.832827  4.215251  5.960734  2.436259  2.371553</code></pre>
-<pre class="r"><code>sim_data2_4pop &lt;- sim_4pops(pop_sizes = pop_size,
-                           branch_sds = branch_sd,
-                           indiv_sd = 1,
-                           n_genes = 10000,
-                           constrain_F = TRUE)</code></pre>
-<p>This is a heatmap of the loadings matrix, <span
-class="math inline">\(L\)</span>:</p>
-<pre class="r"><code>plot_heatmap(sim_data2_4pop$LL)</code></pre>
+</div>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(flash_cov_ebcd_init$L_pm,0),pmax(-1*flash_cov_ebcd_init$L_pm,0) ))</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-47-1">
@@ -1979,8 +2077,9 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
-<pre class="r"><code>plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)</code></pre>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(flash_cov_ebcd_init$L_pm, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-48-1">
@@ -2030,10 +2129,10 @@ Annie Xie
 </table>
 </div>
 </div>
-<pre class="r"><code>observed.vals2 &lt;- tcrossprod(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)</code></pre>
-<p>This is a heatmap of the Gram matrix, <span
-class="math inline">\(XX^{T}/p\)</span>:</p>
-<pre class="r"><code>plot_heatmap(observed.vals2)</code></pre>
+<pre class="r"><code>flash.ebcd.init.fitted.vals1 &lt;- tcrossprod(flash_cov_ebcd_init$L_pm)</code></pre>
+<p>This is a plot of <span
+class="math inline">\(\hat{L}\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(flash.ebcd.init.fitted.vals1)</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-50-1">
@@ -2094,89 +2193,21 @@ Annie Xie
 </table>
 </div>
 </div>
-</div>
-<div id="ebcd-with-point-laplace-prior-1" class="section level2">
-<h2>EBCD with point-Laplace prior</h2>
-<div id="hypothesis-2" class="section level3">
-<h3>Hypothesis</h3>
-<p>I think EBCD should be able to find the divergence factorization.
-However, I also think that the imbalance in drift variances might lead
-to identifiability issues.</p>
-</div>
-<div id="analysis-2" class="section level3">
-<h3>Analysis</h3>
-<pre class="r"><code>set.seed(6287)
-fit.ebcd2 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 50000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
-<p>This is a heatmap of the estimate of <span
-class="math inline">\(L\)</span>, <span
-class="math inline">\(\hat{L}\)</span>:</p>
-<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2$EL), abs(min(fit.ebcd2$EL)))
-plot_heatmap(fit.ebcd2$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-53-1">
-Past versions of unnamed-chunk-53-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-53-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-53-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-53-1.png" target="_blank">1b95f72</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-18
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-53-1.png" target="_blank">6b8c4ed</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-17
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a heatmap of the positive and (absolute value of) the
-negative parts of <span class="math inline">\(\hat{L}\)</span> separated
-out and combined into a single matrix. This is the initialization used
-in GBCD for the generalized binary model.</p>
-<pre class="r"><code>plot_heatmap(cbind(pmax(fit.ebcd2$EL,0),pmax(-1*fit.ebcd2$EL,0) ))</code></pre>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2)</code></pre>
+<pre><code>[1] 180.5391</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.ebcd.init.fitted.vals1))^2)</code></pre>
+<pre><code>[1] 31.85186</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.ebcd.init.fitted.vals1)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-54-1">
@@ -2226,9 +2257,9 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a scatter plot of the entries of <span
-class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
-<pre class="r"><code>plot_loadings(fit.ebcd2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(flash.ebcd.init.fitted.vals1))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-55-1">
@@ -2267,17 +2298,56 @@ Annie Xie
 </table>
 </div>
 </div>
-<pre class="r"><code>ebcd.laplace.fitted.vals2 &lt;- tcrossprod(fit.ebcd2$EL)</code></pre>
-<p>This is a plot of <span class="math inline">\(\hat{L}
-\hat{L}^{T}\)</span>.</p>
-<pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals2)</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>flash_cov_ebcd_init$elbo</code></pre>
+<pre><code>[1] 19418.44</code></pre>
+</div>
+<div id="observations-2" class="section level3">
+<h3>Observations</h3>
+<p>The result of EBMF-Cov with the EBCD initialization does not look
+like the divergence factorization. It looks very similar to the EBCD
+output used to initialize EBMF-Cov. In addition, the objective function
+value attained is higher than that attained by the divergence
+factorization. This suggests that EBCD is finding a “better” solution
+for the point-Laplace prior, and perhaps EBMF-Cov with the greedy
+initialization is getting stuck in local optima.</p>
+</div>
+</div>
+</div>
+<div id="example-2-unbalanced-tree" class="section level1">
+<h1>Example 2: Unbalanced Tree</h1>
+<p>In Example 2, we will simulate data from an unbalanced tree. We will
+use the following settings – <span class="math inline">\(n_A = n_B = n_C
+= n_D = 40\)</span>, <span class="math inline">\(\sigma_{ABC}^2 = 10; \
+\sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2,
+\sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]\)</span>, <span
+class="math inline">\(p=10000\)</span>, and <span
+class="math inline">\(\sigma_{\epsilon}^2 = 1\)</span>.</p>
+<div id="data-generation-1" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>#pop_size &lt;- round(runif(4, min = 20, max = 80))
+set.seed(2759)
+pop_size &lt;- rep(40, 4)
+branch_sd &lt;- c(10, runif(6, min = 1, max = 6))
+pop_size</code></pre>
+<pre><code>[1] 40 40 40 40</code></pre>
+<pre class="r"><code>branch_sd</code></pre>
+<pre><code>[1] 10.000000  1.909695  2.832827  4.215251  5.960734  2.436259  2.371553</code></pre>
+<pre class="r"><code>sim_data2_4pop &lt;- sim_4pops(pop_sizes = pop_size,
+                           branch_sds = branch_sd,
+                           indiv_sd = 1,
+                           n_genes = 10000,
+                           constrain_F = TRUE)</code></pre>
+<p>This is a heatmap of the loadings matrix, <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(sim_data2_4pop$LL)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-59-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-57-1">
-Past versions of unnamed-chunk-57-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-59-1">
+Past versions of unnamed-chunk-59-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-57-1" class="collapse">
+<div id="fig-unnamed-chunk-59-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2296,7 +2366,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-57-1.png" target="_blank">8bfb880</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-59-1.png" target="_blank">8bfb880</a>
 </td>
 <td>
 Annie Xie
@@ -2307,7 +2377,7 @@ Annie Xie
 </tr>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-57-1.png" target="_blank">1b95f72</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-59-1.png" target="_blank">1b95f72</a>
 </td>
 <td>
 Annie Xie
@@ -2318,7 +2388,7 @@ Annie Xie
 </tr>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-57-1.png" target="_blank">6b8c4ed</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-59-1.png" target="_blank">6b8c4ed</a>
 </td>
 <td>
 Annie Xie
@@ -2331,28 +2401,15 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is the L2 norm of the difference between the observed values and
-the fitted values.</p>
-<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2)</code></pre>
-<pre><code>[1] 175.3998</code></pre>
-<p>This is the L2 norm of the difference between the off-diagonal
-entries of the observed values and fitted values.</p>
-<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(ebcd.laplace.fitted.vals2))^2)</code></pre>
-<pre><code>[1] 23.31126</code></pre>
-<p>This is a plot of (a subset of) the off-diagonal entries of the
-fitted values vs. observed values:</p>
-<pre class="r"><code>set.seed(3952)
-diag_idx &lt;- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
-off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
-samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-61-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
+<pre class="r"><code>plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-60-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-61-1">
-Past versions of unnamed-chunk-61-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-60-1">
+Past versions of unnamed-chunk-60-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-61-1" class="collapse">
+<div id="fig-unnamed-chunk-60-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2371,7 +2428,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-61-1.png" target="_blank">8bfb880</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-60-1.png" target="_blank">8bfb880</a>
 </td>
 <td>
 Annie Xie
@@ -2380,13 +2437,25 @@ Annie Xie
 2024-06-19
 </td>
 </tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-60-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>This is a plot of the diagonal entries of the fitted values vs. the
-diagonal entries of the observed values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd.laplace.fitted.vals2))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<pre class="r"><code>observed.vals2 &lt;- tcrossprod(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals2)</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-62-1">
@@ -2425,15 +2494,31 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a plot of the progression of the objective function</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="ebcd-with-point-laplace-prior-1" class="section level2">
+<h2>EBCD with point-Laplace prior</h2>
+<div id="hypothesis-2" class="section level3">
+<h3>Hypothesis</h3>
+<p>I think EBCD should be able to find the divergence factorization.
+However, I also think that the imbalance in drift variances might lead
+to identifiability issues.</p>
+</div>
+<div id="analysis-3" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd2 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 50000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2$EL), abs(min(fit.ebcd2$EL)))
+plot_heatmap(fit.ebcd2$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-65-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-63-1">
-Past versions of unnamed-chunk-63-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-65-1">
+Past versions of unnamed-chunk-65-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-63-1" class="collapse">
+<div id="fig-unnamed-chunk-65-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2452,18 +2537,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-63-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-63-1.png" target="_blank">1b95f72</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-65-1.png" target="_blank">1b95f72</a>
 </td>
 <td>
 Annie Xie
@@ -2474,7 +2548,7 @@ Annie Xie
 </tr>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-63-1.png" target="_blank">6b8c4ed</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-65-1.png" target="_blank">6b8c4ed</a>
 </td>
 <td>
 Annie Xie
@@ -2487,190 +2561,18 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is the number of iterations that the backfit did before the
-convergence criterion was satisfied:</p>
-<pre class="r"><code>length(fit.ebcd2$vec.obj)</code></pre>
-<pre><code>[1] 50000</code></pre>
-<p>This is the value of the objective function that was attained:</p>
-<pre class="r"><code>fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]</code></pre>
-<pre><code>[1] -2252959</code></pre>
-</div>
-<div id="checking-progression-of-ebcd-solution-1"
-class="section level3">
-<h3>Checking Progression of EBCD Solution</h3>
-<p>To investigate the progression of the EBCD solution, I compute the
-EBCD solution after 5000 backfit iterations (compared to 50000 backfit
-iterations).</p>
-<pre class="r"><code>set.seed(6287)
-fit.ebcd2_niter5000 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
-<p>This is a heatmap of the estimate of <span
-class="math inline">\(L\)</span>, <span
-class="math inline">\(\hat{L}\)</span>:</p>
-<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2_niter5000$EL), abs(min(fit.ebcd2_niter5000$EL)))
-plot_heatmap(fit.ebcd2_niter5000$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-68-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-68-1">
-Past versions of unnamed-chunk-68-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-68-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-68-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-68-1.png" target="_blank">1b95f72</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="observations-2" class="section level3">
-<h3>Observations</h3>
-<p>I think the EBCD estimate looks sparser than what we would expect
-from a divergence factorization. For example, in the loadings plot for
-<span class="math inline">\(k=2\)</span>, we see that the loadings for
-population A are zero (or are very close to zero) when ideally they
-should be positive. Furthermore, for <span
-class="math inline">\(k=3\)</span>, the loadings for population <span
-class="math inline">\(B\)</span> are zero when ideally they should be
-negative. However, for an unbalanced tree, it is difficult to know what
-the magnitudes of the loadings should be. So it is possible that these
-loadings are meant to be that small. But based off of what I read in
-Jason’s thesis, I’m leaning towards the conclusion that the estimate is
-sparser than we desire.</p>
-</div>
-</div>
-<div id="ebmf-cov-with-point-laplace-prior-1" class="section level2">
-<h2>EBMF-Cov with point-Laplace prior</h2>
-<p>Again, I want to compare the results of EBCD with the point-Laplace
-prior with the results of EBMF-Cov with the point-Laplace prior.</p>
-<div id="hypothesis-3" class="section level3">
-<h3>Hypothesis</h3>
-<p>I hypothesize that EBMF-Cov should be able to find solution that
-looks like a divergence factorization.</p>
-</div>
-<div id="analysis-3" class="section level3">
-<h3>Analysis</h3>
-<pre class="r"><code>flash_cov_fit2 &lt;- flash_init(data = observed.vals2, var_type = 0) %&gt;%
-  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %&gt;%
-  flash_backfit()</code></pre>
-<pre><code>Adding factor 1 to flash object...
-Adding factor 2 to flash object...
-Adding factor 3 to flash object...
-Adding factor 4 to flash object...
-Wrapping up...
-Done.
-Backfitting 4 factors (tolerance: 3.81e-04)...
-  Difference between iterations is within 1.0e+04...
-  Difference between iterations is within 1.0e+03...
-  Difference between iterations is within 1.0e+02...
-  Difference between iterations is within 1.0e+01...
-  Difference between iterations is within 1.0e+00...
-  Difference between iterations is within 1.0e-01...
-  Difference between iterations is within 1.0e-02...
-  Difference between iterations is within 1.0e-03...
-Wrapping up...
-Done.</code></pre>
-<p>This is a heatmap of the estimate of <span
-class="math inline">\(L\)</span>, <span
-class="math inline">\(\hat{L}\)</span>:</p>
-<pre class="r"><code>max_abs_val &lt;- max(max(flash_cov_fit2$L_pm), abs(min(flash_cov_fit2$L_pm)))
-plot_heatmap(flash_cov_fit2$L_pm, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-70-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-70-1">
-Past versions of unnamed-chunk-70-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-70-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-70-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-70-1.png" target="_blank">1b95f72</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <p>This is a heatmap of the positive and (absolute value of) the
 negative parts of <span class="math inline">\(\hat{L}\)</span> separated
 out and combined into a single matrix. This is the initialization used
 in GBCD for the generalized binary model.</p>
-<pre class="r"><code>plot_heatmap(cbind(pmax(flash_cov_fit2$L_pm,0),pmax(-1*flash_cov_fit2$L_pm,0) ))</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-71-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(fit.ebcd2$EL,0),pmax(-1*fit.ebcd2$EL,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-66-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-71-1">
-Past versions of unnamed-chunk-71-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-66-1">
+Past versions of unnamed-chunk-66-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-71-1" class="collapse">
+<div id="fig-unnamed-chunk-66-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2689,13 +2591,35 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-71-1.png" target="_blank">8bfb880</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-66-1.png" target="_blank">8bfb880</a>
 </td>
 <td>
 Annie Xie
 </td>
 <td>
 2024-06-19
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-66-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-66-1.png" target="_blank">6b8c4ed</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-17
 </td>
 </tr>
 </tbody>
@@ -2704,14 +2628,14 @@ Annie Xie
 </div>
 <p>This is a scatter plot of the entries of <span
 class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
-<pre class="r"><code>plot_loadings(flash_cov_fit2$L_pm, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-72-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_loadings(fit.ebcd2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-67-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-72-1">
-Past versions of unnamed-chunk-72-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-67-1">
+Past versions of unnamed-chunk-67-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-72-1" class="collapse">
+<div id="fig-unnamed-chunk-67-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2730,7 +2654,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-72-1.png" target="_blank">8bfb880</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-67-1.png" target="_blank">8bfb880</a>
 </td>
 <td>
 Annie Xie
@@ -2739,14 +2663,152 @@ Annie Xie
 2024-06-19
 </td>
 </tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-67-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-67-1.png" target="_blank">6b8c4ed</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-17
+</td>
+</tr>
 </tbody>
 </table>
 </div>
 </div>
-<pre class="r"><code>flash.laplace.fitted.vals2 &lt;- tcrossprod(flash_cov_fit2$L_pm)</code></pre>
+<pre class="r"><code>ebcd.laplace.fitted.vals2 &lt;- tcrossprod(fit.ebcd2$EL)</code></pre>
 <p>This is a plot of <span class="math inline">\(\hat{L}
 \hat{L}^{T}\)</span>.</p>
-<pre class="r"><code>plot_heatmap(flash.laplace.fitted.vals2)</code></pre>
+<pre class="r"><code>plot_heatmap(ebcd.laplace.fitted.vals2)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-69-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-69-1">
+Past versions of unnamed-chunk-69-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-69-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-69-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-69-1.png" target="_blank">6b8c4ed</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-17
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2)</code></pre>
+<pre><code>[1] 175.3998</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and fitted values.</p>
+<pre class="r"><code>sum((observed.vals2 - ebcd.laplace.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(ebcd.laplace.fitted.vals2))^2)</code></pre>
+<pre><code>[1] 23.31126</code></pre>
+<p>This is a plot of (a subset of) the off-diagonal entries of the
+fitted values vs. observed values:</p>
+<pre class="r"><code>set.seed(3952)
+diag_idx &lt;- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-73-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-73-1">
+Past versions of unnamed-chunk-73-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-73-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-73-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6b8c4ed61187d5b37bf66b1478daf202762caaff/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-73-1.png" target="_blank">6b8c4ed</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-17
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This is a plot of the diagonal entries of the fitted values vs. the
+diagonal entries of the observed values:</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd.laplace.fitted.vals2))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-74-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-74-1">
@@ -2807,6 +2869,148 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-75-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-75-1">
+Past versions of unnamed-chunk-75-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-75-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-75-1.png" target="_blank">8bfb880</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-19
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/1b95f72f8fb4b4d23ae88eae141ab8a0d9ddff0d/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-75-1.png" target="_blank">1b95f72</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-18
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd2$vec.obj)</code></pre>
+<pre><code>[1] 50000</code></pre>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]</code></pre>
+<pre><code>[1] -2252959</code></pre>
+</div>
+<div id="checking-progression-of-ebcd-solution-1"
+class="section level3">
+<h3>Checking Progression of EBCD Solution</h3>
+<p>To investigate the progression of the EBCD solution, I compute the
+EBCD solution after 5000 backfit iterations (compared to 50000 backfit
+iterations).</p>
+<pre class="r"><code>set.seed(6287)
+fit.ebcd2_niter5000 &lt;- ebcd(X = t(sim_data2_4pop$Y), Kmax = 4, maxiter_backfit = 5000, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(fit.ebcd2_niter5000$EL), abs(min(fit.ebcd2_niter5000$EL)))
+plot_heatmap(fit.ebcd2_niter5000$EL, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-80-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="observations-3" class="section level3">
+<h3>Observations</h3>
+<p>I think the EBCD estimate looks sparser than what we would expect
+from a divergence factorization. For example, in the loadings plot for
+<span class="math inline">\(k=2\)</span>, we see that the loadings for
+population A are zero (or are very close to zero) when ideally they
+should be positive. Furthermore, for <span
+class="math inline">\(k=3\)</span>, the loadings for population <span
+class="math inline">\(B\)</span> are zero when ideally they should be
+negative. However, for an unbalanced tree, it is difficult to know what
+the magnitudes of the loadings should be. So it is possible that these
+loadings are meant to be that small. But based off of what I read in
+Jason’s thesis, I’m leaning towards the conclusion that the estimate is
+sparser than we desire.</p>
+</div>
+</div>
+<div id="ebmf-cov-with-point-laplace-prior-1" class="section level2">
+<h2>EBMF-Cov with point-Laplace prior</h2>
+<p>Again, I want to compare the results of EBCD with the point-Laplace
+prior with the results of EBMF-Cov with the point-Laplace prior.</p>
+<div id="hypothesis-3" class="section level3">
+<h3>Hypothesis</h3>
+<p>I hypothesize that EBMF-Cov should be able to find solution that
+looks like a divergence factorization.</p>
+</div>
+<div id="analysis-4" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>flash_cov_fit2 &lt;- flash_init(data = observed.vals2, var_type = 0) %&gt;%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %&gt;%
+  flash_backfit()</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Wrapping up...
+Done.
+Backfitting 4 factors (tolerance: 3.81e-04)...
+  Difference between iterations is within 1.0e+04...
+  Difference between iterations is within 1.0e+03...
+  Difference between iterations is within 1.0e+02...
+  Difference between iterations is within 1.0e+01...
+  Difference between iterations is within 1.0e+00...
+  Difference between iterations is within 1.0e-01...
+  Difference between iterations is within 1.0e-02...
+  Difference between iterations is within 1.0e-03...
+Wrapping up...
+Done.</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>max_abs_val &lt;- max(max(flash_cov_fit2$L_pm), abs(min(flash_cov_fit2$L_pm)))
+plot_heatmap(flash_cov_fit2$L_pm, colors_range = c(&#39;blue&#39;,&#39;red&#39;), brks = seq(-1*max_abs_val, max_abs_val, length=50))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-82-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the positive and (absolute value of) the
+negative parts of <span class="math inline">\(\hat{L}\)</span> separated
+out and combined into a single matrix. This is the initialization used
+in GBCD for the generalized binary model.</p>
+<pre class="r"><code>plot_heatmap(cbind(pmax(flash_cov_fit2$L_pm,0),pmax(-1*flash_cov_fit2$L_pm,0) ))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-83-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(flash_cov_fit2$L_pm, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-84-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>flash.laplace.fitted.vals2 &lt;- tcrossprod(flash_cov_fit2$L_pm)</code></pre>
+<p>This is a plot of <span class="math inline">\(\hat{L}
+\hat{L}^{T}\)</span>.</p>
+<pre class="r"><code>plot_heatmap(flash.laplace.fitted.vals2)</code></pre>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-86-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the L2 norm of the difference between the observed values and
 the fitted values.</p>
 <pre class="r"><code>sum((observed.vals2 - flash.laplace.fitted.vals2)^2)</code></pre>
@@ -2822,90 +3026,16 @@ diag_idx &lt;- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals
 off_diag_idx &lt;- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
 samp.vals &lt;- sample(off_diag_idx, size = 10000)</code></pre>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(flash.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-78-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-78-1">
-Past versions of unnamed-chunk-78-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-78-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-78-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-90-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(flash.laplace.fitted.vals2))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-79-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-79-1">
-Past versions of unnamed-chunk-79-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-79-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/8bfb8800d350785089fefd9a7e0e01dd2d766e46/docs/figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-79-1.png" target="_blank">8bfb880</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-06-19
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-divergence-factorization-examples.Rmd/unnamed-chunk-91-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the value of the objective function that was attained:</p>
 <pre class="r"><code>flash_cov_fit2$elbo</code></pre>
 <pre><code>[1] 19342.42</code></pre>
 </div>
-<div id="observations-3" class="section level3">
+<div id="observations-4" class="section level3">
 <h3>Observations</h3>
 <p>In this case, EBMF-Cov’s estimate for factors 2-4 is similar to the
 estimate from EBCD (for factors 2-4). One difference is the baseline
@@ -2941,7 +3071,7 @@ LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlap
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/New_York
+time zone: America/Chicago
 tzcode source: internal
 
 attached base packages:

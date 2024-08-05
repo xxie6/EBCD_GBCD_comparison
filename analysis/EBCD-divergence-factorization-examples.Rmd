@@ -287,7 +287,7 @@ Given that EBCD finds other solutions that achieve good fits and obtain higher o
 For comparison, I want to run flashier with the point-Laplace prior on the loadings on the covariance matrix -- I will refer to this as EBMF-Cov with point-Laplace prior. (Note that this is one of the steps in GBCD.)
 
 ### Hypothesis
-I hypothesize the flashier will be able to find the divergence factorization.
+I hypothesize flashier will be able to find the divergence factorization.
 
 ### Analysis
 ```{r}
@@ -359,6 +359,76 @@ We see that flashier is able to recover a factorization that resembles the desir
 Another observation is the solution from EBMF-Cov has a better fit to the data than the solution from EBCD.
 
 I am unsure why EBMF-Cov recovered the divergence factorization and EBCD did not.
+
+## EBMF-Cov with EBCD initialization
+In comparing these two methods, we are interested in ascertaining whether differences in results are due to differences in the objective functions or differences in the convergence properties. In the context of this example, we want to know if EBCD gives a different result than EBMF-Cov because of a difference between their objective functions or because one of them is getting stuck in a local optima. One observation from the EBCD result is during the backfit, it does find something similar to the divergence factorization, but then moves away from this solution. We want to test the solution from EBMF-Cov when initialized with the EBCD solution. If the result is similar to the divergence factorization, then that suggests that the objective functions are different and finding different types of solutions. If the result is similar to the EBCD solution, that may suggest that EBCD is, in fact, finding a "better" solution. 
+
+### Analysis
+```{r}
+flash_cov_ebcd_init <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_factors_init(init = list(fit.ebcd1$EL, fit.ebcd1$EL), ebnm_fn = ebnm::ebnm_point_laplace) %>%
+  flash_backfit()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_ebcd_init$L_pm), abs(min(flash_cov_ebcd_init$L_pm)))
+plot_heatmap(flash_cov_ebcd_init$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(flash_cov_ebcd_init$L_pm,0),pmax(-1*flash_cov_ebcd_init$L_pm,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_ebcd_init$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.ebcd.init.fitted.vals1 <- tcrossprod(flash_cov_ebcd_init$L_pm)
+```
+
+This is a plot of $\hat{L}\hat{L}^{T}$.
+```{r}
+plot_heatmap(flash.ebcd.init.fitted.vals1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.ebcd.init.fitted.vals1))^2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.ebcd.init.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
+```{r}
+ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals1)), y = diag(flash.ebcd.init.fitted.vals1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_ebcd_init$elbo
+```
+
+### Observations
+The result of EBMF-Cov with the EBCD initialization does not look like the divergence factorization. It looks very similar to the EBCD output used to initialize EBMF-Cov. In addition, the objective function value attained is higher than that attained by the divergence factorization. This suggests that EBCD is finding a "better" solution for the point-Laplace prior, and perhaps EBMF-Cov with the greedy initialization is getting stuck in local optima. 
 
 # Example 2: Unbalanced Tree
 In Example 2, we will simulate data from an unbalanced tree. We will use the following settings -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = 10; \ \sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2, \sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]$, $p=10000$, and $\sigma_{\epsilon}^2 = 1$.

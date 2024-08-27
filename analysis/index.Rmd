@@ -12,9 +12,10 @@ This is my project comparing two covariance decomposition methods, Generalized B
   
 Simulations:  
   
-* Results for the [simple normal data simulation](simple-simulation-normal-data.html)
-* Results for the [scRNA-seq dataset simulation without subtypes](simulation-analysis.html). 
-* Results for the [scRNA-seq dataset simulation with subtypes](simulation-with-subtype.html)
+* Results for the [simple 4-patient normal data simulation](simple-simulation-normal-data.html)
+* Results for the [8-patient normal data simulation](simulation-normal-data.html)
+* Results for the [scRNA-seq dataset simulation without subtypes](simulation-analysis.html)
+* Results for the [scRNA-seq dataset simulation with subtypes](simulation-with-subtype.html) 
   
 Real Data Analysis:  
   
@@ -25,3 +26,5 @@ I also have some analyses targeted at bettering understanding the behavior of th
 * Results for [testing generalized-binary-EBCD with a point-Laplace-EBCD initialization](EBCD-laplace-splitting.html)
 * Results for [testing point-Laplace-EBCD part 1](EBCD-divergence-factorization.html)
 * Results for [testing point-Laplace-EBCD part 2](EBCD-divergence-factorization-examples.html)
+* Results for [investigating when EBCD recovers subtype factors part 1](EBCD-subtype-experiments.html)
+* Results for [investigating when EBCD recovers subtype factors part 2](EBCD-subtype-exploration.html)

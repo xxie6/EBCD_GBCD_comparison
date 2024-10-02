@@ -1,0 +1,750 @@
+---
+title: "generalized-binary-comparison-experiments"
+author: "Annie Xie"
+date: "2024-08-29"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+In this analysis, we are interested in comparing the convergence properties between EBCD, flash-Cov, and GBCD. We will run GBCD, EBMF-Cov with generalized binary prior, and EBCD with generalized binary prior. We will compare the number of iterations it takes for the algorithms to converge. We will also look at the progression of the objective function values (these will not be directly comparable since the methods have different objective functions). We will also compare the estimates and see if they both converge to the same local optima. 
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+library(gbcd)
+source("~/Documents/PhD 3/Research/EBCD/gbcd_functions.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("code/ebcd_functions.R")
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+```{r}
+compute_bures_wasserstein_distance <- function(A, B){
+  trA <- sum(diag(A))
+  trB <- sum(diag(B))
+  svdA <- svd(A)
+  sqrtA <- svdA$u %*% sqrt(diag(svdA$d)) %*% t(svdA$u)
+  
+  # eigA <- eigen(A, symmetric = TRUE)
+  # sqrtA <- eigA$vectors %*% diag(sqrt(eigA$values)) %*% t(eigA$vectors)
+  
+  C <- sqrtA %*% B %*% sqrtA
+  
+  svdC <- svd(C)
+  sqrtC <- svdC$u %*% sqrt(diag(svdC$d)) %*% t(svdC$u)
+  
+  # eigC <- eigen(C, symmetric = TRUE)
+  # sqrtC <- eigC$vectors %*% diag(sqrt(eigC$values)) %*% t(eigC$vectors)
+  
+  inner_trace <- sum(diag(sqrtC))
+  bw_dist <- (trA + trB - 2*inner_trace)
+  return(bw_dist)
+}
+```
+
+
+# Example 1: Balanced Tree
+In Example 1, we will simulate data from a balanced tree. Throughout this analysis, we will use the following notation: $n_A$, $n_B$, $n_C$, and $n_D$ are the sample sizes for the four different populations. $\sigma_{ABC}^2$, $\sigma_{AB}^2$, $\sigma_{CD}^2$, $\sigma_A^2$, $\sigma_B^2$, $\sigma_C^2$, and $\sigma_D^2$ are the variances of the drift events. $p$ is the number of genes. $\sigma_{\epsilon}^2$ is the variance of the noise. We will use the same settings that Jason used in his thesis -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = \sigma_{AB}^2 = \sigma_{CD}^2 = \sigma_A^2 = \sigma_B^2 = \sigma_C^2 = \sigma_D^2 = 2^2$, $p=1000$, and $\sigma_{\epsilon}^2 = 1$.
+
+## Data Generation
+```{r}
+sim_4pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+
+  FF <- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat <- matrix(nrow = n, ncol = 4)
+  divmat[, 1] <- LL[, 1]
+  divmat[, 2] <- LL[, 2] - LL[, 3]
+  divmat[, 3] <- LL[, 4] - LL[, 5]
+  divmat[, 4] <- LL[, 6] - LL[, 7]
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}
+```
+
+```{r}
+sim_data_4pop <- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE,
+                           seed = 666)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_4pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_4pop$FF))
+```
+
+```{r}
+observed.vals1 <- tcrossprod(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## EBCD with generalized binary prior
+
+### Hypothesis
+We think that EBCD can recover the binary, hierarchical loadings matrix that was used to generate the data. In this setting, we are particularly interested in recovering the tree structure in the data.
+
+### Analysis
+```{r}
+set.seed(6287)
+# ebcd_backfit_eps <- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd1 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(fit.ebcd1$EL)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.gb.fitted.vals1 <- tcrossprod(fit.ebcd1$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.gb.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.gb.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.gb.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, ebcd.gb.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.gb.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
+```
+
+### Observations
+At first glance, EBCD seems to find a loadings estimate similar to the desired hierarchical loadings matrix. However, looking at the scatter plot of the loadings, we see that there is variation in the loadings values within each factor. Ideally, within each factor, the non-negative loadings are about the same value. The variation in loadings values could be due to the use of the generalized binary prior. The prior does not enforce a strict binary structure; it allows for variation in order to model shared effects that are not binary. Therefore, this prior gives EBCD the ability to move away from binary-structured solutions towards solutions that give higher objective function values.
+
+The fit of the estimates to the observed data with respect to the Euclidean distance is not particularly good. But we will compare it to the other methods. Maybe it is still comparable. The fit of the estimates to the observed data with respect to the Bures-Wasserstein distance is better. (Of course, we will compare it to the other methods.)
+
+In this example, EBCD ran for 2438 backfit iterations. The ELBO saw a significant increase in the beginning, and then plateaued. There are no jumps in the ELBO (which we have seen in other examples such as the divergence factorization example).
+
+## EBMF-Cov with generalized binary prior
+
+### Hypothesis
+We also think that EBMF-Cov with the generalized binary prior should be able to recover the tree-structured loadings matrix.
+
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_gb.tsv')
+flash_cov_fit1 <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_generalized_binary, Kmax = 7) %>%
+  flash_backfit()
+progress_flash_cov <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_gb.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(flash_cov_fit1$L_pm)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit1$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.gb.rescale <- ldf(flash_cov_fit1)
+flash.gb.rescale.L <- flash.gb.rescale$L %*% diag(sqrt(flash.gb.rescale$D))
+flash.gb.fitted.vals1 <- tcrossprod(flash.gb.rescale.L)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.gb.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.gb.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.gb.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, flash.gb.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.gb.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the objective function progression (greedy + backfit):
+```{r}
+ggplot(data = progress_flash_cov, aes(x = c(1:dim(progress_flash_cov)[1]), y = ELBO)) + geom_line() + xlab('Iteration') + geom_vline(xintercept = 13, linetype = 'dashed', color = 'red')
+```
+
+This is plot of the objective function progression for just the backfit:
+```{r}
+ggplot(data = progress_flash_cov[progress_flash_cov$Type == 'backfit',], aes(x = Iter, y = ELBO)) + geom_line() + xlab('Iteration')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit1$elbo
+```
+
+### Observations
+EBMF-Cov generated an estimate for only 3 factors vs the desired 7. The 3 factors found are a mean factor with equal loading on all individuals and two factors corresponding to the 2 vs 2 split. One possible explanation for this is the population effects described in the last four factors were lumped into the individual errors. Because we are missing the other four factors, the fit of the estimates to the observed data is not very good. In particular, the Euclidean distance between the values is very large, much larger than that for EBCD. The Bures-Wasserstein distance is also larger for EBMF-Cov vs EBCD. This is not entirely surprising since the EBCD objective function uses the Bures-Wasserstein distance.
+
+EBMF-Cov got to this estimate using 12 greedy iterations and 18 backfit iterations. The progression of the ELBO is what we expect -- we see a sharper increase in the beginning and then eventually it plateaus.
+
+## EBMF-Cov with EBCD initialization
+In comparing these two methods, we are interested in ascertaining whether differences in results are due to differences in the objective functions or differences in the convergence properties. In the context of this example, we want to know if EBCD gives a different result than EBMF-Cov because of a difference between their objective functions or because one of them is getting stuck in a local optima. One observation from the EBCD result is during the backfit, it does find something similar to the divergence factorization, but then moves away from this solution. We want to test the solution from EBMF-Cov when initialized with the EBCD solution. If the result is similar to the divergence factorization, then that suggests that the objective functions are different and finding different types of solutions. If the result is similar to the EBCD solution, that may suggest that EBCD is, in fact, finding a "better" solution. 
+
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_ebcd_init_gb.tsv')
+flash_cov_ebcd_init <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_factors_init(init = list(fit.ebcd1$EL, fit.ebcd1$EL), ebnm_fn = ebnm::ebnm_generalized_binary) %>%
+  flash_backfit()
+progress_flash_cov_ebcd_init <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_ebcd_init_gb.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(flash_cov_ebcd_init$L_pm)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_ebcd_init$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.ebcd.init.rescale <- ldf(flash_cov_ebcd_init)
+flash.ebcd.init.rescale.L <- flash.ebcd.init.rescale$L %*% diag(sqrt(flash.ebcd.init.rescale$D))
+flash.ebcd.init.fitted.vals1 <- tcrossprod(flash.ebcd.init.rescale.L)
+```
+
+This is a plot of $\hat{L}\hat{L}^{T}$.
+```{r}
+plot_heatmap(flash.ebcd.init.fitted.vals1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.ebcd.init.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, flash.ebcd.init.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.ebcd.init.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the objective function progression (greedy + backfit):
+```{r}
+ggplot(data = progress_flash_cov_ebcd_init, aes(x = Iter, y = ELBO)) + geom_line() + xlab('Iteration')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_ebcd_init$elbo
+```
+
+### Observations
+Initializing EBMF-Cov with the EBCD estimate leads to an estimate that looks more like the desired drift factorization. EBMF-Cov retains all 7 factors of the EBCD estimate. Generally speaking, each factor can be interpreted as a drift in the tree. Factor 3 does have a weird thing where it is primarily loaded on individuals from population A, but it is also loaded on two individuals from population B. Similar to the EBCD estimate, within a factor, the loadings values are around the same value, but there is some variation. 
+
+The ELBO for this estimate is 20266.46, which is much higher than the ELBO for the regular EBMF-Cov estimate, -46426.69. Furthermore, the fit of these estimates to the observed data is much better than the regular EBMF-Cov estimate. This suggests that EBCD is finding a "better" estimate.
+
+This run of EBMF-Cov used 156 backfit iterations.
+
+## GBCD
+
+### Hypothesis
+We hypothesize that GBCD will be able to find the loadings matrix of the drift factorization.
+
+### Analysis
+```{r}
+gbcd_fit1 <- fit_gbcd(Y = sim_data_4pop$Y, Kmax = 7)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(gbcd_fit1$L)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(gbcd_fit1$L, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+**Rescale GBCD loadings estimate:**
+```{r}
+#need to rescale estimate
+fit.gbcd.rescale1 <- flash_fit_cov_ebnmf_fit_laplace(Y = sim_data_4pop$Y, Kmax = 7, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
+
+fit.gbcd.rescale2 <- flash_fit_cov_ebnmf_fit_L(dat = fit.gbcd.rescale1$dat, fit.gbcd.rescale1$fit.cov, Y=sim_data_4pop$Y, Kmax=7, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1)
+```
+
+**LDF Method of Scaling:**
+```{r}
+fit.gbcd.rescale.ldf <- ldf(fit.gbcd.rescale2$fit.cov, type = 'i')
+
+fit.gbcd.rescale.L <- fit.gbcd.rescale.ldf$L %*% diag(sqrt(fit.gbcd.rescale.ldf$D))
+
+thres <- 0.9
+k.idx <- which(fit.gbcd.rescale2$corr > thres)
+fit.gbcd.rescale.L <- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]
+```
+
+```{r}
+gbcd.fitted.vals1 <- tcrossprod(fit.gbcd.rescale.L)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - gbcd.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - gbcd.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(gbcd.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, gbcd.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(gbcd.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the objective function from the final flash fit (before the processing of the L estimates).
+```{r}
+fit.gbcd.rescale2$fit.cov$elbo
+```
+
+### Observations
+Overall, GBCD did an okay job at finding the loadings matrix from the drift factorization. The method was generally able to find the population specific effects. However, in some of the population-effect factors, there are a couple of samples from other populations with non-negative loadings. This is not desired. The first factor has non-negative loadings for all the individuals. However, individuals from populations C and D have a higher loading value than those from populations A and B. Ideally, this factor could be interpreted as a mean factor, and we'd have a consistent loading value across all populations. Furthermore, the third factor has non-negative loading on populations C and D and zero loading on populations A and B. This is desired and can be interpreted as representing part of the 2 vs 2 split. However, in the third factor, the individuals in population D have a higher loading value than those in population C. Ideally, the loading value would be consistent across the two populations.
+
+The fit of the GBCD estimate to the observed values is pretty good. The Euclidean distance between the estimates and the observed values is less than that for the EBCD estimate. However, for the Bures-Wasserstein distance, the EBCD estimate does a slightly better job. Again, this is not surprising since the objective function of the EBCD estimate uses the Bures-Wasserstein distance.
+
+Because the GBCD method requires some ad-hoc processing of the estimates for $L$, I'm not sure if there's a direct objective function value. But I did plot the objective function value from the final flash fit.
+
+# Example 2: Unbalanced Tree
+In Example 2, we will simulate data from an unbalanced tree. We will use the following settings -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = 10; \ \sigma_{AB}^2, \sigma_{CD}^2, \sigma_{A}^2, \sigma_B^2, \sigma_C^2, \sigma_D^2 \overset{i.i.d.}{\sim} \text{Unif}[1,6]$, $p=10000$, and $\sigma_{\epsilon}^2 = 1$.
+
+## Data Generation
+
+```{r}
+#pop_size <- round(runif(4, min = 20, max = 80))
+set.seed(2759)
+pop_size <- rep(40, 4)
+branch_sd <- c(10, runif(6, min = 1, max = 6))
+pop_size
+branch_sd
+```
+
+```{r}
+sim_data2_4pop <- sim_4pops(pop_sizes = pop_size,
+                           branch_sds = branch_sd,
+                           indiv_sd = 1,
+                           n_genes = 10000,
+                           constrain_F = TRUE)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data2_4pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(t(sim_data2_4pop$FF) %*% sim_data2_4pop$FF)
+```
+
+```{r}
+observed.vals2 <- tcrossprod(sim_data2_4pop$Y)/ ncol(sim_data2_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals2)
+```
+
+## EBCD with generalized binary prior
+
+### Analysis
+```{r}
+set.seed(6287)
+# ebcd_backfit_eps <- nrow(sim_data2_4pop$Y)*ncol(sim_data2_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd2 <- ebcd(X = t(sim_data2_4pop$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(fit.ebcd2$EL)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.gb.fitted.vals2 <- tcrossprod(fit.ebcd2$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals2 - ebcd.gb.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals2 - ebcd.gb.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(ebcd.gb.fitted.vals2))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals2, ebcd.gb.fitted.vals2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals2)), length.out = ncol(observed.vals2))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals2))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd.gb.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd2$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]
+```
+
+### Observations
+EBCD struggled more with recovering the tree structure for the unbalanced tree. Factors 5 and 7 look very similar -- both have positive loading on samples from populations A and B and zero loading for the other samples. EBCD did not recover the individual population effect for population C. 
+
+## EBMF-Cov with generalized binary prior
+
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_gb_unbalanced_tree.tsv')
+flash_cov_fit2 <- flash_init(data = observed.vals2, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_generalized_binary, Kmax = 7) %>%
+  flash_backfit()
+progress_flash_cov <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_gb_unbalanced_tree.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(flash_cov_fit2$L_pm)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit2$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.gb.rescale <- ldf(flash_cov_fit1)
+flash.gb.rescale.L <- flash.gb.rescale$L %*% diag(sqrt(flash.gb.rescale$D))
+flash.gb.fitted.vals2 <- tcrossprod(flash.gb.rescale.L)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals2 - flash.gb.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals2 - flash.gb.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(flash.gb.fitted.vals2))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals2, flash.gb.fitted.vals2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(flash.gb.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the objective function progression (greedy + backfit):
+```{r}
+ggplot(data = progress_flash_cov, aes(x = c(1:dim(progress_flash_cov)[1]), y = ELBO)) + geom_line() + xlab('Iteration') + geom_vline(xintercept = 7, linetype = 'dashed', color = 'red')
+```
+
+This is plot of the objective function progression for just the backfit:
+```{r}
+ggplot(data = progress_flash_cov[progress_flash_cov$Type == 'backfit',], aes(x = Iter, y = ELBO)) + geom_line() + xlab('Iteration')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit2$elbo
+```
+
+### Observations
+EBMF-Cov generated an estimate for only 3 factors vs the desired 7. The first factor kind of looks like a mean factor. However, the loading value for samples from population B is noticeably larger than that of the other samples. The second factor has positive loading for populations A and B and zero loading for populations C and D. The third factor is a 3 vs 1 factor -- it has positive loading on populations A, C, and D and zero loading on population B. Regarding the missing factors, it's possible that some of the population effects were lumped into the individual noise factor.
+
+## GBCD
+
+### Analysis
+```{r}
+gbcd_fit2 <- fit_gbcd(Y = sim_data2_4pop$Y, Kmax = 7)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(gbcd_fit2$L)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(gbcd_fit2$L, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+**Rescale GBCD loadings estimate:**
+```{r}
+#need to rescale estimate
+fit.gbcd.rescale1 <- flash_fit_cov_ebnmf_fit_laplace(Y = sim_data2_4pop$Y, Kmax = 7, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1) 
+
+fit.gbcd.rescale2 <- flash_fit_cov_ebnmf_fit_L(dat = fit.gbcd.rescale1$dat, fit.gbcd.rescale1$fit.cov, Y=sim_data_4pop$Y, Kmax=7, prior = ebnm::ebnm_generalized_binary, thres = 0.9, extrapolate = FALSE, maxiter = 500, verbose = 1)
+```
+
+**LDF Method of Scaling:**
+```{r}
+fit.gbcd.rescale.ldf <- ldf(fit.gbcd.rescale2$fit.cov, type = 'i')
+
+fit.gbcd.rescale.L <- fit.gbcd.rescale.ldf$L %*% diag(sqrt(fit.gbcd.rescale.ldf$D))
+
+thres <- 0.9
+k.idx <- which(fit.gbcd.rescale2$corr > thres)
+fit.gbcd.rescale.L <- fit.gbcd.rescale.L[,fit.gbcd.rescale2$k.order][,k.idx]
+```
+
+```{r}
+gbcd.fitted.vals2 <- tcrossprod(fit.gbcd.rescale.L)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals2 - gbcd.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals2 - gbcd.fitted.vals2)^2) - sum((diag(observed.vals2) - diag(gbcd.fitted.vals2))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals2, gbcd.fitted.vals2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(gbcd.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the objective function from the final flash fit (before the processing of the L estimates).
+```{r}
+fit.gbcd.rescale2$fit.cov$elbo
+```
+
+### Observations
+GBCD also struggled more with the unbalanced tree example. Factors 4, 5, and 7 seem to correspond to the 2 vs 2 split. All of these factors have positive loading on populations C and D and zero loading on populations A and B. However, the relative level of the loadings differs. Factor 2 has positive loading on populations A and B and zero loading on populations C and D. One note is the loading value for population A is relatively small. The population effects for populations B and C were not recovered. 
+

@@ -1,0 +1,679 @@
+---
+title: "convergence-comparison-experiments"
+author: "Annie Xie"
+date: "2024-08-27"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we are interested in comparing the convergence properties between EBCD and flash-Cov. We will run EBCD with the point-Laplace prior and flash-Cov with a point-Laplace prior on a simulated dataset. We will compare the number of iterations it takes for the algorithms to converge. We will also look at the progression of the objective function values (these will not be directly comparable since the methods have different objective functions). We will also compare the estimates and see if they both converge to the same local optima. 
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+source("code/ebcd_functions.R")
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+```{r}
+compute_bures_wasserstein_distance <- function(A, B){
+  trA <- sum(diag(A))
+  trB <- sum(diag(B))
+  svdA <- svd(A)
+  sqrtA <- svdA$u %*% sqrt(diag(svdA$d)) %*% t(svdA$u)
+  
+  # eigA <- eigen(A, symmetric = TRUE)
+  # sqrtA <- eigA$vectors %*% diag(sqrt(eigA$values)) %*% t(eigA$vectors)
+  
+  C <- sqrtA %*% B %*% sqrtA
+  
+  svdC <- svd(C)
+  sqrtC <- svdC$u %*% sqrt(diag(svdC$d)) %*% t(svdC$u)
+  
+  # eigC <- eigen(C, symmetric = TRUE)
+  # sqrtC <- eigC$vectors %*% diag(sqrt(eigC$values)) %*% t(eigC$vectors)
+  
+  inner_trace <- sum(diag(sqrtC))
+  bw_dist <- (trA + trB - 2*inner_trace)
+  return(bw_dist)
+}
+```
+
+# Example 1: Balanced Tree
+In Example 1, we will simulate data from a balanced tree. Throughout this analysis, we will use the following notation: $n_A$, $n_B$, $n_C$, and $n_D$ are the sample sizes for the four different populations. $\sigma_{ABC}^2$, $\sigma_{AB}^2$, $\sigma_{CD}^2$, $\sigma_A^2$, $\sigma_B^2$, $\sigma_C^2$, and $\sigma_D^2$ are the variances of the drift events. $p$ is the number of genes. $\sigma_{\epsilon}^2$ is the variance of the noise. We will use the same settings that Jason used in his thesis -- $n_A = n_B = n_C = n_D = 40$, $\sigma_{ABC}^2 = \sigma_{AB}^2 = \sigma_{CD}^2 = \sigma_A^2 = \sigma_B^2 = \sigma_C^2 = \sigma_D^2 = 2^2$, $p=1000$, and $\sigma_{\epsilon}^2 = 1$.
+
+## Data Generation
+```{r}
+sim_4pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+
+  FF <- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat <- matrix(nrow = n, ncol = 4)
+  divmat[, 1] <- LL[, 1]
+  divmat[, 2] <- LL[, 2] - LL[, 3]
+  divmat[, 3] <- LL[, 4] - LL[, 5]
+  divmat[, 4] <- LL[, 6] - LL[, 7]
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}
+```
+
+```{r}
+sim_data_4pop <- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE,
+                           seed = 666)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_4pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_4pop$FF))
+```
+
+```{r}
+observed.vals1 <- tcrossprod(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## EBCD with point-Laplace prior
+
+### Analysis
+```{r}
+set.seed(6287)
+# ebcd_backfit_eps <- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd1 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd1$EL), abs(min(fit.ebcd1$EL)))
+plot_heatmap(fit.ebcd1$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.laplace.fitted.vals1 <- tcrossprod(fit.ebcd1$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.laplace.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, ebcd.laplace.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
+```
+
+### Observations
+We hoped that EBCD would find the tree-structured loadings matrix. However, it has not. It has found a solution that I think is more sparse than the solution we desired. The EBCD estimate still has a pretty good fit to the observed values, so this may suggest an identifiability issue with this problem. This is also very likely due to the use of the point laplace prior, which does not force the entries of the loadings matrix to have ternary structure.
+
+In the plot of the objective function, we see that the objective function makes a large jump at around iteration 9400. Matthew and I have hypothesized that these jumps correspond to the solution becoming more sparse. Another note is that EBCD reached the maximum number of iterations, which I had set to 10000. So it's possible that the method would converge to a different solution if given the time. I also think the convergence tolerance plays a role in this. I've seen examples where EBCD looks like it is converging, but then it finds a new solution, leading to a jump in the objective function value. Therefore, if the convergence tolerance is too high, it is possible that the algorithm will stop prematurely.
+
+## EBMF-Cov with point-Laplace prior
+
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_laplace.tsv')
+flash_cov_fit1 <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %>%
+  flash_backfit()
+progress_flash_cov <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_laplace.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_fit1$L_pm), abs(min(flash_cov_fit1$L_pm)))
+plot_heatmap(flash_cov_fit1$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit1$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash_cov_fit_rescale <- ldf(flash_cov_fit1)
+flash_cov_fit_L_rescale <- flash_cov_fit_rescale$L %*% diag(sqrt(flash_cov_fit_rescale$D))
+flash.laplace.fitted.vals1 <- tcrossprod(flash_cov_fit_L_rescale)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.laplace.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, flash.laplace.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.laplace.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the objective function progression (greedy + backfit):
+```{r}
+ggplot(data = progress_flash_cov, aes(x = c(1:dim(progress_flash_cov)[1]), y = ELBO)) + geom_line() + xlab('Iteration') + geom_vline(xintercept = 40, linetype = 'dashed', color = 'red')
+```
+
+This is plot of the objective function progression for just the backfit:
+```{r}
+ggplot(data = progress_flash_cov[progress_flash_cov$Type == 'backfit',], aes(x = Iter, y = ELBO)) + geom_line() + xlab('Iteration')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit1$elbo
+```
+
+### Observations
+EBMF-Cov was able to find the desired divergence factorization. Compared to the EBCD estimate, the EBMF-Cov estimate had a better fit to the observed data with respect to both the Euclidean distance and the Bures-Wasserstein distance. 
+
+Furthermore, EBMF-Cov found this estimate in fewer iterations. Though one thing I want to note is the backfit portion of the algorithm has a covergence tolerance on the magnitude of 10^(-4). Meanwhile, the convergence tolerance for EBCD is 10^(-6). I used the default values when running these, which is why they are different. It may be worthwhile to try running both methods with the same convergence tolerance value.
+
+## EBMF-Cov with EBCD initialization
+In comparing these two methods, we are interested in ascertaining whether differences in results are due to differences in the objective functions or differences in the convergence properties. In the context of this example, we want to know if EBCD gives a different result than EBMF-Cov because of a difference between their objective functions or because one of them is getting stuck in a local optima. One observation from the EBCD result is during the backfit, it does find something similar to the divergence factorization, but then moves away from this solution. We want to test the solution from EBMF-Cov when initialized with the EBCD solution. If the result is similar to the divergence factorization, then that suggests that the objective functions are different and finding different types of solutions. If the result is similar to the EBCD solution, that may suggest that EBCD is, in fact, finding a "better" solution. 
+
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_ebcd_init_laplace.tsv')
+flash_cov_ebcd_init <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_factors_init(init = list(fit.ebcd1$EL, fit.ebcd1$EL), ebnm_fn = ebnm::ebnm_point_laplace) %>%
+  flash_backfit()
+progress_flash_cov_ebcd_init <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_ebcd_init_laplace.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_ebcd_init$L_pm), abs(min(flash_cov_ebcd_init$L_pm)))
+plot_heatmap(flash_cov_ebcd_init$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a heatmap of the positive and (absolute value of) the negative parts of $\hat{L}$ separated out and combined into a single matrix. This is the initialization used in GBCD for the generalized binary model.
+```{r}
+plot_heatmap(cbind(pmax(flash_cov_ebcd_init$L_pm,0),pmax(-1*flash_cov_ebcd_init$L_pm,0) ))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_ebcd_init$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.ebcd.init.rescale <- ldf(flash_cov_ebcd_init)
+flash.ebcd.init.L.rescale <- flash.ebcd.init.rescale$L %*% diag(sqrt(flash.ebcd.init.rescale$D))
+flash.ebcd.init.fitted.vals1 <- tcrossprod(flash.ebcd.init.L.rescale)
+```
+
+This is a plot of $\hat{L}\hat{L}^{T}$.
+```{r}
+plot_heatmap(flash.ebcd.init.fitted.vals1)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.ebcd.init.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(flash.ebcd.init.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, flash.ebcd.init.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.ebcd.init.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the objective function progression (greedy + backfit):
+```{r}
+ggplot(data = progress_flash_cov_ebcd_init, aes(x = Iter, y = ELBO)) + geom_line() + xlab('Iteration')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_ebcd_init$elbo
+```
+
+### Observations
+The result of EBMF-Cov with the EBCD initialization does not look like the divergence factorization. It looks very similar to the EBCD output used to initialize EBMF-Cov. In addition, the objective function value attained is higher than that attained by the divergence factorization. This suggests that EBCD is finding a "better" solution for the point-Laplace prior, and perhaps EBMF-Cov with the greedy initialization is getting stuck in local optima. 
+
+## EBCD initialized with EBMF-Cov estimate
+For comparison, I will run EBCD initialized with the EBMF-Cov estimate.
+
+```{r}
+# fit.ebmf_cov_ldf <- ldf(flash_cov_fit1)
+# ebmf_cov_L_rescaled <- fit.ebmf_cov_ldf$L %*% sqrt(diag(fit.ebmf_cov_ldf$D))
+```
+
+```{r}
+plot_heatmap(flash_cov_fit_L_rescale, colors_range = c('blue', 'red'))
+```
+
+```{r}
+Z.init <- PolarU(fit.ebcd1$A%*%flash_cov_fit_L_rescale)
+fitted.Y <- Z.init%*%t(flash_cov_fit_L_rescale)
+tau.est <- prod(dim(fit.ebcd1$A)) / sum((fit.ebcd1$A - fitted.Y)^2)
+ebcd_obj_init_rescaled <- list(
+    A = fit.ebcd1$A, N = fit.ebcd1$N, nrowA = fit.ebcd1$nrowA,
+    tau = tau.est, Z = Z.init, EL = flash_cov_fit_L_rescale, ebnm_fn = ebnm::ebnm_point_laplace
+  )
+```
+
+```{r}
+set.seed(6287)
+fit.ebcd_ebmf_init1 <- ebcd_backfit(ebcd_obj_init_rescaled, maxiter = 20000)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd_ebmf_init1$EL), abs(min(fit.ebcd_ebmf_init1$EL)))
+plot_heatmap(fit.ebcd_ebmf_init1$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd_ebmf_init1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.ebmf.cov.init.fitted.vals1 <- tcrossprod(fit.ebcd_ebmf_init1$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.ebmf.cov.init.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.ebmf.cov.init.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.ebmf.cov.init.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, ebcd.ebmf.cov.init.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.ebmf.cov.init.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(5:length(fit.ebcd_ebmf_init1$vec.obj)), y = fit.ebcd_ebmf_init1$vec.obj[-c(1:4)])) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd_ebmf_init1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd_ebmf_init1$vec.obj[length(fit.ebcd_ebmf_init1$vec.obj)]
+```
+
+### Observation
+We see that EBCD initialized with the EBMF-Cov estimate yields an estimate that looks like the original EBCD estimate. This is consistent with my previous analysis, which found that during the EBCD backfit, the estimate starts out as something that looks like a divergence factorization, but then moves toward the final EBCD estimate. This is further evidence that suggests the EBCD algorithm is converging to a "better" estimate than EBMF-Cov. (At the very least, the objective function is favoring a different type of solution than that of EBMF-Cov).
+
+## EBMF-Cov with different convergence tolerance
+### Analysis
+```{r}
+# sink('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_laplace.tsv')
+flash_cov_fit2 <- flash_init(data = observed.vals1, var_type = 0) %>%
+  flash_set_verbose(-1) %>%
+  flash_greedy(ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 4) %>%
+  flash_backfit(tol = 1e-6)
+progress_flash_cov <- read.delim('~/Desktop/EBCD_GBCD_comparison_data/flash_cov_laplace.tsv')
+# sink()
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(flash_cov_fit2$L_pm), abs(min(flash_cov_fit2$L_pm)))
+plot_heatmap(flash_cov_fit2$L_pm, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(flash_cov_fit2$L_pm, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+flash.laplace.fitted.vals2 <- tcrossprod(flash_cov_fit2$L_pm)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals2)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - flash.laplace.fitted.vals2)^2) - sum((diag(observed.vals1) - diag(flash.laplace.fitted.vals2))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, flash.laplace.fitted.vals2)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r, eval = FALSE}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(flash.laplace.fitted.vals2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is the value of the objective function that was attained:
+```{r}
+flash_cov_fit2$elbo
+```
+
+## Visualizations for comparisons
+
+This is a plot comparing the objective function progression for EBMF-Cov with greedy initialization and EBMF-Cov with EBCD initialization
+
+```{r}
+ggplot() + geom_line(data = progress_flash_cov[progress_flash_cov$Type == 'backfit',], aes(x = Iter, y = ELBO), color = 'red') + geom_line(data = progress_flash_cov_ebcd_init, aes(x = Iter, y = ELBO), color = 'blue')
+```
+
+This is a plot comparing the objective function progression for EBCD with greedy initialization and EBCD with EBMF-Cov initialization
+
+```{r}
+ggplot() + geom_line(data = NULL, aes(x = c(6:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj[-c(1:5)]), color = 'red') + geom_line(data = NULL, aes(x = c(6:length(fit.ebcd_ebmf_init1$vec.obj)), y = fit.ebcd_ebmf_init1$vec.obj[-c(1:5)]), color = 'blue')
+```
+
+### Observations
+The EBCD algorithm appears to have more significant jumps in the objective function compared to the EBMF algorithm. Another note is that the default tolerances for convergence are different in these settings. I'm not sure if the tolerances should be comparable or not. Maybe if EBMF-Cov had a smaller convergence tolerance, it would also move towards the solution that EBCD finds. 
+
+## EBCD with divergence prior
+
+```{r}
+ebnm_div <- function(x, s, g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), admix = FALSE) {
+  if (!fix_g) {
+    opt_fn <- function(par) {
+      lambda <- exp(par[1])
+      nu <- exp(par[2])
+      if (admix) {
+        g <- ashr::unimix(rep(1/4, 4), c(0, -nu, -nu, lambda), c(0, -nu, lambda, lambda))
+      } else {
+        g <- ashr::unimix(rep(1/3, 3), c(0, -nu, lambda), c(0, -nu, lambda))
+      }
+
+      ebnm_res <- ebnm::ebnm_ash(
+        x,
+        s,
+        g_init = g,
+        fix_g = FALSE,
+        output = "log_likelihood"
+      )
+      return(-ebnm_res$log_likelihood)
+    }
+    opt_res <- optim(
+      par = c(log(max(c(1, x))), log(max(c(1, -x)))),
+      fn = opt_fn,
+      method = "L-BFGS-B"
+    )
+
+    lambda <- exp(opt_res$par[1])
+    nu <- exp(opt_res$par[2])
+    if (admix) {
+      g_init <- ashr::unimix(rep(1/4, 4), c(0, -nu, -nu, lambda), c(0, -nu, lambda, lambda))
+    } else {
+      g_init <- ashr::unimix(rep(1/3, 3), c(0, -nu, lambda), c(0, -nu, lambda))
+    }
+  }
+
+  return(ebnm::ebnm_ash(x, s, g_init = g_init, fix_g = fix_g, output = output))
+}
+```
+
+```{r, eval = FALSE}
+# check ebnm function
+set.seed(1)
+x <- rnorm(10, sd = 2)
+s <- rep(1, 10)
+ebnm::ebnm_check_fn(ebnm_div, x, s)
+```
+
+```{r}
+set.seed(6287)
+# ebcd_backfit_eps <- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd_div <- ebcd(X = t(sim_data_4pop$Y), Kmax = 4, maxiter_backfit = 10000, ebnm_fn = ebnm_div)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+max_abs_val <- max(max(fit.ebcd_div$EL), abs(min(fit.ebcd_div$EL)))
+plot_heatmap(fit.ebcd_div$EL, colors_range = c('blue','red'), brks = seq(-1*max_abs_val, max_abs_val, length=50))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd_div$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+ebcd.div.fitted.vals1 <- tcrossprod(fit.ebcd_div$EL)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - ebcd.div.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.div.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.div.fitted.vals1))^2)
+```
+
+This is the Bures-Wasserstein distance between the observed values and the fitted values.
+```{r}
+compute_bures_wasserstein_distance(observed.vals1, ebcd.div.fitted.vals1)
+```
+
+This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+set.seed(3952)
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+samp.vals <- sample(off_diag_idx, size = 10000)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[samp.vals], y = c(ebcd.div.fitted.vals1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_div$vec.obj)), y = fit.ebcd_div$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd_div$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd_div$vec.obj[length(fit.ebcd_div$vec.obj)]
+```
+

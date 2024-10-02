@@ -8,7 +8,7 @@ editor_options:
 ---
 
 # Introduction
-In this analysis, we are interesting in testing EBCD's ability to recover divergence factorizations (as opposed to drift factorizations). The reason we are interested in divergence factorizations is because theoretically, the divergence factorization is easier to find than the drift factorization. Furthermore, the drift factorization can usually be easily read off from the divergence factorization.
+In this analysis, we are interested in testing EBCD's ability to recover divergence factorizations (as opposed to drift factorizations). The reason we are interested in divergence factorizations is because theoretically, the divergence factorization is easier to find than the drift factorization. Furthermore, the drift factorization can usually be easily read off from the divergence factorization.
 
 To find a divergence factorization, we just need to run EBCD with a point-Laplace prior.
 

@@ -1,0 +1,2985 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Annie Xie" />
+
+<meta name="date" content="2024-07-13" />
+
+<title>drift-comparison</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">EBCD_GBCD_comparison</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/xxie6/EBCD_GBCD_comparison">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">drift-comparison</h1>
+<h4 class="author">Annie Xie</h4>
+<h4 class="date">2024-07-13</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2024-10-02
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>EBCD_GBCD_comparison/</code>
+<span class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240229code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240229)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240229code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240229)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreedb1cb1a599b472bf97217e9ad8eeb2d5cf8c8f67targetblankdb1cb1aa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/db1cb1a599b472bf97217e9ad8eeb2d5cf8c8f67" target="_blank">db1cb1a</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreedb1cb1a599b472bf97217e9ad8eeb2d5cf8c8f67targetblankdb1cb1aa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/db1cb1a599b472bf97217e9ad8eeb2d5cf8c8f67" target="_blank">db1cb1a</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    code/.DS_Store
+    Ignored:    data/.DS_Store
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/driftr-comparison.Rmd</code>) and
+HTML (<code>docs/driftr-comparison.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/db1cb1a599b472bf97217e9ad8eeb2d5cf8c8f67/analysis/driftr-comparison.Rmd" target="_blank">db1cb1a</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-10-02
+</td>
+<td>
+Add drift simulations
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this analysis, we are interested in assessing the Drift method,
+another covariance decomposition method. The Drift model is essentially
+the EBMF model with a normal prior on the factors. However, the Drift
+algorithm uses a different type of variational approximation than the
+EBMF algorithm. The EBMF algorithm uses the mean-field approximation.
+The Drift algorithm does not use a mean-field approximation for the
+factors. This allows for a correlation structure in the posterior of the
+factors.</p>
+</div>
+<div id="packages-and-functions" class="section level1">
+<h1>Packages and Functions</h1>
+<pre class="r"><code>library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)</code></pre>
+<pre><code>
+Attaching package: &#39;patchwork&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:cowplot&#39;:
+
+    align_plots</code></pre>
+<pre class="r"><code>library(fastTopics)</code></pre>
+<pre><code>Warning: package &#39;fastTopics&#39; was built under R version 4.3.3</code></pre>
+<pre class="r"><code># source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
+<pre class="r"><code>source(&quot;code/ebcd_functions.R&quot;)
+# source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd_functions.R&quot;)
+source(&quot;code/drift_functions.R&quot;)</code></pre>
+<pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;), brks = NULL){
+  ### define the color map
+  cols &lt;- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks &lt;- seq(min(L), max(L), length=50)
+  }
+  
+  plt &lt;- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}</code></pre>
+<pre class="r"><code>#adapted from code used in Jason&#39;s thesis
+
+plot_loadings &lt;- function(L_est, Pop){
+  n &lt;- nrow(L_est)
+  k &lt;- ncol(L_est)
+  Idx &lt;- rep(c(1:n), k)
+  Loading &lt;- c(L_est)
+  Factor &lt;- paste0(&#39;k=&#39;,c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib &lt;- data.frame(Idx, Loading, Factor, Pop)
+  plt &lt;- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = &quot;dashed&quot;) +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, &quot;lines&quot;))
+  plot(plt)
+}</code></pre>
+</div>
+<div id="example-1-2-population-tree" class="section level1">
+<h1>Example 1: 2 Population Tree</h1>
+<p>This example is from the workflow website for the drift.alpha
+software. The results for the drift.alpha software are published, so I
+used this to ensure that my implementation of drift was giving
+consistent results. (Note: I am using a different prior than the
+analysis in the workflow website, so I won’t get exactly the same
+results.)</p>
+<div id="data-generation" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code># copied from drift.alpha
+two_pop_tree_sim &lt;- function(n_per_pop, p, sigma_e, sigma_b=rep(1, 3)){
+
+  if(length(sigma_b) != 3){
+    stop(&quot;There can only be 3 branch lengths i.e. factors&quot;)
+  }
+
+  # number of individuals
+  n &lt;- n_per_pop * 2
+
+  # loadings matrix which specifies the topology
+  L &lt;- matrix(0, nrow=n, ncol=3)
+  L[ ,1] &lt;- 1
+  L[1:n_per_pop, 2] &lt;- 1
+  L[(n_per_pop + 1):(2 * n_per_pop), 3] &lt;- 1
+
+  # drift on each branch
+  F &lt;- matrix(NA, nrow=p, ncol=3)
+  for(k in 1:3){
+    F[ ,k] &lt;- rnorm(p, 0, sigma_b[k])
+  }
+
+  # errors
+  E &lt;- matrix(rnorm(n*p, 0, sigma_e), nrow=n, ncol=p)
+
+  # data
+  Y &lt;- L %*% t(F) + E
+
+  # simulation object
+  res &lt;- list(Y=Y, L=L, F=F)
+  return(res)
+
+}</code></pre>
+<pre class="r"><code>set.seed(235)
+n_per_pop &lt;- 50
+pops &lt;- c(rep(&quot;Pop1&quot;, n_per_pop), rep(&quot;Pop2&quot;, n_per_pop))
+sigma_e &lt;- 1.0
+sigma_b &lt;- c(1.0, 1.0, 1.0)
+p = 10000
+sim_res &lt;- two_pop_tree_sim(n_per_pop, p, sigma_e, sigma_b)</code></pre>
+</div>
+<div id="visualizations-of-the-data" class="section level2">
+<h2>Visualizations of the Data</h2>
+<pre class="r"><code>plot_loadings(sim_res$L, pops)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals0 &lt;- tcrossprod(sim_res$Y)/ ncol(sim_res$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals0)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="drift-analysis" class="section level2">
+<h2>Drift Analysis</h2>
+<div id="analysis" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>drift_fit_init &lt;- drift_init(sim_res$Y, Kmax = 3, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Wrapping up...
+Done.</code></pre>
+<pre class="r"><code>drift_fit &lt;- drift_update(drift_fit_init, tol = 10^(-4), maxiter = 5000)</code></pre>
+<pre><code>[1] 0
+[1] -1465604
+[1] -1465099
+[1] -1465000
+[1] -1464972
+[1] -1464962
+[1] -1464957
+[1] -1464956
+[1] -1464955
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954
+[1] -1464954</code></pre>
+<p>This is a scatter plot of the entries of the initialization:</p>
+<pre class="r"><code>plot_loadings(drift_fit_init$EL, pops)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(drift_fit$drift_obj$EL, pops)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(drift_fit$drift_obj$resid_s2)</code></pre>
+<pre><code>[1] 1.001614</code></pre>
+<pre class="r"><code>cov2cor(drift_fit$drift_obj$CovF)</code></pre>
+<pre><code>           [,1]       [,2]       [,3]
+[1,]  1.0000000 -0.9701334 -0.9701934
+[2,] -0.9701334  1.0000000  0.9412170
+[3,] -0.9701934  0.9412170  1.0000000</code></pre>
+<pre class="r"><code>length(drift_fit$elbo.list)</code></pre>
+<pre><code>[1] 258</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(drift_fit$elbo.list)), y = drift_fit$elbo.list)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="observations" class="section level3">
+<h3>Observations</h3>
+<p>The drift method with generalized-binary prior is able to find the
+loadings matrix from the drift factorization. The first factor is a
+common mean factor with positive loading on all the samples. The second
+factor has a positive loading on samples in Population 1 and zero
+loading on samples in Population 2. The third factor has a positive
+loading on samples in Population 2 and zero loading on samples in
+Population 1. The second and third factors correspond to the tree split
+which separates the samples into two populations.</p>
+<p>The covariance matrix for the posterior of the factors has
+significant correlations between the factors. These correlations would
+be impossible to model with the flashier software.</p>
+<p>For this example, Drift ran for 258 backfit iterations.</p>
+</div>
+</div>
+</div>
+<div
+id="example-2-4-population-balanced-tree-f-is-not-constrained-to-be-orthogonal"
+class="section level1">
+<h1>Example 2: 4 Population Balanced Tree (F is not constrained to be
+orthogonal)</h1>
+<p>This example is the 4 population balanced tree example from Jason’s
+thesis.</p>
+<div id="data-generation-1" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>sim_4pops &lt;- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n &lt;- sum(pop_sizes)
+  p &lt;- n_genes
+
+  FF &lt;- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd &lt;- svd(FF)
+    FF &lt;- FF_svd$u
+    FF &lt;- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL &lt;- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] &lt;- 1
+  LL[, 2] &lt;- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] &lt;- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] &lt;- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] &lt;- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] &lt;- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] &lt;- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat &lt;- matrix(nrow = n, ncol = 4)
+  divmat[, 1] &lt;- LL[, 1]
+  divmat[, 2] &lt;- LL[, 2] - LL[, 3]
+  divmat[, 3] &lt;- LL[, 4] - LL[, 5]
+  divmat[, 4] &lt;- LL[, 6] - LL[, 7]
+
+  E &lt;- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops &lt;- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}</code></pre>
+<pre class="r"><code>sim_data_4pop &lt;- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = FALSE,
+                           seed = 666)</code></pre>
+</div>
+<div id="visualizations-of-the-data-1" class="section level2">
+<h2>Visualizations of the data</h2>
+<p>This is a heatmap of the loadings matrix, <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(sim_data_4pop$LL)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_loadings(sim_data_4pop$LL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
+<pre class="r"><code>plot_heatmap(crossprod(sim_data_4pop$FF))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals1 &lt;- tcrossprod(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals1)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="drift-analysis-1" class="section level2">
+<h2>Drift Analysis</h2>
+<div id="analysis-1" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>drift_fit_init1 &lt;- drift_init(sim_data_4pop$Y, Kmax = 7, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Adding factor 5 to flash object...
+Adding factor 6 to flash object...
+Adding factor 7 to flash object...
+Wrapping up...
+Done.</code></pre>
+<pre class="r"><code>drift_fit1 &lt;- drift_update(drift_fit_init1, tol = 10^(-4), maxiter = 5000)</code></pre>
+<pre><code>[1] 0
+[1] -239503.4
+[1] -239366.4
+[1] -239339.7
+[1] -239328.3
+[1] -239321.6
+[1] -239317.2
+[1] -239314.1
+[1] -239311.9
+[1] -239310.3
+[1] -239309.1
+[1] -239308.1
+[1] -239307.3
+[1] -239306.6
+[1] -239306
+[1] -239305.5
+[1] -239305
+[1] -239304.6
+[1] -239304.2
+[1] -239303.9
+[1] -239303.6
+[1] -239303.3
+[1] -239303.1
+[1] -239302.9
+[1] -239302.7
+[1] -239302.5
+[1] -239302.3
+[1] -239302.1
+[1] -239302
+[1] -239301.8
+[1] -239301.7
+[1] -239301.6
+[1] -239301.5
+[1] -239301.4
+[1] -239301.3
+[1] -239301.2
+[1] -239301.1
+[1] -239301
+[1] -239300.9
+[1] -239300.9
+[1] -239300.8
+[1] -239300.7
+[1] -239300.7
+[1] -239300.6
+[1] -239300.6
+[1] -239300.5
+[1] -239300.5
+[1] -239300.4
+[1] -239300.4
+[1] -239300.4
+[1] -239300.3
+[1] -239300.3
+[1] -239300.3
+[1] -239300.2
+[1] -239300.2
+[1] -239300.2
+[1] -239300.2
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8</code></pre>
+<p>This is a scatter plot of the entries of the initialization:</p>
+<pre class="r"><code>plot_loadings(drift_fit_init1$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(drift_fit1$drift_obj$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(drift_fit1$drift_obj$resid_s2)</code></pre>
+<pre><code>[1] 0.9920867</code></pre>
+<pre class="r"><code>cov2cor(drift_fit1$drift_obj$CovF)</code></pre>
+<pre><code>           [,1]       [,2]       [,3]       [,4]       [,5]       [,6]
+[1,]  1.0000000 -0.4416721 -0.4564596 -0.4047480 -0.4064749 -0.4312684
+[2,] -0.4416721  1.0000000  0.2016055 -0.6325868 -0.6310636  0.1904792
+[3,] -0.4564596  0.2016055  1.0000000  0.1847511  0.1855394 -0.5959239
+[4,] -0.4047480 -0.6325868  0.1847511  1.0000000  0.9815843  0.1745550
+[5,] -0.4064749 -0.6310636  0.1855394  0.9815843  1.0000000  0.1752998
+[6,] -0.4312684  0.1904792 -0.5959239  0.1745550  0.1752998  1.0000000
+[7,] -0.4318012  0.1907145 -0.5954937  0.1747707  0.1755163  0.9799529
+           [,7]
+[1,] -0.4318012
+[2,]  0.1907145
+[3,] -0.5954937
+[4,]  0.1747707
+[5,]  0.1755163
+[6,]  0.9799529
+[7,]  1.0000000</code></pre>
+<pre class="r"><code>length(drift_fit1$elbo.list)</code></pre>
+<pre><code>[1] 156</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(drift_fit1$elbo.list)), y = drift_fit1$elbo.list)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>drift_fit1$drift_obj$elbo</code></pre>
+<pre><code>[1] -239299.8</code></pre>
+</div>
+<div id="observations-1" class="section level3">
+<h3>Observations</h3>
+<p>Overall, Drift did a pretty good job at recovering the drift
+factorization loadings. The first factor looks like a common mean
+factor. The second and third factors correspond to the 2 vs 2 split. The
+latter four factors correspond to the four different population
+effects.</p>
+<p>The covariance matrix for the posterior of the factors shows that
+some factors have moderate amounts of correlation between them. For
+example, factors 2 and 5 have a correlation of -0.63. Furthermore,
+factors 6 and 7 have a correlation of 0.98.</p>
+<p>For this analysis, Drift used 156 backfit iterations.</p>
+</div>
+</div>
+<div id="ebcd" class="section level2">
+<h2>EBCD</h2>
+<p>For comparison, we apply EBCD to this dataset.</p>
+<div id="analysis-2" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>set.seed(6287)
+# ebcd_backfit_eps &lt;- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd1 &lt;- ebcd(X = t(sim_data_4pop$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>plot_heatmap(fit.ebcd1$EL)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(fit.ebcd1$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd1$vec.obj)</code></pre>
+<pre><code>[1] 963</code></pre>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]</code></pre>
+<pre><code>[1] -223799.1</code></pre>
+</div>
+<div id="observations-2" class="section level3">
+<h3>Observations</h3>
+<p>Overall, EBCD did an okay job at recovering the drift factorization
+loadings. The first factor has positive loading on all samples, which is
+what we wanted. However, in the scatter plot of the loadings, we can see
+that the samples from Populations A and D have a slightly smaller
+loadings value than the samples from Populations B and C. We see a
+similar phenomenon in factors 2 and 7, which represent the 2 vs 2 split.
+One possible explanation for this is the use of the generalized-binary
+prior. The flexibility of this prior allows EBCD to move towards
+estimates that don’t have strict binary structure.</p>
+</div>
+</div>
+<div id="drift-initialized-with-ebcd" class="section level2">
+<h2>Drift initialized with EBCD</h2>
+<div id="analysis-3" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>Z.transformed &lt;- transform_ebcd_Z(t(sim_data_4pop$Y), fit.ebcd1)
+drift_ebcd_init_obj &lt;- list(n = nrow(sim_data_4pop$Y),
+                    p = ncol(sim_data_4pop$Y),
+                    K = ncol(fit.ebcd1$EL),
+                    Y = sim_data_4pop$Y,
+                    YYt = tcrossprod(sim_data_4pop$Y),
+                    EL = fit.ebcd1$EL,
+                    EL2 = fit.ebcd1$EL^2,
+                    EF = Z.transformed,
+                    EF2 = Z.transformed^2,
+                    CovF = diag(rep(1, ncol(fit.ebcd1$Z))),
+                    EFtEF = crossprod(Z.transformed),
+                    resid_s2 = 1/fit.ebcd1$tau,
+                    prior_s2 = rep(1, ncol(fit.ebcd1$Z)),
+                    KL_l = NULL,
+                    KL_f = NULL,
+                    elbo = NULL,
+                    fitted_g_l = NULL,
+                    fitted_g_F = NULL,
+                    ebnm_fn = drift_fit_init1$ebnm_fn)</code></pre>
+<pre class="r"><code>drift_fit1_ebcd_init &lt;- drift_update(drift_ebcd_init_obj, tol = 10^(-4), maxiter = 5000)</code></pre>
+<pre><code>[1] 0
+[1] -239408.7
+[1] -239346.8
+[1] -239334.9
+[1] -239329.7
+[1] -239326.3
+[1] -239323.8
+[1] -239321.8
+[1] -239320.1
+[1] -239318.6
+[1] -239317.3
+[1] -239316.2
+[1] -239315.2
+[1] -239314.2
+[1] -239313.4
+[1] -239312.6
+[1] -239311.8
+[1] -239311.2
+[1] -239310.5
+[1] -239309.9
+[1] -239309.4
+[1] -239308.9
+[1] -239308.4
+[1] -239307.9
+[1] -239307.5
+[1] -239307.1
+[1] -239306.7
+[1] -239306.3
+[1] -239306
+[1] -239305.6
+[1] -239305.3
+[1] -239305
+[1] -239304.7
+[1] -239304.5
+[1] -239304.2
+[1] -239304
+[1] -239303.8
+[1] -239303.6
+[1] -239303.4
+[1] -239303.2
+[1] -239303
+[1] -239302.8
+[1] -239302.7
+[1] -239302.5
+[1] -239302.4
+[1] -239302.2
+[1] -239302.1
+[1] -239302
+[1] -239301.9
+[1] -239301.8
+[1] -239301.7
+[1] -239301.6
+[1] -239301.5
+[1] -239301.4
+[1] -239301.3
+[1] -239301.2
+[1] -239301.1
+[1] -239301.1
+[1] -239301
+[1] -239300.9
+[1] -239300.9
+[1] -239300.8
+[1] -239300.8
+[1] -239300.7
+[1] -239300.7
+[1] -239300.6
+[1] -239300.6
+[1] -239300.5
+[1] -239300.5
+[1] -239300.5
+[1] -239300.4
+[1] -239300.4
+[1] -239300.4
+[1] -239300.3
+[1] -239300.3
+[1] -239300.3
+[1] -239300.2
+[1] -239300.2
+[1] -239300.2
+[1] -239300.2
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300.1
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239300
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.9
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8
+[1] -239299.8</code></pre>
+<p>This is a scatter plot of the entries of the initialization:</p>
+<pre class="r"><code>plot_loadings(drift_ebcd_init_obj$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(drift_fit1_ebcd_init$drift_obj$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(drift_fit1_ebcd_init$drift_obj$resid_s2)</code></pre>
+<pre><code>[1] 0.992086</code></pre>
+<pre class="r"><code>cov2cor(drift_fit1_ebcd_init$drift_obj$CovF)</code></pre>
+<pre><code>           [,1]       [,2]       [,3]       [,4]       [,5]       [,6]
+[1,]  1.0000000 -0.4564993 -0.4053878 -0.4319879 -0.4061571 -0.4316724
+[2,] -0.4564993  1.0000000  0.1850593 -0.5952402  0.1854104 -0.5955781
+[3,] -0.4053878  0.1850593  1.0000000  0.1751226  0.9815878  0.1749947
+[4,] -0.4319879 -0.5952402  0.1751226  1.0000000  0.1754549  0.9799486
+[5,] -0.4061571  0.1854104  0.9815878  0.1754549  1.0000000  0.1753268
+[6,] -0.4316724 -0.5955781  0.1749947  0.9799486  0.1753268  1.0000000
+[7,] -0.4416139  0.2015964 -0.6320899  0.1907718 -0.6313904  0.1906325
+           [,7]
+[1,] -0.4416139
+[2,]  0.2015964
+[3,] -0.6320899
+[4,]  0.1907718
+[5,] -0.6313904
+[6,]  0.1906325
+[7,]  1.0000000</code></pre>
+<pre class="r"><code>length(drift_fit1_ebcd_init$elbo.list)</code></pre>
+<pre><code>[1] 181</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(drift_fit1_ebcd_init$elbo.list)), y = drift_fit1_ebcd_init$elbo.list)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>drift_fit1_ebcd_init$drift_obj$elbo</code></pre>
+<pre><code>[1] -239299.8</code></pre>
+</div>
+<div id="observations-3" class="section level3">
+<h3>Observations</h3>
+<p>The estimate from Drift initialized with EBCD is very similar (it
+might even be the same) to the original Drift estimate. One noticeable
+change is Drift reduced the amount of variability in the non-zero
+loading values within each factor. The objective function value for the
+estimate is very close to the objective function value for the original
+Drift estimate. This suggests that for this example, Drift finds a
+better estimate.</p>
+</div>
+</div>
+<div id="comparison" class="section level2">
+<h2>Comparison</h2>
+<p>The initialization that Drift used kind of looks like the estimate
+that EBCD found. In particular, the characteristic where different
+populations have slightly different positive loading values within a
+factor is the same. From visual inspection, I would say that the final
+Drift estimate is closer to the desired drift factorization loadings
+than the EBCD estimate.</p>
+</div>
+</div>
+<div
+id="example-3-4-population-balanced-tree-f-is-constrained-to-be-orthogonal"
+class="section level1">
+<h1>Example 3: 4 Population Balanced Tree (F is constrained to be
+orthogonal)</h1>
+<p>This example is the 4 population balanced tree example from Jason’s
+thesis. Here, we constrain <span class="math inline">\(F\)</span> to be
+orthogonal.</p>
+<div id="data-generation-2" class="section level2">
+<h2>Data Generation</h2>
+<pre class="r"><code>sim_data_4pop_orthog &lt;- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE,
+                           seed = 666)</code></pre>
+</div>
+<div id="visualizations-of-the-data-2" class="section level2">
+<h2>Visualizations of the data</h2>
+<p>This is a heatmap of the loadings matrix, <span
+class="math inline">\(L\)</span>:</p>
+<pre class="r"><code>plot_heatmap(sim_data_4pop_orthog$LL)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_loadings(sim_data_4pop_orthog$LL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of <span class="math inline">\(F^{T}F\)</span>:</p>
+<pre class="r"><code>plot_heatmap(crossprod(sim_data_4pop_orthog$FF))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>observed.vals2 &lt;- tcrossprod(sim_data_4pop_orthog$Y)/ ncol(sim_data_4pop_orthog$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix, <span
+class="math inline">\(XX^{T}/p\)</span>:</p>
+<pre class="r"><code>plot_heatmap(observed.vals2)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-52-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="drift-analysis-2" class="section level2">
+<h2>Drift Analysis</h2>
+<div id="analysis-4" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>drift_fit_init2 &lt;- drift_init(sim_data_4pop_orthog$Y, Kmax = 7, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Adding factor 5 to flash object...
+Adding factor 6 to flash object...
+Adding factor 7 to flash object...
+Wrapping up...
+Done.</code></pre>
+<pre class="r"><code>drift_fit2 &lt;- drift_update(drift_fit_init2, tol = 10^(-4), maxiter = 5000)</code></pre>
+<pre><code>[1] 0
+[1] -241079.1
+[1] -240715.8
+[1] -240561.9
+[1] -240438.1
+[1] -240328.4
+[1] -240231.5
+[1] -240146
+[1] -240070.6
+[1] -240004.8
+[1] -239947.8
+[1] -239899
+[1] -239857.6
+[1] -239822.7
+[1] -239793.7
+[1] -239769.5
+[1] -239749.4
+[1] -239732.7
+[1] -239718.7
+[1] -239706.9
+[1] -239696.7
+[1] -239688
+[1] -239680.4
+[1] -239673.8
+[1] -239668
+[1] -239663.1
+[1] -239658.9
+[1] -239655.4
+[1] -239652.4
+[1] -239649.8
+[1] -239647.5
+[1] -239645.5
+[1] -239643.7
+[1] -239642
+[1] -239639.9
+[1] -239633.1
+[1] -239590.5
+[1] -239535.4
+[1] -239502.2
+[1] -239483.9
+[1] -239482.2
+[1] -239480.5
+[1] -239479
+[1] -239477.6
+[1] -239476.2
+[1] -239474.9
+[1] -239473.6
+[1] -239472.5
+[1] -239471.3
+[1] -239470.3
+[1] -239469.2
+[1] -239468.3
+[1] -239467.3
+[1] -239466.4
+[1] -239465.6
+[1] -239464.8
+[1] -239464
+[1] -239463.2
+[1] -239462.5
+[1] -239461.8
+[1] -239461.1
+[1] -239460.5
+[1] -239459.8
+[1] -239459.2
+[1] -239458.6
+[1] -239458
+[1] -239457.5
+[1] -239456.9
+[1] -239456.4
+[1] -239455.9
+[1] -239455.4
+[1] -239454.9
+[1] -239454.4
+[1] -239453.9
+[1] -239453.5
+[1] -239453
+[1] -239452.6
+[1] -239452.2
+[1] -239451.7
+[1] -239451.3
+[1] -239450.9
+[1] -239450.5
+[1] -239450.1
+[1] -239449.8
+[1] -239449.4
+[1] -239449
+[1] -239448.7
+[1] -239448.3
+[1] -239448
+[1] -239447.6
+[1] -239447.3
+[1] -239447
+[1] -239446.7
+[1] -239446.4
+[1] -239446.1
+[1] -239445.8
+[1] -239445.5
+[1] -239445.2
+[1] -239444.9
+[1] -239444.6
+[1] -239444.4
+[1] -239444.1
+[1] -239443.9
+[1] -239443.7
+[1] -239443.6
+[1] -239443.6</code></pre>
+<p>This is a scatter plot of the entries of the initialization:</p>
+<pre class="r"><code>plot_loadings(drift_fit_init2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(drift_fit2$drift_obj$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(drift_fit2$drift_obj$resid_s2)</code></pre>
+<pre><code>[1] 0.9943908</code></pre>
+<pre class="r"><code>cov2cor(drift_fit2$drift_obj$CovF)</code></pre>
+<pre><code>              [,1]          [,2]          [,3]          [,4]          [,5]
+[1,]  1.000000e+00 -9.808564e-01 -9.697658e-01  3.915771e-02  4.898113e-02
+[2,] -9.808564e-01  1.000000e+00  9.870423e-01 -1.506523e-01 -1.629978e-01
+[3,] -9.697658e-01  9.870423e-01  1.000000e+00 -1.761714e-01 -1.916303e-01
+[4,]  3.915771e-02 -1.506523e-01 -1.761714e-01  1.000000e+00  1.203701e-01
+[5,]  4.898113e-02 -1.629978e-01 -1.916303e-01  1.203701e-01  1.000000e+00
+[6,] -7.389716e-02 -6.108950e-02 -1.258853e-01  3.806593e-01  4.121909e-01
+[7,] -1.885234e-09 -2.184084e-09 -2.140141e-09 -1.426979e-09 -1.469559e-09
+              [,6]          [,7]
+[1,] -7.389716e-02 -1.885234e-09
+[2,] -6.108950e-02 -2.184084e-09
+[3,] -1.258853e-01 -2.140141e-09
+[4,]  3.806593e-01 -1.426979e-09
+[5,]  4.121909e-01 -1.469559e-09
+[6,]  1.000000e+00 -1.285658e-10
+[7,] -1.285658e-10  1.000000e+00</code></pre>
+<pre class="r"><code>length(drift_fit2$elbo.list)</code></pre>
+<pre><code>[1] 104</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(drift_fit2$elbo.list)), y = drift_fit2$elbo.list)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-59-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>drift_fit2$drift_obj$elbo</code></pre>
+<pre><code>[1] -239443.6</code></pre>
+</div>
+<div id="observations-4" class="section level3">
+<h3>Observations</h3>
+<p>In this example, the Drift ELBO slightly decreases, leading to the
+termination of the algorithm. It goes from -239443.6175 to -239443.6194.
+I think due to numerical issues, this can happen. But I may also need to
+double check the Drift code.</p>
+</div>
+</div>
+<div id="ebcd-with-generalized-binary-prior" class="section level2">
+<h2>EBCD with generalized binary prior</h2>
+<div id="analysis-5" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>set.seed(6287)
+#set.seed(146)
+# ebcd_backfit_eps &lt;- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd2 &lt;- ebcd(X = t(sim_data_4pop_orthog$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
+<p>This is a heatmap of the estimate of <span
+class="math inline">\(L\)</span>, <span
+class="math inline">\(\hat{L}\)</span>:</p>
+<pre class="r"><code>plot_heatmap(fit.ebcd2$EL)</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(fit.ebcd2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the progression of the objective function</p>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-64-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the number of iterations that the backfit did before the
+convergence criterion was satisfied:</p>
+<pre class="r"><code>length(fit.ebcd2$vec.obj)</code></pre>
+<pre><code>[1] 2438</code></pre>
+<p>This is the value of the objective function that was attained:</p>
+<pre class="r"><code>fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]</code></pre>
+<pre><code>[1] -223835.9</code></pre>
+</div>
+<div id="observations-5" class="section level3">
+<h3>Observations</h3>
+<p>At first glance, EBCD seems to find a loadings estimate similar to
+the desired hierarchical loadings matrix. However, looking at the
+scatter plot of the loadings, we see that there is variation in the
+loadings values within each factor. Ideally, within each factor, the
+non-negative loadings are about the same value. The variation in
+loadings values could be due to the use of the generalized binary prior.
+The prior does not enforce a strict binary structure; it allows for
+variation in order to model shared effects that are not binary.
+Therefore, this prior gives EBCD the ability to move away from
+binary-structured solutions towards solutions that give higher objective
+function values.</p>
+<p>Another note is that if I change the seed before running EBCD, I
+sometimes get different estimates. The source of the randomness is
+something I still need to figure out.</p>
+</div>
+</div>
+<div id="drift-initialized-with-ebcd-1" class="section level2">
+<h2>Drift initialized with EBCD</h2>
+<div id="analysis-6" class="section level3">
+<h3>Analysis</h3>
+<pre class="r"><code>Z.transformed2 &lt;- transform_ebcd_Z(t(sim_data_4pop_orthog$Y), fit.ebcd2)
+drift_ebcd_init_obj2 &lt;- list(n = nrow(sim_data_4pop_orthog$Y),
+                    p = ncol(sim_data_4pop_orthog$Y),
+                    K = ncol(fit.ebcd2$EL),
+                    Y = sim_data_4pop_orthog$Y,
+                    YYt = tcrossprod(sim_data_4pop_orthog$Y),
+                    EL = fit.ebcd2$EL,
+                    EL2 = fit.ebcd2$EL^2,
+                    EF = Z.transformed2,
+                    EF2 = Z.transformed2^2,
+                    CovF = diag(rep(1, ncol(fit.ebcd2$Z))),
+                    EFtEF = crossprod(Z.transformed2),
+                    resid_s2 = 1/fit.ebcd2$tau,
+                    prior_s2 = rep(1, ncol(fit.ebcd2$Z)),
+                    KL_l = NULL,
+                    KL_f = NULL,
+                    elbo = NULL,
+                    fitted_g_l = NULL,
+                    fitted_g_F = NULL,
+                    ebnm_fn = drift_fit_init2$ebnm_fn)</code></pre>
+<pre class="r"><code>drift_fit2_ebcd_init &lt;- drift_update(drift_ebcd_init_obj2, tol = 10^(-4), maxiter = 5000)</code></pre>
+<pre><code>[1] 0
+[1] -239418.5
+[1] -239353.3
+[1] -239340.3
+[1] -239334.9
+[1] -239331.7
+[1] -239329.5
+[1] -239327.9
+[1] -239326.5
+[1] -239325.5
+[1] -239324.6
+[1] -239323.8
+[1] -239323.1
+[1] -239322.5
+[1] -239321.9
+[1] -239321.4
+[1] -239321
+[1] -239320.5
+[1] -239320.1
+[1] -239319.7
+[1] -239319.4
+[1] -239319.1
+[1] -239318.7
+[1] -239318.5
+[1] -239318.2
+[1] -239317.9
+[1] -239317.7
+[1] -239317.4
+[1] -239317.2
+[1] -239317
+[1] -239316.8
+[1] -239316.6
+[1] -239316.4
+[1] -239316.2
+[1] -239316
+[1] -239315.9
+[1] -239315.7
+[1] -239315.6
+[1] -239315.4
+[1] -239315.3
+[1] -239315.2
+[1] -239315.1
+[1] -239314.9
+[1] -239314.8
+[1] -239314.7
+[1] -239314.6
+[1] -239314.5
+[1] -239314.4
+[1] -239314.3
+[1] -239314.3
+[1] -239314.2
+[1] -239314.1
+[1] -239314
+[1] -239313.9
+[1] -239313.9
+[1] -239313.8
+[1] -239313.7
+[1] -239313.7
+[1] -239313.6
+[1] -239313.6
+[1] -239313.5
+[1] -239313.5
+[1] -239313.4
+[1] -239313.4
+[1] -239313.3
+[1] -239313.3
+[1] -239313.2
+[1] -239313.2
+[1] -239313.1
+[1] -239313.1
+[1] -239313.1
+[1] -239313
+[1] -239313
+[1] -239313
+[1] -239312.9
+[1] -239312.9
+[1] -239312.9
+[1] -239312.9
+[1] -239312.8
+[1] -239312.8
+[1] -239312.8
+[1] -239312.8
+[1] -239312.7
+[1] -239312.7
+[1] -239312.7
+[1] -239312.7
+[1] -239312.6
+[1] -239312.6
+[1] -239312.6
+[1] -239312.6
+[1] -239312.6
+[1] -239312.6
+[1] -239312.5
+[1] -239312.5
+[1] -239312.5
+[1] -239312.5
+[1] -239312.5
+[1] -239312.5
+[1] -239312.5
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.4
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.3
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.2
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312.1
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239312
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.9
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.8
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.7
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.6
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.5
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.4
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.3
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.2
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311.1
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239311
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.9
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.8
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.7
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.6
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.5
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.4
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.3
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.2
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310.1
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239310
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.9
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.8
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.7
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.6
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5
+[1] -239309.5</code></pre>
+<p>This is a scatter plot of the entries of the initialization:</p>
+<pre class="r"><code>plot_loadings(drift_ebcd_init_obj2$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-69-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the entries of <span
+class="math inline">\(\hat{L}\)</span>, separated by factor:</p>
+<pre class="r"><code>plot_loadings(drift_fit2_ebcd_init$drift_obj$EL, c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40)))</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-70-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>print(drift_fit2_ebcd_init$drift_obj$resid_s2)</code></pre>
+<pre><code>[1] 0.9917917</code></pre>
+<pre class="r"><code>cov2cor(drift_fit2_ebcd_init$drift_obj$CovF)</code></pre>
+<pre><code>           [,1]        [,2]        [,3]        [,4]        [,5]        [,6]
+[1,]  1.0000000 -0.33301020 -0.16603490 -0.16870440 -0.16985046 -0.16947598
+[2,] -0.3330102  1.00000000  0.05529132 -0.86443718  0.05656194 -0.86401411
+[3,] -0.1660349  0.05529132  1.00000000  0.02801082  0.98128378  0.02813893
+[4,] -0.1687044 -0.86443718  0.02801082  1.00000000  0.02865452  0.98166701
+[5,] -0.1698505  0.05656194  0.98128378  0.02865452  1.00000000  0.02878557
+[6,] -0.1694760 -0.86401411  0.02813893  0.98166701  0.02878557  1.00000000
+[7,] -0.3383583  0.11267676 -0.86287150  0.05708253 -0.86083340  0.05734360
+            [,7]
+[1,] -0.33835828
+[2,]  0.11267676
+[3,] -0.86287150
+[4,]  0.05708253
+[5,] -0.86083340
+[6,]  0.05734360
+[7,]  1.00000000</code></pre>
+<pre class="r"><code>length(drift_fit2_ebcd_init$elbo.list)</code></pre>
+<pre><code>[1] 846</code></pre>
+<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(drift_fit2_ebcd_init$elbo.list)), y = drift_fit2_ebcd_init$elbo.list)) + geom_line()</code></pre>
+<p><img src="figure/driftr-comparison.Rmd/unnamed-chunk-74-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>drift_fit2_ebcd_init$drift_obj$elbo</code></pre>
+<pre><code>[1] -239309.5</code></pre>
+</div>
+<div id="observations-6" class="section level3">
+<h3>Observations</h3>
+<p>The estimate from Drift initialized with EBCD is more similar to the
+EBCD estimate than the original Drift estimate. Drift maintained the
+individual population effect factors rather than explaining these
+effects through 2 vs 2 splits. Furthermore, the objective function value
+associated with this estimate is higher than that of the original Drift
+estimate. This suggests that in this case, EBCD found a better
+estimate.</p>
+<p>One note is that EBCD can produce different estimates under different
+seeds. So I’m not sure how robust this is to the actual EBCD estimate
+you use for initialization.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Sonoma 14.4.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] fastTopics_0.6-192 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
+ [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
+[13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
+
+loaded via a namespace (and not attached):
+ [1] tidyselect_1.2.1     viridisLite_0.4.2    farver_2.1.2        
+ [4] dplyr_1.1.4          fastmap_1.2.0        lazyeval_0.2.2      
+ [7] promises_1.3.0       digest_0.6.37        lifecycle_1.0.4     
+[10] processx_3.8.4       invgamma_1.1         compiler_4.3.2      
+[13] rlang_1.1.4          sass_0.4.9           progress_1.2.3      
+[16] tools_4.3.2          utf8_1.2.4           yaml_2.3.10         
+[19] data.table_1.15.4    knitr_1.48           labeling_0.4.3      
+[22] prettyunits_1.2.0    htmlwidgets_1.6.4    scatterplot3d_0.3-44
+[25] plyr_1.8.9           Rtsne_0.17           withr_3.0.1         
+[28] purrr_1.0.2          grid_4.3.2           fansi_1.0.6         
+[31] git2r_0.33.0         colorspace_2.1-1     scales_1.3.0        
+[34] gtools_3.9.5         cli_3.6.3            rmarkdown_2.28      
+[37] crayon_1.5.3         generics_0.1.3       RcppParallel_5.1.9  
+[40] rstudioapi_0.16.0    httr_1.4.7           pbapply_1.7-2       
+[43] cachem_1.1.0         stringr_1.5.1        splines_4.3.2       
+[46] parallel_4.3.2       softImpute_1.4-1     vctrs_0.6.5         
+[49] jsonlite_1.8.8       callr_3.7.6          hms_1.1.3           
+[52] mixsqp_0.3-54        horseshoe_0.2.0      trust_0.1-8         
+[55] plotly_4.10.4        jquerylib_0.1.4      tidyr_1.3.1         
+[58] glue_1.7.0           ps_1.7.7             uwot_0.1.16         
+[61] stringi_1.8.4        Polychrome_1.5.1     gtable_0.3.5        
+[64] later_1.3.2          quadprog_1.5-8       munsell_0.5.1       
+[67] tibble_3.2.1         pillar_1.9.0         htmltools_0.5.8.1   
+[70] truncnorm_1.0-9      R6_2.5.1             rprojroot_2.0.4     
+[73] evaluate_0.24.0      lattice_0.22-6       highr_0.11          
+[76] RhpcBLASctl_0.23-42  SQUAREM_2021.1       httpuv_1.6.15       
+[79] bslib_0.8.0          Rcpp_1.0.13          deconvolveR_1.2-1   
+[82] whisker_0.4.1        xfun_0.47            fs_1.6.4            
+[85] getPass_0.2-4        pkgconfig_2.0.3     </code></pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

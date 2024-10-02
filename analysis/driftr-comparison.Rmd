@@ -1,0 +1,601 @@
+---
+title: "drift-comparison"
+author: "Annie Xie"
+date: "2024-07-13"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we are interested in assessing the Drift method, another covariance decomposition method. The Drift model is essentially the EBMF model with a normal prior on the factors. However, the Drift algorithm uses a different type of variational approximation than the EBMF algorithm. The EBMF algorithm uses the mean-field approximation. The Drift algorithm does not use a mean-field approximation for the factors. This allows for a correlation structure in the posterior of the factors.
+
+# Packages and Functions
+```{r}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+# source("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R")
+```
+
+```{r}
+source("code/ebcd_functions.R")
+# source("~/Documents/PhD 3/Research/EBCD/gbcd_functions.R")
+source("code/drift_functions.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+# Example 1: 2 Population Tree
+This example is from the workflow website for the drift.alpha software. The results for the drift.alpha software are published, so I used this to ensure that my implementation of drift was giving consistent results. (Note: I am using a different prior than the analysis in the workflow website, so I won't get exactly the same results.)
+
+## Data Generation 
+
+```{r}
+# copied from drift.alpha
+two_pop_tree_sim <- function(n_per_pop, p, sigma_e, sigma_b=rep(1, 3)){
+
+  if(length(sigma_b) != 3){
+    stop("There can only be 3 branch lengths i.e. factors")
+  }
+
+  # number of individuals
+  n <- n_per_pop * 2
+
+  # loadings matrix which specifies the topology
+  L <- matrix(0, nrow=n, ncol=3)
+  L[ ,1] <- 1
+  L[1:n_per_pop, 2] <- 1
+  L[(n_per_pop + 1):(2 * n_per_pop), 3] <- 1
+
+  # drift on each branch
+  F <- matrix(NA, nrow=p, ncol=3)
+  for(k in 1:3){
+    F[ ,k] <- rnorm(p, 0, sigma_b[k])
+  }
+
+  # errors
+  E <- matrix(rnorm(n*p, 0, sigma_e), nrow=n, ncol=p)
+
+  # data
+  Y <- L %*% t(F) + E
+
+  # simulation object
+  res <- list(Y=Y, L=L, F=F)
+  return(res)
+
+}
+```
+
+```{r}
+set.seed(235)
+n_per_pop <- 50
+pops <- c(rep("Pop1", n_per_pop), rep("Pop2", n_per_pop))
+sigma_e <- 1.0
+sigma_b <- c(1.0, 1.0, 1.0)
+p = 10000
+sim_res <- two_pop_tree_sim(n_per_pop, p, sigma_e, sigma_b)
+```
+
+## Visualizations of the Data
+```{r}
+plot_loadings(sim_res$L, pops)
+```
+
+```{r}
+observed.vals0 <- tcrossprod(sim_res$Y)/ ncol(sim_res$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals0)
+```
+
+## Drift Analysis
+
+### Analysis
+```{r}
+drift_fit_init <- drift_init(sim_res$Y, Kmax = 3, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)
+drift_fit <- drift_update(drift_fit_init, tol = 10^(-4), maxiter = 5000)
+```
+
+This is a scatter plot of the entries of the initialization:
+```{r}
+plot_loadings(drift_fit_init$EL, pops)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(drift_fit$drift_obj$EL, pops)
+```
+
+```{r}
+print(drift_fit$drift_obj$resid_s2)
+```
+
+```{r}
+cov2cor(drift_fit$drift_obj$CovF)
+```
+
+```{r}
+length(drift_fit$elbo.list)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(drift_fit$elbo.list)), y = drift_fit$elbo.list)) + geom_line()
+```
+
+### Observations
+The drift method with generalized-binary prior is able to find the loadings matrix from the drift factorization. The first factor is a common mean factor with positive loading on all the samples. The second factor has a positive loading on samples in Population 1 and zero loading on samples in Population 2. The third factor has a positive loading on samples in Population 2 and zero loading on samples in Population 1. The second and third factors correspond to the tree split which separates the samples into two populations. 
+
+The covariance matrix for the posterior of the factors has significant correlations between the factors. These correlations would be impossible to model with the flashier software.
+
+For this example, Drift ran for 258 backfit iterations.
+
+# Example 2: 4 Population Balanced Tree (F is not constrained to be orthogonal)
+This example is the 4 population balanced tree example from Jason's thesis.
+
+## Data Generation
+
+```{r}
+sim_4pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+
+  FF <- matrix(rnorm(7 * p, sd = rep(branch_sds, each = p)), ncol = 7)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = pop_sizes)
+
+  # Only true for trees with no admixture:
+  divmat <- matrix(nrow = n, ncol = 4)
+  divmat[, 1] <- LL[, 1]
+  divmat[, 2] <- LL[, 2] - LL[, 3]
+  divmat[, 3] <- LL[, 4] - LL[, 5]
+  divmat[, 4] <- LL[, 6] - LL[, 7]
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, divmat = divmat, pops = pops))
+}
+```
+
+```{r}
+sim_data_4pop <- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = FALSE,
+                           seed = 666)
+```
+
+## Visualizations of the data
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_4pop$LL)
+```
+
+```{r}
+plot_loadings(sim_data_4pop$LL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_4pop$FF))
+```
+
+```{r}
+observed.vals1 <- tcrossprod(sim_data_4pop$Y)/ ncol(sim_data_4pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## Drift Analysis
+
+### Analysis
+
+```{r}
+drift_fit_init1 <- drift_init(sim_data_4pop$Y, Kmax = 7, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)
+drift_fit1 <- drift_update(drift_fit_init1, tol = 10^(-4), maxiter = 5000)
+```
+
+This is a scatter plot of the entries of the initialization:
+```{r}
+plot_loadings(drift_fit_init1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(drift_fit1$drift_obj$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+print(drift_fit1$drift_obj$resid_s2)
+```
+
+```{r}
+cov2cor(drift_fit1$drift_obj$CovF)
+```
+
+```{r}
+length(drift_fit1$elbo.list)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(drift_fit1$elbo.list)), y = drift_fit1$elbo.list)) + geom_line()
+```
+
+```{r}
+drift_fit1$drift_obj$elbo
+```
+
+### Observations
+Overall, Drift did a pretty good job at recovering the drift factorization loadings. The first factor looks like a common mean factor. The second and third factors correspond to the 2 vs 2 split. The latter four factors correspond to the four different population effects. 
+
+The covariance matrix for the posterior of the factors shows that some factors have moderate amounts of correlation between them. For example, factors 2 and 5 have a correlation of -0.63. Furthermore, factors 6 and 7 have a correlation of 0.98.
+
+For this analysis, Drift used 156 backfit iterations.
+
+## EBCD
+For comparison, we apply EBCD to this dataset.
+
+### Analysis
+```{r}
+set.seed(6287)
+# ebcd_backfit_eps <- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd1 <- ebcd(X = t(sim_data_4pop$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(fit.ebcd1$EL)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd1$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd1$vec.obj)), y = fit.ebcd1$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd1$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd1$vec.obj[length(fit.ebcd1$vec.obj)]
+```
+
+### Observations
+Overall, EBCD did an okay job at recovering the drift factorization loadings. The first factor has positive loading on all samples, which is what we wanted. However, in the scatter plot of the loadings, we can see that the samples from Populations A and D have a slightly smaller loadings value than the samples from Populations B and C. We see a similar phenomenon in factors 2 and 7, which represent the 2 vs 2 split. One possible explanation for this is the use of the generalized-binary prior. The flexibility of this prior allows EBCD to move towards estimates that don't have strict binary structure.
+
+## Drift initialized with EBCD
+
+### Analysis
+```{r}
+Z.transformed <- transform_ebcd_Z(t(sim_data_4pop$Y), fit.ebcd1)
+drift_ebcd_init_obj <- list(n = nrow(sim_data_4pop$Y),
+                    p = ncol(sim_data_4pop$Y),
+                    K = ncol(fit.ebcd1$EL),
+                    Y = sim_data_4pop$Y,
+                    YYt = tcrossprod(sim_data_4pop$Y),
+                    EL = fit.ebcd1$EL,
+                    EL2 = fit.ebcd1$EL^2,
+                    EF = Z.transformed,
+                    EF2 = Z.transformed^2,
+                    CovF = diag(rep(1, ncol(fit.ebcd1$Z))),
+                    EFtEF = crossprod(Z.transformed),
+                    resid_s2 = 1/fit.ebcd1$tau,
+                    prior_s2 = rep(1, ncol(fit.ebcd1$Z)),
+                    KL_l = NULL,
+                    KL_f = NULL,
+                    elbo = NULL,
+                    fitted_g_l = NULL,
+                    fitted_g_F = NULL,
+                    ebnm_fn = drift_fit_init1$ebnm_fn)
+```
+
+```{r}
+drift_fit1_ebcd_init <- drift_update(drift_ebcd_init_obj, tol = 10^(-4), maxiter = 5000)
+```
+
+This is a scatter plot of the entries of the initialization:
+```{r}
+plot_loadings(drift_ebcd_init_obj$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(drift_fit1_ebcd_init$drift_obj$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+print(drift_fit1_ebcd_init$drift_obj$resid_s2)
+```
+
+```{r}
+cov2cor(drift_fit1_ebcd_init$drift_obj$CovF)
+```
+
+```{r}
+length(drift_fit1_ebcd_init$elbo.list)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(drift_fit1_ebcd_init$elbo.list)), y = drift_fit1_ebcd_init$elbo.list)) + geom_line()
+```
+
+```{r}
+drift_fit1_ebcd_init$drift_obj$elbo
+```
+
+### Observations
+The estimate from Drift initialized with EBCD is very similar (it might even be the same) to the original Drift estimate. One noticeable change is Drift reduced the amount of variability in the non-zero loading values within each factor. The objective function value for the estimate is very close to the objective function value for the original Drift estimate. This suggests that for this example, Drift finds a better estimate. 
+
+## Comparison
+The initialization that Drift used kind of looks like the estimate that EBCD found. In particular, the characteristic where different populations have slightly different positive loading values within a factor is the same. From visual inspection, I would say that the final Drift estimate is closer to the desired drift factorization loadings than the EBCD estimate.
+
+# Example 3: 4 Population Balanced Tree (F is constrained to be orthogonal)
+This example is the 4 population balanced tree example from Jason's thesis. Here, we constrain $F$ to be orthogonal.
+
+## Data Generation
+```{r}
+sim_data_4pop_orthog <- sim_4pops(pop_sizes = rep(40, 4),
+                           branch_sds = rep(2, 7),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = TRUE,
+                           seed = 666)
+```
+
+## Visualizations of the data
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_4pop_orthog$LL)
+```
+
+```{r}
+plot_loadings(sim_data_4pop_orthog$LL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_4pop_orthog$FF))
+```
+
+```{r}
+observed.vals2 <- tcrossprod(sim_data_4pop_orthog$Y)/ ncol(sim_data_4pop_orthog$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals2)
+```
+
+## Drift Analysis
+
+### Analysis
+
+```{r}
+drift_fit_init2 <- drift_init(sim_data_4pop_orthog$Y, Kmax = 7, ebnm_fn = ebnm::ebnm_generalized_binary, verbose = 1)
+drift_fit2 <- drift_update(drift_fit_init2, tol = 10^(-4), maxiter = 5000)
+```
+
+This is a scatter plot of the entries of the initialization:
+```{r}
+plot_loadings(drift_fit_init2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(drift_fit2$drift_obj$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+print(drift_fit2$drift_obj$resid_s2)
+```
+
+```{r}
+cov2cor(drift_fit2$drift_obj$CovF)
+```
+
+```{r}
+length(drift_fit2$elbo.list)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(drift_fit2$elbo.list)), y = drift_fit2$elbo.list)) + geom_line()
+```
+
+```{r}
+drift_fit2$drift_obj$elbo
+```
+
+### Observations
+In this example, the Drift ELBO slightly decreases, leading to the termination of the algorithm. It goes from -239443.6175 to -239443.6194. I think due to numerical issues, this can happen. But I may also need to double check the Drift code.
+
+## EBCD with generalized binary prior
+
+### Analysis
+```{r}
+set.seed(6287)
+#set.seed(146)
+# ebcd_backfit_eps <- nrow(sim_data_4pop$Y)*ncol(sim_data_4pop$Y)*sqrt(.Machine$double.eps)
+fit.ebcd2 <- ebcd(X = t(sim_data_4pop_orthog$Y), Kmax = 7, maxiter_backfit = 10000, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(fit.ebcd2$EL)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(fit.ebcd2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a plot of the progression of the objective function
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()
+```
+
+This is the number of iterations that the backfit did before the convergence criterion was satisfied:
+```{r}
+length(fit.ebcd2$vec.obj)
+```
+
+This is the value of the objective function that was attained:
+```{r}
+fit.ebcd2$vec.obj[length(fit.ebcd2$vec.obj)]
+```
+
+### Observations
+At first glance, EBCD seems to find a loadings estimate similar to the desired hierarchical loadings matrix. However, looking at the scatter plot of the loadings, we see that there is variation in the loadings values within each factor. Ideally, within each factor, the non-negative loadings are about the same value. The variation in loadings values could be due to the use of the generalized binary prior. The prior does not enforce a strict binary structure; it allows for variation in order to model shared effects that are not binary. Therefore, this prior gives EBCD the ability to move away from binary-structured solutions towards solutions that give higher objective function values.
+
+Another note is that if I change the seed before running EBCD, I sometimes get different estimates. The source of the randomness is something I still need to figure out.
+
+## Drift initialized with EBCD
+
+### Analysis
+```{r}
+Z.transformed2 <- transform_ebcd_Z(t(sim_data_4pop_orthog$Y), fit.ebcd2)
+drift_ebcd_init_obj2 <- list(n = nrow(sim_data_4pop_orthog$Y),
+                    p = ncol(sim_data_4pop_orthog$Y),
+                    K = ncol(fit.ebcd2$EL),
+                    Y = sim_data_4pop_orthog$Y,
+                    YYt = tcrossprod(sim_data_4pop_orthog$Y),
+                    EL = fit.ebcd2$EL,
+                    EL2 = fit.ebcd2$EL^2,
+                    EF = Z.transformed2,
+                    EF2 = Z.transformed2^2,
+                    CovF = diag(rep(1, ncol(fit.ebcd2$Z))),
+                    EFtEF = crossprod(Z.transformed2),
+                    resid_s2 = 1/fit.ebcd2$tau,
+                    prior_s2 = rep(1, ncol(fit.ebcd2$Z)),
+                    KL_l = NULL,
+                    KL_f = NULL,
+                    elbo = NULL,
+                    fitted_g_l = NULL,
+                    fitted_g_F = NULL,
+                    ebnm_fn = drift_fit_init2$ebnm_fn)
+```
+
+```{r}
+drift_fit2_ebcd_init <- drift_update(drift_ebcd_init_obj2, tol = 10^(-4), maxiter = 5000)
+```
+
+This is a scatter plot of the entries of the initialization:
+```{r}
+plot_loadings(drift_ebcd_init_obj2$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(drift_fit2_ebcd_init$drift_obj$EL, c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40)))
+```
+
+```{r}
+print(drift_fit2_ebcd_init$drift_obj$resid_s2)
+```
+
+```{r}
+cov2cor(drift_fit2_ebcd_init$drift_obj$CovF)
+```
+
+```{r}
+length(drift_fit2_ebcd_init$elbo.list)
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(drift_fit2_ebcd_init$elbo.list)), y = drift_fit2_ebcd_init$elbo.list)) + geom_line()
+```
+
+```{r}
+drift_fit2_ebcd_init$drift_obj$elbo
+```
+
+### Observations
+The estimate from Drift initialized with EBCD is more similar to the EBCD estimate than the original Drift estimate. Drift maintained the individual population effect factors rather than explaining these effects through 2 vs 2 splits. Furthermore, the objective function value associated with this estimate is higher than that of the original Drift estimate. This suggests that in this case, EBCD found a better estimate. 
+
+One note is that EBCD can produce different estimates under different seeds. So I'm not sure how robust this is to the actual EBCD estimate you use for initialization.
+

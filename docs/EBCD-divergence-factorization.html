@@ -15,7 +15,7 @@
 
 <title>EBCD-divergence-factorization</title>
 
-<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-06-19
+<strong>Last updated:</strong> 2024-10-02
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree3e279e4401e9a37e32f21ec2ea902a3353ecd2f6targetblank3e279e4a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree511bb0f8a749f100c110a7a37996c397d7853bc9targetblank511bb0fa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/3e279e4401e9a37e32f21ec2ea902a3353ecd2f6" target="_blank">3e279e4</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/511bb0f8a749f100c110a7a37996c397d7853bc9" target="_blank">511bb0f</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree3e279e4401e9a37e32f21ec2ea902a3353ecd2f6targetblank3e279e4a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree511bb0f8a749f100c110a7a37996c397d7853bc9targetblank511bb0fa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/3e279e4401e9a37e32f21ec2ea902a3353ecd2f6" target="_blank">3e279e4</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/511bb0f8a749f100c110a7a37996c397d7853bc9" target="_blank">511bb0f</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -559,8 +559,11 @@ Ignored files:
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
 
-Unstaged changes:
-    Modified:   analysis/EBCD-divergence-factorization-examples.Rmd
+Untracked files:
+    Untracked:  analysis/convergence-comparison-experiments.Rmd
+    Untracked:  analysis/driftr-comparison.Rmd
+    Untracked:  analysis/generalized-binary-comparison-experiments.Rmd
+    Untracked:  analysis/other-binary-simulations.Rmd
 
 </code></pre>
 <p>
@@ -607,6 +610,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/511bb0f8a749f100c110a7a37996c397d7853bc9/analysis/EBCD-divergence-factorization.Rmd" target="_blank">511bb0f</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-10-02
+</td>
+<td>
+Add updates to divergence factorization simulations
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/22bf89dc492f756316ec78f2b26b653a24546daa/docs/EBCD-divergence-factorization.html" target="_blank">22bf89d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-19
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -667,7 +704,7 @@ Add divergence factorization experiments
 </div>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>In this analysis, we are interesting in testing EBCD’s ability to
+<p>In this analysis, we are interested in testing EBCD’s ability to
 recover divergence factorizations (as opposed to drift factorizations).
 The reason we are interested in divergence factorizations is because
 theoretically, the divergence factorization is easier to find than the
@@ -699,8 +736,9 @@ Attaching package: &#39;patchwork&#39;</code></pre>
 <pre><code>The following object is masked from &#39;package:cowplot&#39;:
 
     align_plots</code></pre>
-<pre class="r"><code>library(fastTopics)
-#source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
+<pre class="r"><code>library(fastTopics)</code></pre>
+<pre><code>Warning: package &#39;fastTopics&#39; was built under R version 4.3.3</code></pre>
+<pre class="r"><code>#source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
 <pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;), brks = NULL){
   ### define the color map
   cols &lt;- colorRampPalette(colors_range)(49)
@@ -2071,50 +2109,48 @@ LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlap
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/New_York
+time zone: America/Chicago
 tzcode source: internal
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [1] fastTopics_0.6-192 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
  [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
  [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
 [13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
 
 loaded via a namespace (and not attached):
- [1] pbapply_1.7-2        rlang_1.1.3          git2r_0.33.0        
- [4] horseshoe_0.2.0      compiler_4.3.2       getPass_0.2-4       
- [7] callr_3.7.6          vctrs_0.6.5          quantreg_5.97       
-[10] quadprog_1.5-8       stringr_1.5.1        pkgconfig_2.0.3     
-[13] crayon_1.5.2         fastmap_1.2.0        mcmc_0.9-8          
-[16] labeling_0.4.3       utf8_1.2.4           promises_1.3.0      
-[19] rmarkdown_2.27       ps_1.7.6             MatrixModels_0.5-3  
-[22] purrr_1.0.2          xfun_0.44            cachem_1.1.0        
-[25] trust_0.1-8          jsonlite_1.8.8       progress_1.2.3      
-[28] highr_0.11           later_1.3.2          parallel_4.3.2      
-[31] prettyunits_1.2.0    R6_2.5.1             bslib_0.7.0         
-[34] stringi_1.8.4        SQUAREM_2021.1       jquerylib_0.1.4     
-[37] Rcpp_1.0.12          knitr_1.45           httpuv_1.6.15       
-[40] splines_4.3.2        tidyselect_1.2.1     rstudioapi_0.16.0   
-[43] yaml_2.3.8           processx_3.8.4       plyr_1.8.9          
-[46] lattice_0.22-6       tibble_3.2.1         withr_3.0.0         
-[49] coda_0.19-4.1        evaluate_0.23        Rtsne_0.17          
-[52] survival_3.6-4       RcppParallel_5.1.7   pillar_1.9.0        
-[55] whisker_0.4.1        plotly_4.10.4        softImpute_1.4-1    
-[58] generics_0.1.3       rprojroot_2.0.4      invgamma_1.1        
-[61] truncnorm_1.0-9      hms_1.1.3            munsell_0.5.1       
-[64] scales_1.3.0         glue_1.7.0           scatterplot3d_0.3-44
-[67] lazyeval_0.2.2       tools_4.3.2          data.table_1.15.4   
-[70] SparseM_1.81         fs_1.6.4             grid_4.3.2          
-[73] tidyr_1.3.1          MCMCpack_1.7-0       colorspace_2.1-0    
-[76] deconvolveR_1.2-1    cli_3.6.2            Polychrome_1.5.1    
-[79] fansi_1.0.6          mixsqp_0.3-54        viridisLite_0.4.2   
-[82] dplyr_1.1.4          uwot_0.1.16          gtable_0.3.5        
-[85] sass_0.4.9           digest_0.6.35        farver_2.1.2        
-[88] htmlwidgets_1.6.4    htmltools_0.5.8.1    lifecycle_1.0.4     
-[91] httr_1.4.7           MASS_7.3-60.0.1     </code></pre>
+ [1] tidyselect_1.2.1     viridisLite_0.4.2    farver_2.1.2        
+ [4] dplyr_1.1.4          fastmap_1.2.0        lazyeval_0.2.2      
+ [7] promises_1.3.0       digest_0.6.37        lifecycle_1.0.4     
+[10] processx_3.8.4       invgamma_1.1         compiler_4.3.2      
+[13] rlang_1.1.4          sass_0.4.9           progress_1.2.3      
+[16] tools_4.3.2          utf8_1.2.4           yaml_2.3.10         
+[19] data.table_1.15.4    knitr_1.48           labeling_0.4.3      
+[22] prettyunits_1.2.0    htmlwidgets_1.6.4    scatterplot3d_0.3-44
+[25] plyr_1.8.9           Rtsne_0.17           withr_3.0.1         
+[28] purrr_1.0.2          grid_4.3.2           fansi_1.0.6         
+[31] git2r_0.33.0         colorspace_2.1-1     scales_1.3.0        
+[34] gtools_3.9.5         cli_3.6.3            rmarkdown_2.28      
+[37] crayon_1.5.3         generics_0.1.3       RcppParallel_5.1.9  
+[40] rstudioapi_0.16.0    httr_1.4.7           pbapply_1.7-2       
+[43] cachem_1.1.0         stringr_1.5.1        splines_4.3.2       
+[46] parallel_4.3.2       softImpute_1.4-1     vctrs_0.6.5         
+[49] jsonlite_1.8.8       callr_3.7.6          hms_1.1.3           
+[52] mixsqp_0.3-54        horseshoe_0.2.0      trust_0.1-8         
+[55] plotly_4.10.4        jquerylib_0.1.4      tidyr_1.3.1         
+[58] glue_1.7.0           ps_1.7.7             uwot_0.1.16         
+[61] stringi_1.8.4        Polychrome_1.5.1     gtable_0.3.5        
+[64] later_1.3.2          quadprog_1.5-8       munsell_0.5.1       
+[67] tibble_3.2.1         pillar_1.9.0         htmltools_0.5.8.1   
+[70] truncnorm_1.0-9      R6_2.5.1             rprojroot_2.0.4     
+[73] evaluate_0.24.0      lattice_0.22-6       highr_0.11          
+[76] RhpcBLASctl_0.23-42  SQUAREM_2021.1       httpuv_1.6.15       
+[79] bslib_0.8.0          Rcpp_1.0.13          deconvolveR_1.2-1   
+[82] whisker_0.4.1        xfun_0.47            fs_1.6.4            
+[85] getPass_0.2-4        pkgconfig_2.0.3     </code></pre>
 </div>
 </div>
 </div>

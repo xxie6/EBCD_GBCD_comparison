@@ -2,7 +2,9 @@
 title: "EBCD-divergence-factorization-examples"
 author: "Annie Xie"
 date: "2024-06-12"
-output: workflowr::wflow_html
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
 editor_options:
   chunk_output_type: console
 ---
@@ -13,7 +15,7 @@ In this analysis, we are interested in testing EBCD's ability to recover diverge
 Furthermore, for these examples we compare EBCD with flash-Cov (which fits the EBMF-Cov model). We want to assess differences in the solutions of these two methods.
 
 # Packages and Functions
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)

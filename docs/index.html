@@ -310,7 +310,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-08-27
+<strong>Last updated:</strong> 2025-01-13
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -357,15 +357,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree78d14c4b2b3312beb135694e70973c6082e585cftargetblank78d14c4a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree6d15e2068758a80caeaf58b736047dfb6b2d4694targetblank6d15e20a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/78d14c4b2b3312beb135694e70973c6082e585cf" target="_blank">78d14c4</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/6d15e2068758a80caeaf58b736047dfb6b2d4694" target="_blank">6d15e20</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree78d14c4b2b3312beb135694e70973c6082e585cftargetblank78d14c4a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree6d15e2068758a80caeaf58b736047dfb6b2d4694targetblank6d15e20a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -375,7 +375,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/78d14c4b2b3312beb135694e70973c6082e585cf" target="_blank">78d14c4</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/6d15e2068758a80caeaf58b736047dfb6b2d4694" target="_blank">6d15e20</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -396,7 +396,13 @@ Ignored files:
     Ignored:    data/.DS_Store
 
 Untracked files:
-    Untracked:  analysis/driftr-comparison.Rmd
+    Untracked:  analysis/gbcd-tree-experiments.Rmd
+    Untracked:  analysis/star-simulations.Rmd
+    Untracked:  code/gbcd_functions.R
+
+Unstaged changes:
+    Modified:   analysis/driftr-comparison.Rmd
+    Modified:   code/drift_functions.R
 
 </code></pre>
 <p>
@@ -441,6 +447,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/6d15e2068758a80caeaf58b736047dfb6b2d4694/analysis/index.Rmd" target="_blank">6d15e20</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-01-13
+</td>
+<td>
+Update website links
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/1beed1a67223938407dee1ce1570be269a35a016/docs/index.html" target="_blank">1beed1a</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-08-27
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -723,10 +763,19 @@ Start workflowr project.
 <p>This is my project comparing two covariance decomposition methods,
 Generalized Binary Covariance Decomposition (GBCD) and Empirical Bayes
 Covariance Decomposition (EBCD), from the Stephens Lab.</p>
-<p>Simulations:</p>
+<p>Simulations (generally ordered by complexity of simulated
+dataset):</p>
 <ul>
 <li>Results for the <a href="simple-simulation-normal-data.html">simple
-4-patient normal data simulation</a></li>
+4-patient normal data simulation</a>.</li>
+<li>Results for <a
+href="generalized-binary-comparison-experiments.html">tree-structured
+data (similar to 4-patient dataset)</a></li>
+<li>More results for <a
+href="convergence-comparison-experiments.html">tree-structured
+data</a></li>
+<li>Results for <a href="other-binary-simulations.html">data from
+sparse, binary-overlapping loadings</a></li>
 <li>Results for the <a href="simulation-normal-data.html">8-patient
 normal data simulation</a></li>
 <li>Results for the <a href="simulation-analysis.html">scRNA-seq dataset

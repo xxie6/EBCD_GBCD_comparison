@@ -2,7 +2,9 @@
 title: "EBCD-laplace-splitting"
 author: "Annie Xie"
 date: "2024-05-17"
-output: workflowr::wflow_html
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
 editor_options:
   chunk_output_type: console
 ---
@@ -16,7 +18,7 @@ One hypothesis is that GBCD may be able to recover the desired loadings matrix b
 In this analysis, I want to explore this strategy with EBCD and see if it improves results.
 
 # Packages and Functions
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
@@ -90,7 +92,7 @@ set.seed(2052)
 data_norm <- generate_normal_data(0.01)
 ```
 
-```{r}
+```{r, eval = FALSE, include = FALSE}
 dim(data_norm$Y)
 ```
 
@@ -120,6 +122,7 @@ plot_heatmap(observed.vals)
 
 ### EBCD with Point-Laplace Prior
 
+Now, we apply EBCD with the point-Laplace prior.
 ```{r}
 set.seed(6287)
 fit.ebcd.laplace <- ebcd(X = t(data_norm$Y), Kmax = 2)
@@ -187,6 +190,7 @@ In this setting where the data only has subtype effects, EBCD is able to recover
 ## Simulated data with subtype and patient effects
 
 ### Data Generation
+Now we simulate data with both subtype and patient effects.
 
 ```{r}
 generate_normal_data_patient <- function(noise_sd){
@@ -227,14 +231,16 @@ set.seed(2052)
 data_norm_patient <- generate_normal_data_patient(0.01)
 ```
 
-```{r}
+```{r, eval = FALSE, include = FALSE}
 dim(data_norm_patient$Y)
 ```
 
+This is a heatmap of the loadings matrix.
 ```{r}
 plot_heatmap(data_norm_patient$LL)
 ```
 
+This is a heatmap of the factor matrix.
 ```{r}
 plot_heatmap(crossprod(data_norm_patient$FF))
 ```
@@ -243,11 +249,13 @@ plot_heatmap(crossprod(data_norm_patient$FF))
 observed.vals_patient <- tcrossprod(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
 ```
 
+This is a heatmap of the Gram matrix.
 ```{r}
 plot_heatmap(observed.vals_patient)
 ```
 
 ### EBCD with Point-Laplace Prior
+Now, we apply EBCD with the point-Laplace prior, same as before. 
 
 ```{r}
 set.seed(6287)
@@ -392,7 +400,7 @@ set.seed(2052)
 data_norm <- generate_normal_data(0.01)
 ```
 
-```{r}
+```{r, include = FALSE, eval = FALSE}
 dim(data_norm$Y)
 ```
 
@@ -435,6 +443,7 @@ This is a plot of the scaled estimate of $L$. This estimate is scaled such that 
 plot_heatmap(t(t(fit.ebcd$EL)/apply(fit.ebcd$EL,2, max)))
 ```
 
+This is a heatmap of the estimate of $L$.
 ```{r}
 plot_heatmap(fit.ebcd$EL)
 ```
@@ -504,7 +513,7 @@ fit.ebcd$vec.obj[length(fit.ebcd$vec.obj)]
 ```
 
 ## Observations
-EBCD was able to recover the baseline factor and the two subtype factors. It also maintains an additional shared GEP. I'm not exactly sure where this GEP comes from since all the data should be on a comparable scale.
+EBCD was able to recover the baseline factor and the two subtype factors. It also maintains an additional shared GEP. I'm not exactly sure where this GEP comes from.
 
 # Simulated Data with subtype and patient effects
 
@@ -548,14 +557,16 @@ set.seed(2052)
 data_norm_patient <- generate_normal_data_patient(0.01)
 ```
 
-```{r}
+```{r, eval = FALSE, include = FALSE}
 dim(data_norm_patient$Y)
 ```
 
+This is a heatmap of the loadings matrix.
 ```{r}
 plot_heatmap(data_norm_patient$LL)
 ```
 
+This is a heatmap of the factor matrix.
 ```{r}
 plot_heatmap(crossprod(data_norm_patient$FF))
 ```
@@ -564,12 +575,13 @@ plot_heatmap(crossprod(data_norm_patient$FF))
 observed.vals_patient <- tcrossprod(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
 ```
 
+This is a heatmap of the Gram matrix.
 ```{r}
 plot_heatmap(observed.vals_patient)
 ```
 
 ## Hypothesis
-Based off of the performance of GBCD, I hypothesize that EBCD with the laplace-splitting initialization (with the proper choice of parameters) will be able to recover both the subtype effects and the patient effects.
+Based off of the performance of GBCD, I hypothesize that EBCD with the Laplace-splitting initialization (with the proper choice of parameters) will be able to recover both the subtype effects and the patient effects.
 
 ## Analysis
 
@@ -669,7 +681,7 @@ This is the initialization used for EBCD.
 plot_heatmap(fit.ebcd_patient.init$EL)
 ```
 
-This is the EBCD estimate after backfitting for 1 iteration.
+We take a closer look at the EBCD estimate after backfitting for 1 iteration.
 ```{r}
 fit.ebcd_patient_iter1 <- ebcd_backfit(fit.ebcd_patient.init, maxiter = 1)
 ```
@@ -684,7 +696,7 @@ This is a plot of the unscaled estimate of $L$.
 plot_heatmap(fit.ebcd_patient_iter1$EL)
 ```
 
-This is the EBCD estimate after backfitting for 2 iterations.
+Now we look at the EBCD estimate after backfitting for 2 iterations.
 ```{r}
 fit.ebcd_patient_iter2 <- ebcd_backfit(fit.ebcd_patient.init, maxiter = 2)
 ```
@@ -699,7 +711,7 @@ This is a plot of the unscaled estimate of $L$.
 plot_heatmap(fit.ebcd_patient_iter2$EL)
 ```
 
-This is the EBCD estimate after backfitting for 10 iterations.
+Now we look at the EBCD estimate after backfitting for 10 iterations.
 ```{r}
 fit.ebcd_patient_iter10 <- ebcd_backfit(fit.ebcd_patient.init, maxiter = 10)
 ```

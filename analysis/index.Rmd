@@ -10,12 +10,15 @@ editor_options:
 
 This is my project comparing two covariance decomposition methods, Generalized Binary Covariance Decomposition (GBCD) and Empirical Bayes Covariance Decomposition (EBCD), from the Stephens Lab.  
   
-Simulations:  
+Simulations (generally ordered by complexity of simulated dataset):  
   
-* Results for the [simple 4-patient normal data simulation](simple-simulation-normal-data.html)
+* Results for the [simple 4-patient normal data simulation](simple-simulation-normal-data.html).
+* Results for [tree-structured data (similar to 4-patient dataset)](generalized-binary-comparison-experiments.html)
+* More results for [tree-structured data](convergence-comparison-experiments.html)
+* Results for [data from sparse, binary-overlapping loadings](other-binary-simulations.html)
 * Results for the [8-patient normal data simulation](simulation-normal-data.html)
 * Results for the [scRNA-seq dataset simulation without subtypes](simulation-analysis.html)
-* Results for the [scRNA-seq dataset simulation with subtypes](simulation-with-subtype.html) 
+* Results for the [scRNA-seq dataset simulation with subtypes](simulation-with-subtype.html)
   
 Real Data Analysis:  
   

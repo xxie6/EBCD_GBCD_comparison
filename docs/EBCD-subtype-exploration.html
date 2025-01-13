@@ -15,7 +15,7 @@
 
 <title>EBCD-subtype-exploration</title>
 
-<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -35,6 +35,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
@@ -233,6 +234,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -357,6 +361,14 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">EBCD-subtype-exploration</h1>
@@ -390,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-06-12
+<strong>Last updated:</strong> 2025-01-13
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +533,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree77c9a88245691f47c6b9c992ca8bda25fd7a4cfatargetblank77c9a88a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree17a31ae798c61931d28bea852c8d4cc914239518targetblank17a31aea">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/77c9a88245691f47c6b9c992ca8bda25fd7a4cfa" target="_blank">77c9a88</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/17a31ae798c61931d28bea852c8d4cc914239518" target="_blank">17a31ae</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree77c9a88245691f47c6b9c992ca8bda25fd7a4cfatargetblank77c9a88a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree17a31ae798c61931d28bea852c8d4cc914239518targetblank17a31aea"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +551,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/77c9a88245691f47c6b9c992ca8bda25fd7a4cfa" target="_blank">77c9a88</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/17a31ae798c61931d28bea852c8d4cc914239518" target="_blank">17a31ae</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -558,6 +570,15 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
+
+Untracked files:
+    Untracked:  analysis/gbcd-tree-experiments.Rmd
+    Untracked:  analysis/star-simulations.Rmd
+    Untracked:  code/gbcd_functions.R
+
+Unstaged changes:
+    Modified:   analysis/driftr-comparison.Rmd
+    Modified:   code/drift_functions.R
 
 </code></pre>
 <p>
@@ -604,6 +625,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/17a31ae798c61931d28bea852c8d4cc914239518/analysis/EBCD-subtype-exploration.Rmd" target="_blank">17a31ae</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-01-13
+</td>
+<td>
+Clean up analyses for data with subtype effects
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/27ae153946c98d5908d16c2ffdce582c341899bd/docs/EBCD-subtype-exploration.html" target="_blank">27ae153</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2024-06-12
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -670,13 +725,8 @@ library(ashr)
 library(irlba)
 library(reshape2)
 
-library(patchwork)</code></pre>
-<pre><code>
-Attaching package: &#39;patchwork&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:cowplot&#39;:
-
-    align_plots</code></pre>
-<pre class="r"><code>library(fastTopics)
+library(patchwork)
+library(fastTopics)
 #source(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/code/fit_cov_ebnmf.R&quot;)</code></pre>
 <pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;)){
   ### define the color map
@@ -772,6 +822,7 @@ for(iter in 1:1){
 <h2>Visualization of the Data</h2>
 <pre class="r"><code>iter &lt;- 1
 data &lt;- readRDS(paste0(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter&quot;, iter, &quot;_only_subtype_data.rds&quot;))</code></pre>
+<p>This is a heatmap of the loadings.</p>
 <pre class="r"><code>plot_heatmap(data$L)</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -811,6 +862,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(data$F)</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -851,6 +903,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>observed.vals &lt;- data$Y %*% t(data$Y)/ ncol(data$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix.</p>
 <pre class="r"><code>plot_heatmap(observed.vals)</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -952,6 +1005,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>transformed_Z &lt;- transform_ebcd_Z(t(data$Y), fit.ebcd)</code></pre>
+<p>This is a heatmap of the estimate of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(transformed_Z, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -991,6 +1045,8 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the positive part of the factor matrix
+estimate.</p>
 <pre class="r"><code>#heatmap of the positive part of the factor matrix
 plot_heatmap(pmax(transformed_Z, 0))</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1031,6 +1087,8 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the (absolute value of) the negative part of the
+factor matrix estimate.</p>
 <pre class="r"><code>#heatmap of the negative part of the factor matrix
 plot_heatmap(pmin(transformed_Z, 0), colors_range = c(&#39;red&#39;,&#39;gray96&#39;))</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1072,6 +1130,8 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.fitted.vals &lt;- fit.ebcd$EL %*% t(fit.ebcd$EL)</code></pre>
+<p>This is a heatmap of <span class="math inline">\(\hat{L}
+\hat{L}^{T}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(ebcd.fitted.vals)</code></pre>
 <p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1111,8 +1171,12 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.fitted.vals)^2)</code></pre>
 <pre><code>[1] 6281.355</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.fitted.vals)^2) - sum((diag(observed.vals) - diag(ebcd.fitted.vals))^2)</code></pre>
 <pre><code>[1] 2509.04</code></pre>
 <p>This is a plot of (a subset of) the fitted values vs. observed
@@ -1290,12 +1354,16 @@ don’t find these factors biologically meaningful.</p>
 cdr &lt;- rowMeans(data$Y != 0)</code></pre>
 <pre class="r"><code>correlation_EBCD_size &lt;- cor(fit.ebcd$EL, size_factors)
 correlation_EBCD_cdr &lt;- cor(fit.ebcd$EL, cdr)</code></pre>
+<p>This is the correlation between the EBCD loadings and the size
+factors.</p>
 <pre class="r"><code>correlation_EBCD_size</code></pre>
 <pre><code>             [,1]
 [1,]  0.989108088
 [2,]  0.958153315
 [3,]  0.120568855
 [4,] -0.007860759</code></pre>
+<p>This is the correlation between the EBCD loadings and cellular
+detection rate.</p>
 <pre class="r"><code>correlation_EBCD_cdr</code></pre>
 <pre><code>             [,1]
 [1,]  0.967508238
@@ -1379,8 +1447,12 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>ebcd.true.init.fitted.vals &lt;- fit.ebcd.true.init$EL %*% t(fit.ebcd.true.init$EL)</code></pre>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.true.init.fitted.vals)^2)</code></pre>
 <pre><code>[1] 5863.172</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entries of the observed values and the fitted values.</p>
 <pre class="r"><code>sum((observed.vals - ebcd.true.init.fitted.vals)^2) - sum((diag(observed.vals) - diag(ebcd.true.init.fitted.vals))^2)</code></pre>
 <pre><code>[1] 2039.429</code></pre>
 <p>This is a plot of (a subset of) the fitted values vs. observed
@@ -1517,522 +1589,119 @@ essentially turned them into fully shared GEPs. As a result, none of the
 factors in the EBCD output can be interpreted as subtype-specific. The
 estimate still fits the data well, so I’m not sure if this problem is
 just a hard problem for the EBCD method.</p>
-</div>
-</div>
-</div>
-<div id="experiment-normal-data-with-constant-variance"
-class="section level1">
-<h1>Experiment: Normal data with constant variance</h1>
-<div id="code-to-simulate-data" class="section level2">
-<h2>Code to simulate data</h2>
-<pre class="r"><code>##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
-### simulate normal data
-for(iter in 1:1){
-  
-  ### set the seed
-  set.seed(iter)
-  
-  ### load in previously simulated loading and factor matrices
-  dat &lt;- readRDS(paste0(&quot;data/iter&quot;, iter, &quot;_only_subtype_data.rds&quot;))
-  
-  ### add normal noise
-  E &lt;- matrix(rnorm(nrow(dat$L)*nrow(dat$F), mean = 0, sd = 1), ncol = nrow(dat$F))
-  Y = dat$L %*% t(dat$F) + E
-  
-  ### save the simulated data
-  data_norm &lt;- list(Y = Y, L = dat$L, F = dat$F)
-  saveRDS(data, file=paste0(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter&quot;, iter, &quot;_normal_only_subtype_data.rds&quot;))
-  rm(data_norm, Y, L, F, E)
-}</code></pre>
-</div>
-<div id="visualization-of-data" class="section level2">
-<h2>Visualization of Data</h2>
-<pre class="r"><code>data_norm &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_only_subtype_data.rds&#39;)</code></pre>
-<pre class="r"><code>plot_heatmap(data_norm$L)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-47-1">
-Past versions of unnamed-chunk-47-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-47-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-47-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_heatmap(data_norm$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-48-1">
-Past versions of unnamed-chunk-48-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-48-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-48-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>observed.vals_norm &lt;- data_norm$Y %*% t(data_norm$Y)/ ncol(data_norm$Y)</code></pre>
-<pre class="r"><code>plot_heatmap(observed.vals_norm)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-50-1">
-Past versions of unnamed-chunk-50-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-50-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-50-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="ebcd-analysis-1" class="section level2">
-<h2>EBCD Analysis</h2>
-<div id="hypothesis-2" class="section level3">
-<h3>Hypothesis</h3>
-<p>I suspect that EBCD should be able to recover the true loadings
-because this data was generated using normal noise, which matches EBCD’s
-model assumptions. More specifically, for the EBCD estimate, I expect to
-find a factor for each subtype (two in total) and a factor corresponding
-to the shared GEP from the true loadings matrix. One observation is the
-two subtypes are more clear in the Gram matrix for this data compared to
-that of the data generated from Yusha’s workflow. Therefore, I suspect
-it will be easier for EBCD to find the two subtype factors from this
-data.</p>
-</div>
-<div id="analysis-2" class="section level3">
-<h3>Analysis</h3>
-<p>I’m loading in previously saved results.</p>
-<pre class="r"><code>fit.ebcd_norm &lt;- readRDS(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_subtype_only_ebcd.rds&quot;)</code></pre>
-<p>This is the code to run the EBCD analysis. I’ve already loaded in the
-saved results.</p>
-<pre class="r"><code>set.seed(295)
-fit.ebcd_norm &lt;- ebcd(X = t(data_norm$Y), Kmax = 5, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
-<p>This is a plot of the scaled estimate of <span
-class="math inline">\(L\)</span>. This estimate is scaled such that the
-infinity norm for each column is 1, i.e. the maximum value for each
-column is 1.</p>
-<pre class="r"><code>plot_heatmap(t(t(fit.ebcd_norm$EL)/apply(fit.ebcd_norm$EL,2, max)))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-53-1">
-Past versions of unnamed-chunk-53-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-53-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-53-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>transformed_Z_norm &lt;- transform_ebcd_Z(t(data_norm$Y), fit.ebcd_norm)</code></pre>
-<pre class="r"><code>plot_heatmap(transformed_Z_norm, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-55-1">
-Past versions of unnamed-chunk-55-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-55-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-55-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the positive part of the factor matrix
-plot_heatmap(pmax(transformed_Z_norm, 0))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-56-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-56-1">
-Past versions of unnamed-chunk-56-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-56-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-56-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the negative part of the factor matrix
-plot_heatmap(pmin(transformed_Z_norm, 0), colors_range = c(&#39;red&#39;,&#39;gray96&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-57-1">
-Past versions of unnamed-chunk-57-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-57-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-57-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>ebcd_norm.fitted.vals &lt;- fit.ebcd_norm$EL %*% t(fit.ebcd_norm$EL)</code></pre>
-<pre class="r"><code>sum((observed.vals_norm - ebcd_norm.fitted.vals)^2)</code></pre>
-<pre><code>[1] 2280.709</code></pre>
-<pre class="r"><code>sum((observed.vals_norm - ebcd_norm.fitted.vals)^2) - sum((diag(observed.vals_norm) - diag(ebcd_norm.fitted.vals))^2)</code></pre>
-<pre><code>[1] 687.6311</code></pre>
-<p>This is a plot of (a subset of) the fitted values vs. observed
-values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_norm))[samp.vals], y = c(ebcd_norm.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-61-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-61-1">
-Past versions of unnamed-chunk-61-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-61-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-61-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the diagonal entries of the fitted values vs. the
-diagonal entries of the observed values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_norm)), y = diag(ebcd_norm.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-62-1">
-Past versions of unnamed-chunk-62-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-62-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-62-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the progression of the objective function</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_norm$vec.obj)), y = fit.ebcd_norm$vec.obj)) + geom_line()</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-63-1">
-Past versions of unnamed-chunk-63-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-63-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-63-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is the number of iterations that the backfit did before the
-convergence criterion was satisfied:</p>
-<pre class="r"><code>length(fit.ebcd_norm$vec.obj)</code></pre>
-<pre><code>[1] 56</code></pre>
-</div>
-<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-1"
-class="section level3">
-<h3>Correlation of EBCD estimate to true loadings matrix</h3>
-<p>We compute the correlation of the EBCD estimate of the loadings
-matrix to the true loadings matrix.</p>
-<pre class="r"><code>correlation_EBCD_norm_true &lt;- cor(fit.ebcd_norm$EL, data_norm$L)
-colnames(correlation_EBCD_norm_true) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;)</code></pre>
-<pre class="r"><code>correlation_EBCD_norm_true</code></pre>
-<pre><code>     Subtype 1 GEP Subtype 2 GEP   Shared GEP
-[1,]    0.01249933   -0.01249933  0.998693647
-[2,]    0.99737193   -0.99737193  0.000616454
-[3,]    0.37355042   -0.37355042  0.526665466
-[4,]   -0.99753963    0.99753963 -0.018952837
-[5,]   -0.27780340    0.27780340  0.514814627</code></pre>
-</div>
-<div id="correlation-of-geps-to-size-factor" class="section level3">
-<h3>Correlation of GEPs to size factor</h3>
-<pre class="r"><code>size_factors &lt;- rowSums(data_norm$Y)</code></pre>
-<pre class="r"><code>correlation_EBCD_norm_size &lt;- cor(fit.ebcd_norm$EL, size_factors)</code></pre>
-<pre class="r"><code>correlation_EBCD_norm_size</code></pre>
-<pre><code>            [,1]
-[1,]  0.96457297
-[2,]  0.01405526
-[3,]  0.51008105
-[4,] -0.02897294
-[5,]  0.48622003</code></pre>
-</div>
-<div id="observations-2" class="section level3">
-<h3>Observations</h3>
-<p>EBCD on the normal noise data was able to uncover columns from the
-true loadings matrix. Factor 1 has a high positive correlation with the
-shared GEP from the true loadings matrix. In addition, factors 2 and 4
-have high positive correlations with subtype 1 and 2 factors,
-respectively. There are two additional factors which are primarily
-concentrated on the different subtypes, but they are more sparse and
-they have some additional positive loadings in other samples. It’s
-possible that these factors correlate with size factor (or cellular
-detection rate, but in this case, the rate is 1 across all cells);
-however, neither of these factors are highly correlated with size
-factor.</p>
-<p>As I noted previously, the subtype characteristic was much more
-apparent in this dataset as opposed to the dataset previously analyzed.
-As a result, I think it was easier for EBCD to find the subtype factors
-in this dataset. I’m guessing this is related to the signal to noise
-ratio. Therefore, it might be worth trying varying signal-to-noise
-ratios in the simulated single cell RNAseq datasets. Another thing I am
-interested in is testing how well EBCD works when the noise is normal
-with non-constant variance. But I think I will test that in a different
-set of experiments.</p>
+<!-- # Experiment: Normal data with constant variance -->
+<!-- ## Code to simulate data -->
+<!-- ```{r, eval = FALSE} -->
+<!-- ##################################### simulate the single cell RNA-seq data for 20 replicates ################################################## -->
+<!-- ### simulate normal data -->
+<!-- for(iter in 1:1){ -->
+<!--   ### set the seed -->
+<!--   set.seed(iter) -->
+<!--   ### load in previously simulated loading and factor matrices -->
+<!--   dat <- readRDS(paste0("data/iter", iter, "_only_subtype_data.rds")) -->
+<!--   ### add normal noise -->
+<!--   E <- matrix(rnorm(nrow(dat$L)*nrow(dat$F), mean = 0, sd = 1), ncol = nrow(dat$F)) -->
+<!--   Y = dat$L %*% t(dat$F) + E -->
+<!--   ### save the simulated data -->
+<!--   data_norm <- list(Y = Y, L = dat$L, F = dat$F) -->
+<!--   saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_normal_only_subtype_data.rds")) -->
+<!--   rm(data_norm, Y, L, F, E) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ## Visualization of Data -->
+<!-- ```{r} -->
+<!-- data_norm <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_only_subtype_data.rds') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data_norm$L) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data_norm$F) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- observed.vals_norm <- data_norm$Y %*% t(data_norm$Y)/ ncol(data_norm$Y) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_norm) -->
+<!-- ``` -->
+<!-- ## EBCD Analysis  -->
+<!-- ### Hypothesis -->
+<!-- I suspect that EBCD should be able to recover the true loadings because this data was generated using normal noise, which matches EBCD's model assumptions. More specifically, for the EBCD estimate, I expect to find a factor for each subtype (two in total) and a factor corresponding to the shared GEP from the true loadings matrix. One observation is the two subtypes are more clear in the Gram matrix for this data compared to that of the data generated from Yusha's workflow. Therefore, I suspect it will be easier for EBCD to find the two subtype factors from this data.  -->
+<!-- ### Analysis -->
+<!-- I'm loading in previously saved results. -->
+<!-- ```{r} -->
+<!-- fit.ebcd_norm <- readRDS("~/Desktop/EBCD_GBCD_comparison_data/iter1_normal_subtype_only_ebcd.rds") -->
+<!-- ``` -->
+<!-- This is the code to run the EBCD analysis. I've already loaded in the saved results.  -->
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd_norm <- ebcd(X = t(data_norm$Y), Kmax = 5, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
+<!-- This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1.  -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_norm$EL)/apply(fit.ebcd_norm$EL,2, max))) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- transformed_Z_norm <- transform_ebcd_Z(t(data_norm$Y), fit.ebcd_norm) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(transformed_Z_norm, colors_range = c('blue', 'red')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the positive part of the factor matrix -->
+<!-- plot_heatmap(pmax(transformed_Z_norm, 0)) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the negative part of the factor matrix -->
+<!-- plot_heatmap(pmin(transformed_Z_norm, 0), colors_range = c('red','gray96')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- ebcd_norm.fitted.vals <- fit.ebcd_norm$EL %*% t(fit.ebcd_norm$EL) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals_norm - ebcd_norm.fitted.vals)^2) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals_norm - ebcd_norm.fitted.vals)^2) - sum((diag(observed.vals_norm) - diag(ebcd_norm.fitted.vals))^2) -->
+<!-- ``` -->
+<!-- This is a plot of (a subset of) the fitted values vs. observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_norm))[samp.vals], y = c(ebcd_norm.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_norm)), y = diag(ebcd_norm.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the progression of the objective function -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_norm$vec.obj)), y = fit.ebcd_norm$vec.obj)) + geom_line() -->
+<!-- ``` -->
+<!-- This is the number of iterations that the backfit did before the convergence criterion was satisfied: -->
+<!-- ```{r} -->
+<!-- length(fit.ebcd_norm$vec.obj) -->
+<!-- ``` -->
+<!-- ### Correlation of EBCD estimate to true loadings matrix -->
+<!-- We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix. -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_norm_true <- cor(fit.ebcd_norm$EL, data_norm$L) -->
+<!-- colnames(correlation_EBCD_norm_true) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_norm_true -->
+<!-- ``` -->
+<!-- ### Correlation of GEPs to size factor -->
+<!-- ```{r} -->
+<!-- size_factors <- rowSums(data_norm$Y) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_norm_size <- cor(fit.ebcd_norm$EL, size_factors) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_norm_size -->
+<!-- ``` -->
+<!-- ### Observations -->
+<!-- EBCD on the normal noise data was able to uncover columns from the true loadings matrix. Factor 1 has a high positive correlation with the shared GEP from the true loadings matrix. In addition, factors 2 and 4 have high positive correlations with subtype 1 and 2 factors, respectively. There are two additional factors which are primarily concentrated on the different subtypes, but they are more sparse and they have some additional positive loadings in other samples. It's possible that these factors correlate with size factor (or cellular detection rate, but in this case, the rate is 1 across all cells); however, neither of these factors are highly correlated with size factor. -->
+<!-- As I noted previously, the subtype characteristic was much more apparent in this dataset as opposed to the dataset previously analyzed. As a result, I think it was easier for EBCD to find the subtype factors in this dataset. I'm guessing this is related to the signal to noise ratio. Therefore, it might be worth trying varying signal-to-noise ratios in the simulated single cell RNAseq datasets. Another thing I am interested in is testing how well EBCD works when the noise is normal with non-constant variance. But I think I will test that in a different set of experiments. -->
 </div>
 </div>
 </div>
@@ -2047,7 +1716,7 @@ data generation by only including the subtype factors in the factor and
 loading matrix, i.e. we are getting rid of the shared factor. I am
 curious to see if EBCD will be able to identify both subtype factors in
 this setting.</p>
-<div id="code-to-simulate-data-1" class="section level2">
+<div id="code-to-simulate-data" class="section level2">
 <h2>Code to simulate data</h2>
 <pre class="r"><code>#simulation code
 library(Matrix)
@@ -2120,17 +1789,18 @@ for(iter in 1:1){
   rm(data2, X, X.mod, L, F)
 }</code></pre>
 </div>
-<div id="visualization-of-data-1" class="section level2">
+<div id="visualization-of-data" class="section level2">
 <h2>Visualization of data</h2>
 <pre class="r"><code>data2 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data2.rds&#39;)</code></pre>
+<p>This is a heatmap of the loadings.</p>
 <pre class="r"><code>plot_heatmap(data2$L)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-73-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-73-1">
-Past versions of unnamed-chunk-73-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-48-1">
+Past versions of unnamed-chunk-48-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-73-1" class="collapse">
+<div id="fig-unnamed-chunk-48-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2149,7 +1819,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-73-1.png" target="_blank">845fd53</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-48-1.png" target="_blank">845fd53</a>
 </td>
 <td>
 Annie Xie
@@ -2162,89 +1832,17 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(data2$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-74-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-74-1">
-Past versions of unnamed-chunk-74-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-74-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-74-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>observed.vals2 &lt;- data2$Y %*% t(data2$Y)/ ncol(data2$Y)</code></pre>
+<p>This is a heatmap of the Gram matrix.</p>
 <pre class="r"><code>plot_heatmap(observed.vals2)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-76-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-76-1">
-Past versions of unnamed-chunk-76-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-76-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-76-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
-</div>
-</div>
-<div id="ebcd-analysis-2" class="section level2">
+<div id="ebcd-analysis-1" class="section level2">
 <h2>EBCD Analysis</h2>
-<div id="hypothesis-3" class="section level3">
+<div id="hypothesis-2" class="section level3">
 <h3>Hypothesis</h3>
 <p>I hypothesize that EBCD will be able to recover both subtype factors
 from this dataset because the effect from the subtype seems to be more
@@ -2253,7 +1851,7 @@ the set up where we only looked at patient effects, and EBCD worked in
 that setting. Therefore, we expect EBCD to also work in this
 setting.)</p>
 </div>
-<div id="analysis-3" class="section level3">
+<div id="analysis-2" class="section level3">
 <h3>Analysis</h3>
 <p>I will load in previously saved results.</p>
 <pre class="r"><code>fit.ebcd2 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data2_ebcd.rds&#39;)</code></pre>
@@ -2266,53 +1864,17 @@ class="math inline">\(L\)</span>. This estimate is scaled such that the
 infinity norm for each column is 1, i.e. the maximum value for each
 column is 1.</p>
 <pre class="r"><code>plot_heatmap(t(t(fit.ebcd2$EL)/apply(fit.ebcd2$EL,2, max)))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-79-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-79-1">
-Past versions of unnamed-chunk-79-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-79-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-79-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>transformed_Z2 &lt;- transform_ebcd_Z(t(data2$Y), fit.ebcd2)</code></pre>
+<p>This is a heatmap of the estimate for the factor matrix.</p>
 <pre class="r"><code>plot_heatmap(transformed_Z2, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-81-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-56-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-81-1">
-Past versions of unnamed-chunk-81-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-56-1">
+Past versions of unnamed-chunk-56-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-81-1" class="collapse">
+<div id="fig-unnamed-chunk-56-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2331,7 +1893,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-81-1.png" target="_blank">845fd53</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-56-1.png" target="_blank">845fd53</a>
 </td>
 <td>
 Annie Xie
@@ -2344,15 +1906,17 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the positive part of the factor matrix
+estimate.</p>
 <pre class="r"><code>#heatmap of the positive part of the factor matrix
 plot_heatmap(pmax(transformed_Z2, 0))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-82-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-82-1">
-Past versions of unnamed-chunk-82-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-57-1">
+Past versions of unnamed-chunk-57-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-82-1" class="collapse">
+<div id="fig-unnamed-chunk-57-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2371,7 +1935,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-82-1.png" target="_blank">845fd53</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-57-1.png" target="_blank">845fd53</a>
 </td>
 <td>
 Annie Xie
@@ -2384,61 +1948,30 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the (absolute value of) the negative part of the
+factor matrix estimate.</p>
 <pre class="r"><code>#heatmap of the negative part of the factor matrix
 plot_heatmap(pmin(transformed_Z2, 0), colors_range = c(&#39;red&#39;,&#39;gray96&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-83-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-83-1">
-Past versions of unnamed-chunk-83-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-83-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-83-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-58-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ebcd2.fitted.vals &lt;- fit.ebcd2$EL %*% t(fit.ebcd2$EL)</code></pre>
+<p>This is the L2 norm of the difference between the observed values and
+the fitted values.</p>
 <pre class="r"><code>sum((observed.vals2 - ebcd2.fitted.vals)^2)</code></pre>
 <pre><code>[1] 5928.804</code></pre>
+<p>This is the L2 norm of the difference between the off-diagonal
+entires of the observed values and the fitted values.</p>
 <pre class="r"><code>sum((observed.vals2 - ebcd2.fitted.vals)^2) - sum((diag(observed.vals2) - diag(ebcd2.fitted.vals))^2)</code></pre>
 <pre><code>[1] 2572.532</code></pre>
 <p>This is a plot of (a subset of) the fitted values vs. observed
 values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals2))[samp.vals], y = c(ebcd2.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-87-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-87-1">
-Past versions of unnamed-chunk-87-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-62-1">
+Past versions of unnamed-chunk-62-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-87-1" class="collapse">
+<div id="fig-unnamed-chunk-62-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2457,7 +1990,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-87-1.png" target="_blank">845fd53</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-62-1.png" target="_blank">845fd53</a>
 </td>
 <td>
 Annie Xie
@@ -2473,13 +2006,13 @@ Annie Xie
 <p>This is a plot of the diagonal entries of the fitted values vs. the
 diagonal entries of the observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals2)), y = diag(ebcd2.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-88-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-63-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-88-1">
-Past versions of unnamed-chunk-88-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-63-1">
+Past versions of unnamed-chunk-63-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-88-1" class="collapse">
+<div id="fig-unnamed-chunk-63-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -2498,7 +2031,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-88-1.png" target="_blank">845fd53</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-63-1.png" target="_blank">845fd53</a>
 </td>
 <td>
 Annie Xie
@@ -2513,50 +2046,13 @@ Annie Xie
 </div>
 <p>This is a plot of the progression of the objective function</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd2$vec.obj)), y = fit.ebcd2$vec.obj)) + geom_line()</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-89-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-89-1">
-Past versions of unnamed-chunk-89-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-89-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-89-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-64-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the number of iterations that the backfit did before the
 convergence criterion was satisfied:</p>
 <pre class="r"><code>length(fit.ebcd2$vec.obj)</code></pre>
 <pre><code>[1] 617</code></pre>
 </div>
-<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-2"
+<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-1"
 class="section level3">
 <h3>Correlation of EBCD estimate to true loadings matrix</h3>
 <p>We compute the correlation of the EBCD estimate of the loadings
@@ -2571,7 +2067,7 @@ colnames(correlation_EBCD_true2) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2
 [4,]    -0.9144690     0.9144690
 [5,]    -0.9371316     0.9371316</code></pre>
 </div>
-<div id="observations-3" class="section level3">
+<div id="observations-2" class="section level3">
 <h3>Observations</h3>
 <p>In the EBCD loadings estimate, factor 2 had a high positive
 correlation with the subtype 1 factor from the true loadings matrix. In
@@ -2580,6 +2076,8 @@ factor from the true loadings matrix. The first factor, to me, looks
 like a baseline factor since it has positive loadings on most of the
 samples. In addition, the code below shows that the first factor is
 highly correlated with size factor.</p>
+<p>This is the correlation between the the first column of the EBCD
+loadings and the size factor.</p>
 <pre class="r"><code>cor(fit.ebcd2$EL[,1], rowSums(data2$Y))</code></pre>
 <pre><code>[1] 0.9827066</code></pre>
 <p>In this setting, EBCD was able to find both subtype factors which
@@ -2595,1295 +2093,418 @@ subtype. I’m guessing it’s because of the signal to noise ratio. If you
 plot the Gram matrix, the subtype effect is not very evident, especially
 compared to the Gram matrix from this set up. Therefore, I’m guessing it
 is more difficult in general to pick up the subtype effects.</p>
-</div>
-</div>
-</div>
-<div id="experiment-alter-the-factor-matrix" class="section level1">
-<h1>Experiment: Alter the factor matrix</h1>
-<p>In this experiment, I will change the number of active genes
-(i.e. genes with non-zero values in the factor matrix). I think that
-altering this number should alter the strength of the subtype effects.
-My goal is to create a dataset where the subtype nature of the data is
-more clear in the Gram matrix, and thus hopefully EBCD can recover both
-subtype GEPs.</p>
-<div id="code-to-simulate-data-2" class="section level2">
-<h2>Code to simulate data</h2>
-<pre class="r"><code>#simulation code
-library(Matrix)
-library(splatter)
-library(scran)
-library(seqgendiff)</code></pre>
-<pre class="r"><code>##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
-### load in the Splatter model parameters estimated from one PDAC dataset
-#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
-
-params &lt;- readRDS(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds&quot;)
-
-### define the function to normalize and log transform the UMI counts
-fnc_norm &lt;- function(X){
-  ### calculate the cell-specific library size
-  clusters &lt;- quickCluster(X)
-  si &lt;- calculateSumFactors(X, clusters=clusters)
-  
-  ### log transform and normalize single cell count data
-  norm.dat &lt;- log(10*(median(si)*t(X)/si + 0.1))
-}
-
-
-### simulate single cell RNA-seq data
-for(iter in 1:1){
-  
-  ### set the seed
-  set.seed(iter)
-  
-  ### simulate a homoegenous population of cells
-  dat &lt;- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
-  X &lt;- counts(dat)
-  gene.info &lt;- as.data.frame(rowData(dat))
-  
-  ### simulate L
-  L &lt;- matrix(0, nrow=ncol(X), ncol=3)
-  L[1:800, 1] &lt;- 1
-  L[801:1600, 2] &lt;- 1
-  L[sample(1:nrow(L), 600, replace=FALSE), 3] &lt;- runif(600, min=0.4, max=2)
-  
-  ### simulate F
-  F &lt;- matrix(0, nrow=nrow(X), ncol=3)
-  idx.gene &lt;- sort(which(rowSums(X!=0) &gt;= 300))
-  F[idx.gene[1:1200], 1] &lt;- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
-  F[idx.gene[1201:2400], 2] &lt;- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
-  F[idx.gene[2401:3000], 3] &lt;- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
-  F[gene.info$OutlierFactor &gt; 1, ] &lt;- 0
-  
-  ### simulate patterns of gene expression variation according to L and F using binomial thinning
-  X.mod &lt;- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
-  X.thin &lt;- as(X.mod$mat, &quot;sparseMatrix&quot;) 
-  
-  ### remove genes with very low expression levels
-  idx.gene &lt;- rowSums(X.thin!=0) &gt;= 32
-  X.thin &lt;- X.thin[idx.gene,]
-  F &lt;- F[idx.gene,]
-  colnames(X.thin) &lt;- paste0(&quot;cell&quot;, 1:ncol(X.thin))
-  rownames(X.thin) &lt;- paste0(&quot;gene&quot;, 1:nrow(X.thin))
-  rownames(L) &lt;- colnames(X.thin)
-  colnames(L) &lt;- paste0(&quot;k&quot;, 1:ncol(L))
-  rownames(F) &lt;- rownames(X.thin)
-  colnames(F) &lt;- colnames(L)
-  
-  ### normalize and log transform the UMI counts
-  norm.dat &lt;- fnc_norm(X.thin)
-  
-  ### save the simulated data
-  data3 &lt;- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
-  saveRDS(data, file=paste0(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter&quot;, iter, &quot;_only_subtype_data3.rds&quot;))
-  rm(data3, X, X.mod, L, F)
-}</code></pre>
-</div>
-<div id="visualization-of-data-2" class="section level2">
-<h2>Visualization of data</h2>
-<pre class="r"><code>data3 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3.rds&#39;)</code></pre>
-<pre class="r"><code>plot_heatmap(data3$L)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-97-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-97-1">
-Past versions of unnamed-chunk-97-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-97-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-97-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_heatmap(data3$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-98-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-98-1">
-Past versions of unnamed-chunk-98-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-98-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-98-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_heatmap(t(data3$F) %*% data3$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-99-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-99-1">
-Past versions of unnamed-chunk-99-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-99-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-99-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>observed.vals3 &lt;- data3$Y %*% t(data3$Y)/ ncol(data3$Y)</code></pre>
-<pre class="r"><code>plot_heatmap(observed.vals3)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-101-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-101-1">
-Past versions of unnamed-chunk-101-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-101-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-101-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="ebcd-analysis-3" class="section level2">
-<h2>EBCD Analysis</h2>
-<div id="hypothesis-4" class="section level3">
-<h3>Hypothesis</h3>
-<p>I hypothesize that EBCD will be able to recover both subtype factors
-from this dataset because the effect from the subtype seems to be more
-apparent in the Gram matrix.</p>
-</div>
-<div id="ebcd-analysis-4" class="section level3">
-<h3>EBCD Analysis</h3>
-<pre class="r"><code>fit.ebcd3 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3_ebcd.rds&#39;)</code></pre>
-<p>This is the code to run the EBCD analysis. I’ve already loaded in the
-saved results.</p>
-<pre class="r"><code>set.seed(295)
-fit.ebcd3 &lt;- ebcd(X = t(data3$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
-<p>This is a plot of the scaled estimate of <span
-class="math inline">\(L\)</span>. This estimate is scaled such that the
-infinity norm for each column is 1, i.e. the maximum value for each
-column is 1.</p>
-<pre class="r"><code>plot_heatmap(t(t(fit.ebcd3$EL)/apply(fit.ebcd3$EL,2, max)))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-104-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-104-1">
-Past versions of unnamed-chunk-104-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-104-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-104-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>transformed_Z3 &lt;- transform_ebcd_Z(t(data3$Y), fit.ebcd3)</code></pre>
-<pre class="r"><code>plot_heatmap(transformed_Z3, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-106-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-106-1">
-Past versions of unnamed-chunk-106-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-106-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-106-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the positive part of the factor matrix
-plot_heatmap(pmax(transformed_Z3, 0))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-107-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-107-1">
-Past versions of unnamed-chunk-107-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-107-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-107-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the negative part of the factor matrix
-plot_heatmap(pmin(transformed_Z3, 0), colors_range = c(&#39;red&#39;,&#39;gray96&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-108-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-108-1">
-Past versions of unnamed-chunk-108-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-108-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-108-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>ebcd3.fitted.vals &lt;- fit.ebcd3$EL %*% t(fit.ebcd3$EL)</code></pre>
-<pre class="r"><code>sum((observed.vals3 - ebcd3.fitted.vals)^2)</code></pre>
-<pre><code>[1] 5162.38</code></pre>
-<pre class="r"><code>sum((observed.vals3 - ebcd3.fitted.vals)^2) - sum((diag(observed.vals3) - diag(ebcd3.fitted.vals))^2)</code></pre>
-<pre><code>[1] 2212.357</code></pre>
-<p>This is a plot of (a subset of) the fitted values vs. observed
-values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals3))[samp.vals], y = c(ebcd3.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-113-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-113-1">
-Past versions of unnamed-chunk-113-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-113-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-113-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the diagonal entries of the fitted values vs. the
-diagonal entries of the observed values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals3)), y = diag(ebcd3.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-114-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-114-1">
-Past versions of unnamed-chunk-114-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-114-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-114-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the progression of the objective function</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd3$vec.obj)), y = fit.ebcd3$vec.obj)) + geom_line()</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-115-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-115-1">
-Past versions of unnamed-chunk-115-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-115-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-115-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is the number of iterations that the backfit did before the
-convergence criterion was satisfied:</p>
-<pre class="r"><code>length(fit.ebcd3$vec.obj)</code></pre>
-<pre><code>[1] 310</code></pre>
-<p>This is the objective function value attained:</p>
-<pre class="r"><code>fit.ebcd3$vec.obj[length(fit.ebcd3$vec.obj)]</code></pre>
-<pre><code>[1] -11440893</code></pre>
-</div>
-<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-3"
-class="section level3">
-<h3>Correlation of EBCD estimate to true loadings matrix</h3>
-<p>We compute the correlation of the EBCD estimate of the loadings
-matrix to the true loadings matrix.</p>
-<pre class="r"><code>correlation_EBCD_true3 &lt;- cor(fit.ebcd3$EL, data3$L)
-colnames(correlation_EBCD_true3) &lt;- c(&#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;)</code></pre>
-<pre class="r"><code>correlation_EBCD_true3</code></pre>
-<pre><code>      Subtype 1 GEP Subtype 2 GEP   Shared GEP
- [1,]   -0.07569358    0.07569358  0.048656541
- [2,]    0.98228451   -0.98228451 -0.004352540
- [3,]    0.94270801   -0.94270801  0.015521395
- [4,]   -0.59074450    0.59074450 -0.258341032
- [5,]    0.01464077   -0.01464077  0.973602488
- [6,]    0.96135988   -0.96135988 -0.007180061
- [7,]    0.95474462   -0.95474462  0.005243442
- [8,]   -0.64487762    0.64487762 -0.011109501
- [9,]   -0.95766377    0.95766377 -0.007500831
-[10,]   -0.94269346    0.94269346 -0.012548837</code></pre>
-</div>
-<div id="observations-4" class="section level3">
-<h3>Observations</h3>
-<p>I originally tried running EBCD with <code>Kmax = 6</code>, and the
-resulting estimate did not have a factor that strongly corresponded with
-subtype 2. However, when I increased <code>Kmax</code> to 10, the
-estimate did find a factor that corresponds with the subtype 2 factor
-from the true loadings matrix (the correlation value was 0.958). I guess
-this means that EBCD is able to find other factors (i.e. sources of
-variation) that increase the fit more than including the subtype 2
-factor would. I wonder if this is related to the fact that the subtype 2
-factor is the flip of the subtype 1 factor, and thus maybe including the
-second subtype factor is redundant.</p>
-<p>Another thing I noticed is that the true factor matrix is
-nonnegative, but the estimated factor matrix usually contains negative
-values along with positive values. Therefore, I wonder if there’s an
-identifiability issue happening where the baseline factor and one
-subtype factor is enough, because the effect of the second subtype can
-be subtracted.</p>
-</div>
-</div>
-</div>
-<div id="experiment-add-baseline-factor" class="section level1">
-<h1>Experiment: Add baseline factor</h1>
-<p>Given that the first factor of the EBCD estimate is usually
-interpreted as a baseline, I wanted to see what would happen if I added
-an explicit baseline factor in the data generation process. I am curious
-to see if the incorporation of a baseline in the data will better match
-the EBCD assumptions, and thus make it easier to find both subtype
-factors.</p>
-<div id="code-to-simulate-data-3" class="section level2">
-<h2>Code to simulate data</h2>
-<pre class="r"><code>#simulation code
-library(Matrix)
-library(splatter)
-library(scran)
-library(seqgendiff)</code></pre>
-<pre class="r"><code>##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
-### load in the Splatter model parameters estimated from one PDAC dataset
-#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
-
-params &lt;- readRDS(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds&quot;)
-
-### define the function to normalize and log transform the UMI counts
-fnc_norm &lt;- function(X){
-  ### calculate the cell-specific library size
-  clusters &lt;- quickCluster(X)
-  si &lt;- calculateSumFactors(X, clusters=clusters)
-  
-  ### log transform and normalize single cell count data
-  norm.dat &lt;- log(10*(median(si)*t(X)/si + 0.1))
-}
-
-
-### simulate single cell RNA-seq data
-for(iter in 1:1){
-  
-  ### set the seed
-  set.seed(iter)
-  
-  ### simulate a homoegenous population of cells
-  dat &lt;- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
-  X &lt;- counts(dat)
-  gene.info &lt;- as.data.frame(rowData(dat))
-  
-  ### simulate L
-  L &lt;- matrix(0, nrow=ncol(X), ncol=4)
-  L[,1] &lt;- 1
-  L[1:800, 2] &lt;- 1
-  L[801:1600, 3] &lt;- 1
-  L[sample(1:nrow(L), 600, replace=FALSE), 4] &lt;- runif(600, min=0.4, max=2)
-  
-  ### simulate F
-  F &lt;- matrix(0, nrow=nrow(X), ncol=4)
-  idx.gene &lt;- sort(which(rowSums(X!=0) &gt;= 300))
-  F[idx.gene[2601:3200], 1] &lt;- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
-  # F[idx.gene[1:1200], 2] &lt;- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
-  # F[idx.gene[1201:2400], 3] &lt;- pmax(rnorm(1200, log2(3), 0.5), log2(1.5))
-  # F[idx.gene[2401:3000], 4] &lt;- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
-  F[idx.gene[1:1000], 2] &lt;- pmax(rnorm(1000, log2(3), 0.5), log2(1.5))
-  F[idx.gene[1001:2000], 3] &lt;- pmax(rnorm(1000, log2(3), 0.5), log2(1.5))
-  F[idx.gene[2001:2600], 4] &lt;- pmax(rnorm(600, log2(3), 0.5), log2(1.5))
-  F[gene.info$OutlierFactor &gt; 1, ] &lt;- 0
-  
-  ### simulate patterns of gene expression variation according to L and F using binomial thinning
-  X.mod &lt;- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
-  X.thin &lt;- as(X.mod$mat, &quot;sparseMatrix&quot;) 
-  
-  ### remove genes with very low expression levels
-  idx.gene &lt;- rowSums(X.thin!=0) &gt;= 32
-  X.thin &lt;- X.thin[idx.gene,]
-  F &lt;- F[idx.gene,]
-  colnames(X.thin) &lt;- paste0(&quot;cell&quot;, 1:ncol(X.thin))
-  rownames(X.thin) &lt;- paste0(&quot;gene&quot;, 1:nrow(X.thin))
-  rownames(L) &lt;- colnames(X.thin)
-  colnames(L) &lt;- paste0(&quot;k&quot;, 1:ncol(L))
-  rownames(F) &lt;- rownames(X.thin)
-  colnames(F) &lt;- colnames(L)
-  
-  ### normalize and log transform the UMI counts
-  norm.dat &lt;- fnc_norm(X.thin)
-  
-  ### save the simulated data
-  data4 &lt;- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
-  saveRDS(data, file=paste0(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter&quot;, iter, &quot;_only_subtype_data4.rds&quot;))
-  rm(data4, X, X.mod, L, F)
-}</code></pre>
-</div>
-<div id="visualization-of-data-3" class="section level2">
-<h2>Visualization of data</h2>
-<pre class="r"><code>data4 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4.rds&#39;)</code></pre>
-<pre class="r"><code>plot_heatmap(data4$L)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-123-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-123-1">
-Past versions of unnamed-chunk-123-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-123-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-123-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_heatmap(data4$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-124-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-124-1">
-Past versions of unnamed-chunk-124-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-124-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-124-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_heatmap(t(data4$F) %*% data4$F)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-125-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-125-1">
-Past versions of unnamed-chunk-125-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-125-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-125-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>observed.vals4 &lt;- data4$Y %*% t(data4$Y)/ ncol(data4$Y)</code></pre>
-<pre class="r"><code>plot_heatmap(observed.vals4)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-127-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-127-1">
-Past versions of unnamed-chunk-127-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-127-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-127-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="ebcd-analysis-5" class="section level2">
-<h2>EBCD Analysis</h2>
-<div id="hypothesis-5" class="section level3">
-<h3>Hypothesis</h3>
-<p>I hypothesize that EBCD will be able to recover both subtype factors
-from this dataset since the incorporation of a baseline factor should
-better fit the assumptions of the greedy initialization.</p>
-</div>
-<div id="ebcd-analysis-6" class="section level3">
-<h3>EBCD Analysis</h3>
-<pre class="r"><code>fit.ebcd4 &lt;- readRDS(&#39;~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4_ebcd.rds&#39;)</code></pre>
-<p>This is the code to run the EBCD analysis. I’ve already loaded in the
-saved results.</p>
-<pre class="r"><code>set.seed(295)
-fit.ebcd4 &lt;- ebcd(X = t(data4$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
-<p>This is a plot of the scaled estimate of <span
-class="math inline">\(L\)</span>. This estimate is scaled such that the
-infinity norm for each column is 1, i.e. the maximum value for each
-column is 1.</p>
-<pre class="r"><code>plot_heatmap(t(t(fit.ebcd4$EL)/apply(fit.ebcd4$EL,2, max)))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-130-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-130-1">
-Past versions of unnamed-chunk-130-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-130-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-130-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>transformed_Z4 &lt;- transform_ebcd_Z(t(data4$Y), fit.ebcd4)</code></pre>
-<pre class="r"><code>plot_heatmap(transformed_Z4, colors_range = c(&#39;blue&#39;, &#39;red&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-132-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-132-1">
-Past versions of unnamed-chunk-132-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-132-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-132-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the positive part of the factor matrix
-plot_heatmap(pmax(transformed_Z4, 0))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-133-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-133-1">
-Past versions of unnamed-chunk-133-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-133-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-133-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>#heatmap of the negative part of the factor matrix
-plot_heatmap(pmin(transformed_Z4, 0), colors_range = c(&#39;red&#39;,&#39;gray96&#39;))</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-134-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-134-1">
-Past versions of unnamed-chunk-134-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-134-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-134-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>ebcd4.fitted.vals &lt;- fit.ebcd4$EL %*% t(fit.ebcd4$EL)</code></pre>
-<pre class="r"><code>sum((observed.vals4 - ebcd4.fitted.vals)^2)</code></pre>
-<pre><code>[1] 5093.816</code></pre>
-<pre class="r"><code>sum((observed.vals4 - ebcd4.fitted.vals)^2) - sum((diag(observed.vals4) - diag(ebcd4.fitted.vals))^2)</code></pre>
-<pre><code>[1] 2090.216</code></pre>
-<p>This is a plot of (a subset of) the fitted values vs. observed
-values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(as.matrix(observed.vals4))[samp.vals], y = c(ebcd4.fitted.vals)[samp.vals])) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-139-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-139-1">
-Past versions of unnamed-chunk-139-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-139-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-139-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the diagonal entries of the fitted values vs. the
-diagonal entries of the observed values:</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals4)), y = diag(ebcd4.fitted.vals))) + geom_point() + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-140-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-140-1">
-Past versions of unnamed-chunk-140-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-140-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-140-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is a plot of the progression of the objective function</p>
-<pre class="r"><code>ggplot(data = NULL, aes(x = c(1:length(fit.ebcd4$vec.obj)), y = fit.ebcd4$vec.obj)) + geom_line()</code></pre>
-<p><img src="figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-141-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-141-1">
-Past versions of unnamed-chunk-141-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-141-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/845fd53af0adef7df634e4a7d47e6ceb3eed97ee/docs/figure/EBCD-subtype-exploration.Rmd/unnamed-chunk-141-1.png" target="_blank">845fd53</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2024-05-08
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>This is the number of iterations that the backfit did before the
-convergence criterion was satisfied:</p>
-<pre class="r"><code>length(fit.ebcd4$vec.obj)</code></pre>
-<pre><code>[1] 330</code></pre>
-<p>This is the objective function value attained:</p>
-<pre class="r"><code>fit.ebcd4$vec.obj[length(fit.ebcd4$vec.obj)]</code></pre>
-<pre><code>[1] -11472632</code></pre>
-</div>
-<div id="correlation-of-ebcd-estimate-to-true-loadings-matrix-4"
-class="section level3">
-<h3>Correlation of EBCD estimate to true loadings matrix</h3>
-<p>We compute the correlation of the EBCD estimate of the loadings
-matrix to the true loadings matrix.</p>
-<pre class="r"><code>correlation_EBCD_true4 &lt;- cor(fit.ebcd4$EL, data4$L)</code></pre>
-<pre><code>Warning in cor(fit.ebcd4$EL, data4$L): the standard deviation is zero</code></pre>
-<pre class="r"><code>colnames(correlation_EBCD_true4) &lt;- c(&#39;Baseline&#39;, &#39;Subtype 1 GEP&#39;, &#39;Subtype 2 GEP&#39;, &#39;Shared GEP&#39;)</code></pre>
-<pre class="r"><code>correlation_EBCD_true4</code></pre>
-<pre><code>      Baseline Subtype 1 GEP Subtype 2 GEP   Shared GEP
- [1,]       NA  -0.105120998   0.105120998  0.051699694
- [2,]       NA   0.984950945  -0.984950945 -0.001020878
- [3,]       NA   0.004720343  -0.004720343  0.976525544
- [4,]       NA  -0.677332075   0.677332075 -0.060275076
- [5,]       NA  -0.961995749   0.961995749 -0.014933391
- [6,]       NA   0.962032677  -0.962032677  0.009231723
- [7,]       NA   0.941561274  -0.941561274  0.014691115
- [8,]       NA  -0.949556743   0.949556743 -0.037003908
- [9,]       NA   0.451680728  -0.451680728  0.041843201
-[10,]       NA  -0.924997426   0.924997426 -0.032408393</code></pre>
-</div>
-<div id="observations-5" class="section level3">
-<h3>Observations</h3>
-<p>To me, it seems like for this dataset, EBCD had an easier time
-finding factors that correspond to both subtypes. The EBCD estimate does
-find many additional factors that don’t highly correspond to any of the
-columns from the true loadings matrix – these could perhaps be artifacts
-from the fact that the data is drawn from a Poisson distribution and
-then normalized.</p>
-</div>
-</div>
-</div>
-<div id="miscellaneous-experiments" class="section level1">
-<h1>Miscellaneous Experiments</h1>
-<div id="code-for-single-cell-rnaseq-simulated-data-1"
-class="section level2">
-<h2>Code for Single Cell RNAseq Simulated Data</h2>
-<p>This is the code used to create the simulated dataset (This was
-modified from the simulations for the GBCD paper). In this simulated
-dataset, we have one shared GEP, two subtype GEPs.</p>
-<pre class="r"><code>#simulation code
-library(Matrix)
-library(splatter)
-library(scran)
-library(seqgendiff)</code></pre>
-<pre class="r"><code>##################################### simulate the single cell RNA-seq data for 20 replicates ##################################################
-### load in the Splatter model parameters estimated from one PDAC dataset
-#Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used:
-
-params &lt;- readRDS(&quot;~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds&quot;)
-
-### define the function to normalize and log transform the UMI counts
-fnc_norm &lt;- function(X){
-  ### calculate the cell-specific library size
-  clusters &lt;- quickCluster(X)
-  si &lt;- calculateSumFactors(X, clusters=clusters)
-  
-  ### log transform and normalize single cell count data
-  norm.dat &lt;- log(10*(median(si)*t(X)/si + 0.1))
-}
-
-
-### simulate single cell RNA-seq data
-for(iter in 1:1){
-  
-  ### set the seed
-  set.seed(iter)
-  
-  ### simulate a homoegenous population of cells
-  dat &lt;- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5))
-  X &lt;- counts(dat)
-  gene.info &lt;- as.data.frame(rowData(dat))
-  
-  ### simulate L
-  L &lt;- matrix(0, nrow=ncol(X), ncol=2)
-  #L[,1] &lt;- 1
-  L[1:800, 1] &lt;- 1
-  L[801:1600, 2] &lt;- 1
-  #L[sample(1:nrow(L), 600, replace=FALSE), 3] &lt;- runif(600, min=0.4, max=2)
-  
-  ### simulate F
-  F &lt;- matrix(0, nrow=nrow(X), ncol=2)
-  idx.gene &lt;- sort(which(rowSums(X!=0) &gt;= 300))
-  F[idx.gene[1:75], 1] &lt;- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
-  F[idx.gene[76:150], 2] &lt;- pmax(rnorm(75, log2(3), 0.5), log2(1.5))
-  #F[idx.gene[251:500], 1] &lt;- pmax(rnorm(250, log2(3), 0.5), log2(1.5))
-  F[gene.info$OutlierFactor &gt; 1, ] &lt;- 0
-  
-  ### simulate patterns of gene expression variation according to L and F using binomial thinning
-  X.mod &lt;- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F)
-  X.thin &lt;- as(X.mod$mat, &quot;sparseMatrix&quot;) 
-  
-  ### remove genes with very low expression levels
-  idx.gene &lt;- rowSums(X.thin!=0) &gt;= 32
-  X.thin &lt;- X.thin[idx.gene,]
-  F &lt;- F[idx.gene,]
-  colnames(X.thin) &lt;- paste0(&quot;cell&quot;, 1:ncol(X.thin))
-  rownames(X.thin) &lt;- paste0(&quot;gene&quot;, 1:nrow(X.thin))
-  rownames(L) &lt;- colnames(X.thin)
-  colnames(L) &lt;- paste0(&quot;k&quot;, 1:ncol(L))
-  rownames(F) &lt;- rownames(X.thin)
-  colnames(F) &lt;- colnames(L)
-  
-  ### normalize and log transform the UMI counts
-  norm.dat &lt;- fnc_norm(X.thin)
-  
-  ### save the simulated data
-  data6 &lt;- list(X = t(X.thin), Y = norm.dat, L = L, F = F)
-  #saveRDS(data, file=paste0(&quot;~/Desktop/EBCD_GBCD_comparison_data/iter&quot;, iter, &quot;_only_subtype_data.rds&quot;))
-  rm(X, X.mod, L, F)
-}</code></pre>
-</div>
-<div id="visualization-of-the-data-1" class="section level2">
-<h2>Visualization of the Data</h2>
-<pre class="r"><code>plot_heatmap(data6$L)</code></pre>
-<pre class="r"><code>plot_heatmap(data6$F)</code></pre>
-<pre class="r"><code>observed.vals6 &lt;- data6$Y %*% t(data6$Y)/ ncol(data6$Y)</code></pre>
-<pre class="r"><code>plot_heatmap(observed.vals6)</code></pre>
-</div>
-<div id="ebcd-analysis-7" class="section level2">
-<h2>EBCD Analysis</h2>
-<p>This is the code to run the EBCD analysis. I’ve already loaded in the
-saved results.</p>
-<pre class="r"><code>set.seed(295)
-fit.ebcd6 &lt;- ebcd(X = t(data6$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)</code></pre>
-<p>This is a plot of the scaled estimate of <span
-class="math inline">\(L\)</span>. This estimate is scaled such that the
-infinity norm for each column is 1, i.e. the maximum value for each
-column is 1.</p>
-<pre class="r"><code>plot_heatmap(t(t(fit.ebcd6$EL)/apply(fit.ebcd6$EL,2, max)))</code></pre>
+<!-- # Experiment: Alter the factor matrix -->
+<!-- In this experiment, I will change the number of active genes (i.e. genes with non-zero values in the factor matrix). I think that altering this number should alter the strength of the subtype effects. My goal is to create a dataset where the subtype nature of the data is more clear in the Gram matrix, and thus hopefully EBCD can recover both subtype GEPs. -->
+<!-- ## Code to simulate data -->
+<!-- ```{r, eval = FALSE} -->
+<!-- #simulation code -->
+<!-- library(Matrix) -->
+<!-- library(splatter) -->
+<!-- library(scran) -->
+<!-- library(seqgendiff) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- ##################################### simulate the single cell RNA-seq data for 20 replicates ################################################## -->
+<!-- ### load in the Splatter model parameters estimated from one PDAC dataset -->
+<!-- #Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used: -->
+<!-- params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds") -->
+<!-- ### define the function to normalize and log transform the UMI counts -->
+<!-- fnc_norm <- function(X){ -->
+<!--   ### calculate the cell-specific library size -->
+<!--   clusters <- quickCluster(X) -->
+<!--   si <- calculateSumFactors(X, clusters=clusters) -->
+<!--   ### log transform and normalize single cell count data -->
+<!--   norm.dat <- log(10*(median(si)*t(X)/si + 0.1)) -->
+<!-- } -->
+<!-- ### simulate single cell RNA-seq data -->
+<!-- for(iter in 1:1){ -->
+<!--   ### set the seed -->
+<!--   set.seed(iter) -->
+<!--   ### simulate a homoegenous population of cells -->
+<!--   dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5)) -->
+<!--   X <- counts(dat) -->
+<!--   gene.info <- as.data.frame(rowData(dat)) -->
+<!--   ### simulate L -->
+<!--   L <- matrix(0, nrow=ncol(X), ncol=3) -->
+<!--   L[1:800, 1] <- 1 -->
+<!--   L[801:1600, 2] <- 1 -->
+<!--   L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2) -->
+<!--   ### simulate F -->
+<!--   F <- matrix(0, nrow=nrow(X), ncol=3) -->
+<!--   idx.gene <- sort(which(rowSums(X!=0) >= 300)) -->
+<!--   F[idx.gene[1:1200], 1] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[1201:2400], 2] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[2401:3000], 3] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5)) -->
+<!--   F[gene.info$OutlierFactor > 1, ] <- 0 -->
+<!--   ### simulate patterns of gene expression variation according to L and F using binomial thinning -->
+<!--   X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F) -->
+<!--   X.thin <- as(X.mod$mat, "sparseMatrix")  -->
+<!--   ### remove genes with very low expression levels -->
+<!--   idx.gene <- rowSums(X.thin!=0) >= 32 -->
+<!--   X.thin <- X.thin[idx.gene,] -->
+<!--   F <- F[idx.gene,] -->
+<!--   colnames(X.thin) <- paste0("cell", 1:ncol(X.thin)) -->
+<!--   rownames(X.thin) <- paste0("gene", 1:nrow(X.thin)) -->
+<!--   rownames(L) <- colnames(X.thin) -->
+<!--   colnames(L) <- paste0("k", 1:ncol(L)) -->
+<!--   rownames(F) <- rownames(X.thin) -->
+<!--   colnames(F) <- colnames(L) -->
+<!--   ### normalize and log transform the UMI counts -->
+<!--   norm.dat <- fnc_norm(X.thin) -->
+<!--   ### save the simulated data -->
+<!--   data3 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F) -->
+<!--   saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data3.rds")) -->
+<!--   rm(data3, X, X.mod, L, F) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ## Visualization of data -->
+<!-- ```{r} -->
+<!-- data3 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3.rds') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data3$L) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data3$F) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(data3$F) %*% data3$F) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- observed.vals3 <- data3$Y %*% t(data3$Y)/ ncol(data3$Y) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals3) -->
+<!-- ``` -->
+<!-- ## EBCD Analysis -->
+<!-- ### Hypothesis -->
+<!-- I hypothesize that EBCD will be able to recover both subtype factors from this dataset because the effect from the subtype seems to be more apparent in the Gram matrix. -->
+<!-- ### EBCD Analysis -->
+<!-- ```{r} -->
+<!-- fit.ebcd3 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data3_ebcd.rds') -->
+<!-- ``` -->
+<!-- This is the code to run the EBCD analysis. I've already loaded in the saved results.  -->
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd3 <- ebcd(X = t(data3$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
+<!-- This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1.  -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd3$EL)/apply(fit.ebcd3$EL,2, max))) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- transformed_Z3 <- transform_ebcd_Z(t(data3$Y), fit.ebcd3) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(transformed_Z3, colors_range = c('blue', 'red')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the positive part of the factor matrix -->
+<!-- plot_heatmap(pmax(transformed_Z3, 0)) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the negative part of the factor matrix -->
+<!-- plot_heatmap(pmin(transformed_Z3, 0), colors_range = c('red','gray96')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- ebcd3.fitted.vals <- fit.ebcd3$EL %*% t(fit.ebcd3$EL) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals3 - ebcd3.fitted.vals)^2) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals3 - ebcd3.fitted.vals)^2) - sum((diag(observed.vals3) - diag(ebcd3.fitted.vals))^2) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals3)), length.out = ncol(observed.vals3)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals3))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+<!-- This is a plot of (a subset of) the fitted values vs. observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals3))[samp.vals], y = c(ebcd3.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals3)), y = diag(ebcd3.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the progression of the objective function -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(1:length(fit.ebcd3$vec.obj)), y = fit.ebcd3$vec.obj)) + geom_line() -->
+<!-- ``` -->
+<!-- This is the number of iterations that the backfit did before the convergence criterion was satisfied: -->
+<!-- ```{r} -->
+<!-- length(fit.ebcd3$vec.obj) -->
+<!-- ``` -->
+<!-- This is the objective function value attained: -->
+<!-- ```{r} -->
+<!-- fit.ebcd3$vec.obj[length(fit.ebcd3$vec.obj)] -->
+<!-- ``` -->
+<!-- ### Correlation of EBCD estimate to true loadings matrix -->
+<!-- We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix. -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_true3 <- cor(fit.ebcd3$EL, data3$L) -->
+<!-- colnames(correlation_EBCD_true3) <- c('Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_true3 -->
+<!-- ``` -->
+<!-- ### Observations -->
+<!-- I originally tried running EBCD with `Kmax = 6`, and the resulting estimate did not have a factor that strongly corresponded with subtype 2. However, when I increased `Kmax` to 10, the estimate did find a factor that corresponds with the subtype 2 factor from the true loadings matrix (the correlation value was 0.958). I guess this means that EBCD is able to find other factors (i.e. sources of variation) that increase the fit more than including the subtype 2 factor would. I wonder if this is related to the fact that the subtype 2 factor is the flip of the subtype 1 factor, and thus maybe including the second subtype factor is redundant.  -->
+<!-- Another thing I noticed is that the true factor matrix is nonnegative, but the estimated factor matrix usually contains negative values along with positive values. Therefore, I wonder if there's an identifiability issue happening where the baseline factor and one subtype factor is enough, because the effect of the second subtype can be subtracted. -->
+<!-- # Experiment: Add baseline factor -->
+<!-- Given that the first factor of the EBCD estimate is usually interpreted as a baseline, I wanted to see what would happen if I added an explicit baseline factor in the data generation process. I am curious to see if the incorporation of a baseline in the data will better match the EBCD assumptions, and thus make it easier to find both subtype factors. -->
+<!-- ## Code to simulate data -->
+<!-- ```{r, eval = FALSE} -->
+<!-- #simulation code -->
+<!-- library(Matrix) -->
+<!-- library(splatter) -->
+<!-- library(scran) -->
+<!-- library(seqgendiff) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- ##################################### simulate the single cell RNA-seq data for 20 replicates ################################################## -->
+<!-- ### load in the Splatter model parameters estimated from one PDAC dataset -->
+<!-- #Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used: -->
+<!-- params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds") -->
+<!-- ### define the function to normalize and log transform the UMI counts -->
+<!-- fnc_norm <- function(X){ -->
+<!--   ### calculate the cell-specific library size -->
+<!--   clusters <- quickCluster(X) -->
+<!--   si <- calculateSumFactors(X, clusters=clusters) -->
+<!--   ### log transform and normalize single cell count data -->
+<!--   norm.dat <- log(10*(median(si)*t(X)/si + 0.1)) -->
+<!-- } -->
+<!-- ### simulate single cell RNA-seq data -->
+<!-- for(iter in 1:1){ -->
+<!--   ### set the seed -->
+<!--   set.seed(iter) -->
+<!--   ### simulate a homoegenous population of cells -->
+<!--   dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5)) -->
+<!--   X <- counts(dat) -->
+<!--   gene.info <- as.data.frame(rowData(dat)) -->
+<!--   ### simulate L -->
+<!--   L <- matrix(0, nrow=ncol(X), ncol=4) -->
+<!--   L[,1] <- 1 -->
+<!--   L[1:800, 2] <- 1 -->
+<!--   L[801:1600, 3] <- 1 -->
+<!--   L[sample(1:nrow(L), 600, replace=FALSE), 4] <- runif(600, min=0.4, max=2) -->
+<!--   ### simulate F -->
+<!--   F <- matrix(0, nrow=nrow(X), ncol=4) -->
+<!--   idx.gene <- sort(which(rowSums(X!=0) >= 300)) -->
+<!--   F[idx.gene[2601:3200], 1] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5)) -->
+<!--   # F[idx.gene[1:1200], 2] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5)) -->
+<!--   # F[idx.gene[1201:2400], 3] <- pmax(rnorm(1200, log2(3), 0.5), log2(1.5)) -->
+<!--   # F[idx.gene[2401:3000], 4] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[1:1000], 2] <- pmax(rnorm(1000, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[1001:2000], 3] <- pmax(rnorm(1000, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[2001:2600], 4] <- pmax(rnorm(600, log2(3), 0.5), log2(1.5)) -->
+<!--   F[gene.info$OutlierFactor > 1, ] <- 0 -->
+<!--   ### simulate patterns of gene expression variation according to L and F using binomial thinning -->
+<!--   X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F) -->
+<!--   X.thin <- as(X.mod$mat, "sparseMatrix")  -->
+<!--   ### remove genes with very low expression levels -->
+<!--   idx.gene <- rowSums(X.thin!=0) >= 32 -->
+<!--   X.thin <- X.thin[idx.gene,] -->
+<!--   F <- F[idx.gene,] -->
+<!--   colnames(X.thin) <- paste0("cell", 1:ncol(X.thin)) -->
+<!--   rownames(X.thin) <- paste0("gene", 1:nrow(X.thin)) -->
+<!--   rownames(L) <- colnames(X.thin) -->
+<!--   colnames(L) <- paste0("k", 1:ncol(L)) -->
+<!--   rownames(F) <- rownames(X.thin) -->
+<!--   colnames(F) <- colnames(L) -->
+<!--   ### normalize and log transform the UMI counts -->
+<!--   norm.dat <- fnc_norm(X.thin) -->
+<!--   ### save the simulated data -->
+<!--   data4 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F) -->
+<!--   saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data4.rds")) -->
+<!--   rm(data4, X, X.mod, L, F) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ## Visualization of data -->
+<!-- ```{r} -->
+<!-- data4 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4.rds') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data4$L) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data4$F) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(data4$F) %*% data4$F) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- observed.vals4 <- data4$Y %*% t(data4$Y)/ ncol(data4$Y) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals4) -->
+<!-- ``` -->
+<!-- ## EBCD Analysis -->
+<!-- ### Hypothesis -->
+<!-- I hypothesize that EBCD will be able to recover both subtype factors from this dataset since the incorporation of a baseline factor should better fit the assumptions of the greedy initialization. -->
+<!-- ### EBCD Analysis -->
+<!-- ```{r} -->
+<!-- fit.ebcd4 <- readRDS('~/Desktop/EBCD_GBCD_comparison_data/iter1_only_subtype_data4_ebcd.rds') -->
+<!-- ``` -->
+<!-- This is the code to run the EBCD analysis. I've already loaded in the saved results.  -->
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd4 <- ebcd(X = t(data4$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
+<!-- This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1.  -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd4$EL)/apply(fit.ebcd4$EL,2, max))) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- transformed_Z4 <- transform_ebcd_Z(t(data4$Y), fit.ebcd4) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- plot_heatmap(transformed_Z4, colors_range = c('blue', 'red')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the positive part of the factor matrix -->
+<!-- plot_heatmap(pmax(transformed_Z4, 0)) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #heatmap of the negative part of the factor matrix -->
+<!-- plot_heatmap(pmin(transformed_Z4, 0), colors_range = c('red','gray96')) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- ebcd4.fitted.vals <- fit.ebcd4$EL %*% t(fit.ebcd4$EL) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals4 - ebcd4.fitted.vals)^2) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sum((observed.vals4 - ebcd4.fitted.vals)^2) - sum((diag(observed.vals4) - diag(ebcd4.fitted.vals))^2) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals3)), length.out = ncol(observed.vals3)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals3))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+<!-- This is a plot of (a subset of) the fitted values vs. observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals4))[samp.vals], y = c(ebcd4.fitted.vals)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals4)), y = diag(ebcd4.fitted.vals))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
+<!-- This is a plot of the progression of the objective function -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(1:length(fit.ebcd4$vec.obj)), y = fit.ebcd4$vec.obj)) + geom_line() -->
+<!-- ``` -->
+<!-- This is the number of iterations that the backfit did before the convergence criterion was satisfied: -->
+<!-- ```{r} -->
+<!-- length(fit.ebcd4$vec.obj) -->
+<!-- ``` -->
+<!-- This is the objective function value attained: -->
+<!-- ```{r} -->
+<!-- fit.ebcd4$vec.obj[length(fit.ebcd4$vec.obj)] -->
+<!-- ``` -->
+<!-- ### Correlation of EBCD estimate to true loadings matrix -->
+<!-- We compute the correlation of the EBCD estimate of the loadings matrix to the true loadings matrix. -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_true4 <- cor(fit.ebcd4$EL, data4$L) -->
+<!-- colnames(correlation_EBCD_true4) <- c('Baseline', 'Subtype 1 GEP', 'Subtype 2 GEP', 'Shared GEP') -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- correlation_EBCD_true4 -->
+<!-- ``` -->
+<!-- ### Observations -->
+<!-- To me, it seems like for this dataset, EBCD had an easier time finding factors that correspond to both subtypes. The EBCD estimate does find many additional factors that don't highly correspond to any of the columns from the true loadings matrix -- these could perhaps be artifacts from the fact that the data is drawn from a Poisson distribution and then normalized.  -->
+<!-- # Miscellaneous Experiments -->
+<!-- ## Code for Single Cell RNAseq Simulated Data -->
+<!-- This is the code used to create the simulated dataset (This was modified from the simulations for the GBCD paper). In this simulated dataset, we have one shared GEP, two subtype GEPs. -->
+<!-- ```{r, eval = FALSE} -->
+<!-- #simulation code -->
+<!-- library(Matrix) -->
+<!-- library(splatter) -->
+<!-- library(scran) -->
+<!-- library(seqgendiff) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- ##################################### simulate the single cell RNA-seq data for 20 replicates ################################################## -->
+<!-- ### load in the Splatter model parameters estimated from one PDAC dataset -->
+<!-- #Once we have a set of parameters we are happy with we can use splatSimulate to simulate counts. If we want to make small adjustments to the parameters we can provide them as additional arguments, alternatively if we don’t supply any parameters the defaults will be used: -->
+<!-- params <- readRDS("~/Documents/PhD 3/Research/EBCD/gbcd-workflow/simulations/simparams.rds") -->
+<!-- ### define the function to normalize and log transform the UMI counts -->
+<!-- fnc_norm <- function(X){ -->
+<!--   ### calculate the cell-specific library size -->
+<!--   clusters <- quickCluster(X) -->
+<!--   si <- calculateSumFactors(X, clusters=clusters) -->
+<!--   ### log transform and normalize single cell count data -->
+<!--   norm.dat <- log(10*(median(si)*t(X)/si + 0.1)) -->
+<!-- } -->
+<!-- ### simulate single cell RNA-seq data -->
+<!-- for(iter in 1:1){ -->
+<!--   ### set the seed -->
+<!--   set.seed(iter) -->
+<!--   ### simulate a homoegenous population of cells -->
+<!--   dat <- splatSimulate(params, nGenes = 5000, batchCells = 1600, seed = iter, out.prob = 0.005, lib.loc = params@lib.loc + log(2.5)) -->
+<!--   X <- counts(dat) -->
+<!--   gene.info <- as.data.frame(rowData(dat)) -->
+<!--   ### simulate L -->
+<!--   L <- matrix(0, nrow=ncol(X), ncol=2) -->
+<!--   #L[,1] <- 1 -->
+<!--   L[1:800, 1] <- 1 -->
+<!--   L[801:1600, 2] <- 1 -->
+<!--   #L[sample(1:nrow(L), 600, replace=FALSE), 3] <- runif(600, min=0.4, max=2) -->
+<!--   ### simulate F -->
+<!--   F <- matrix(0, nrow=nrow(X), ncol=2) -->
+<!--   idx.gene <- sort(which(rowSums(X!=0) >= 300)) -->
+<!--   F[idx.gene[1:75], 1] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5)) -->
+<!--   F[idx.gene[76:150], 2] <- pmax(rnorm(75, log2(3), 0.5), log2(1.5)) -->
+<!--   #F[idx.gene[251:500], 1] <- pmax(rnorm(250, log2(3), 0.5), log2(1.5)) -->
+<!--   F[gene.info$OutlierFactor > 1, ] <- 0 -->
+<!--   ### simulate patterns of gene expression variation according to L and F using binomial thinning -->
+<!--   X.mod <- thin_diff(mat = as.matrix(X), design_fixed = L, coef_fixed = F) -->
+<!--   X.thin <- as(X.mod$mat, "sparseMatrix")  -->
+<!--   ### remove genes with very low expression levels -->
+<!--   idx.gene <- rowSums(X.thin!=0) >= 32 -->
+<!--   X.thin <- X.thin[idx.gene,] -->
+<!--   F <- F[idx.gene,] -->
+<!--   colnames(X.thin) <- paste0("cell", 1:ncol(X.thin)) -->
+<!--   rownames(X.thin) <- paste0("gene", 1:nrow(X.thin)) -->
+<!--   rownames(L) <- colnames(X.thin) -->
+<!--   colnames(L) <- paste0("k", 1:ncol(L)) -->
+<!--   rownames(F) <- rownames(X.thin) -->
+<!--   colnames(F) <- colnames(L) -->
+<!--   ### normalize and log transform the UMI counts -->
+<!--   norm.dat <- fnc_norm(X.thin) -->
+<!--   ### save the simulated data -->
+<!--   data6 <- list(X = t(X.thin), Y = norm.dat, L = L, F = F) -->
+<!--   #saveRDS(data, file=paste0("~/Desktop/EBCD_GBCD_comparison_data/iter", iter, "_only_subtype_data.rds")) -->
+<!--   rm(X, X.mod, L, F) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ## Visualization of the Data -->
+<!-- ```{r, eval = FALSE} -->
+<!-- plot_heatmap(data6$L) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- plot_heatmap(data6$F) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- observed.vals6 <- data6$Y %*% t(data6$Y)/ ncol(data6$Y) -->
+<!-- ``` -->
+<!-- ```{r, eval = FALSE} -->
+<!-- plot_heatmap(observed.vals6) -->
+<!-- ``` -->
+<!-- ## EBCD Analysis -->
+<!-- This is the code to run the EBCD analysis. I've already loaded in the saved results.  -->
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd6 <- ebcd(X = t(data6$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
+<!-- This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1.  -->
+<!-- ```{r, eval = FALSE} -->
+<!-- plot_heatmap(t(t(fit.ebcd6$EL)/apply(fit.ebcd6$EL,2, max))) -->
+<!-- ``` -->
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -3911,43 +2532,42 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] fastTopics_0.6-142 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
- [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-27       
- [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.5     
+ [1] fastTopics_0.6-192 patchwork_1.2.0    reshape2_1.4.4     irlba_2.3.5.1     
+ [5] ashr_2.2-66        magrittr_2.0.3     flashier_1.0.53    ebnm_1.1-34       
+ [9] Matrix_1.6-5       gridExtra_2.3      pheatmap_1.0.12    ggrepel_0.9.6     
 [13] RColorBrewer_1.1-3 cowplot_1.1.3      ggplot2_3.5.1      workflowr_1.7.1   
 
 loaded via a namespace (and not attached):
- [1] pbapply_1.7-2        rlang_1.1.3          git2r_0.33.0        
- [4] horseshoe_0.2.0      compiler_4.3.2       getPass_0.2-4       
- [7] callr_3.7.6          vctrs_0.6.5          quantreg_5.97       
-[10] quadprog_1.5-8       stringr_1.5.1        pkgconfig_2.0.3     
-[13] crayon_1.5.2         fastmap_1.2.0        mcmc_0.9-8          
-[16] labeling_0.4.3       utf8_1.2.4           promises_1.3.0      
-[19] rmarkdown_2.27       ps_1.7.6             MatrixModels_0.5-3  
-[22] purrr_1.0.2          xfun_0.44            cachem_1.1.0        
-[25] trust_0.1-8          jsonlite_1.8.8       progress_1.2.3      
-[28] highr_0.11           later_1.3.2          parallel_4.3.2      
-[31] prettyunits_1.2.0    R6_2.5.1             bslib_0.7.0         
-[34] stringi_1.8.4        SQUAREM_2021.1       jquerylib_0.1.4     
-[37] Rcpp_1.0.12          knitr_1.45           httpuv_1.6.15       
-[40] splines_4.3.2        tidyselect_1.2.1     rstudioapi_0.16.0   
-[43] yaml_2.3.8           processx_3.8.4       plyr_1.8.9          
-[46] lattice_0.22-6       tibble_3.2.1         withr_3.0.0         
-[49] coda_0.19-4.1        evaluate_0.23        Rtsne_0.17          
-[52] survival_3.6-4       RcppParallel_5.1.7   pillar_1.9.0        
-[55] whisker_0.4.1        plotly_4.10.4        softImpute_1.4-1    
-[58] generics_0.1.3       rprojroot_2.0.4      invgamma_1.1        
-[61] truncnorm_1.0-9      hms_1.1.3            munsell_0.5.1       
-[64] scales_1.3.0         glue_1.7.0           scatterplot3d_0.3-44
-[67] lazyeval_0.2.2       tools_4.3.2          data.table_1.15.4   
-[70] SparseM_1.81         fs_1.6.4             grid_4.3.2          
-[73] tidyr_1.3.1          MCMCpack_1.7-0       colorspace_2.1-0    
-[76] deconvolveR_1.2-1    cli_3.6.2            Polychrome_1.5.1    
-[79] fansi_1.0.6          mixsqp_0.3-54        viridisLite_0.4.2   
-[82] dplyr_1.1.4          uwot_0.1.16          gtable_0.3.5        
-[85] sass_0.4.9           digest_0.6.35        farver_2.1.2        
-[88] htmlwidgets_1.6.4    htmltools_0.5.8.1    lifecycle_1.0.4     
-[91] httr_1.4.7           MASS_7.3-60.0.1     </code></pre>
+ [1] tidyselect_1.2.1     viridisLite_0.4.2    farver_2.1.2        
+ [4] dplyr_1.1.4          fastmap_1.2.0        lazyeval_0.2.2      
+ [7] promises_1.3.0       digest_0.6.37        lifecycle_1.0.4     
+[10] processx_3.8.4       invgamma_1.1         compiler_4.3.2      
+[13] rlang_1.1.4          sass_0.4.9           progress_1.2.3      
+[16] tools_4.3.2          utf8_1.2.4           yaml_2.3.10         
+[19] data.table_1.16.0    knitr_1.48           labeling_0.4.3      
+[22] prettyunits_1.2.0    htmlwidgets_1.6.4    scatterplot3d_0.3-44
+[25] plyr_1.8.9           Rtsne_0.17           withr_3.0.1         
+[28] purrr_1.0.2          grid_4.3.2           fansi_1.0.6         
+[31] git2r_0.33.0         colorspace_2.1-1     scales_1.3.0        
+[34] gtools_3.9.5         cli_3.6.3            rmarkdown_2.28      
+[37] crayon_1.5.3         generics_0.1.3       RcppParallel_5.1.9  
+[40] rstudioapi_0.16.0    httr_1.4.7           pbapply_1.7-2       
+[43] cachem_1.1.0         stringr_1.5.1        splines_4.3.2       
+[46] parallel_4.3.2       softImpute_1.4-1     vctrs_0.6.5         
+[49] jsonlite_1.8.9       callr_3.7.6          hms_1.1.3           
+[52] mixsqp_0.3-54        horseshoe_0.2.0      trust_0.1-8         
+[55] plotly_4.10.4        jquerylib_0.1.4      tidyr_1.3.1         
+[58] glue_1.8.0           ps_1.7.7             uwot_0.1.16         
+[61] stringi_1.8.4        Polychrome_1.5.1     gtable_0.3.5        
+[64] later_1.3.2          quadprog_1.5-8       munsell_0.5.1       
+[67] tibble_3.2.1         pillar_1.9.0         htmltools_0.5.8.1   
+[70] truncnorm_1.0-9      R6_2.5.1             rprojroot_2.0.4     
+[73] evaluate_1.0.0       lattice_0.22-6       highr_0.11          
+[76] RhpcBLASctl_0.23-42  SQUAREM_2021.1       httpuv_1.6.15       
+[79] bslib_0.8.0          Rcpp_1.0.13          deconvolveR_1.2-1   
+[82] whisker_0.4.1        xfun_0.48            fs_1.6.4            
+[85] getPass_0.2-4        pkgconfig_2.0.3     </code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -4001,6 +2621,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

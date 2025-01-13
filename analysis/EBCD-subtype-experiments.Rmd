@@ -2,7 +2,9 @@
 title: "EBCD-subtype-experiments"
 author: "Annie Xie"
 date: "2024-05-01"
-output: workflowr::wflow_html
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
 editor_options:
   chunk_output_type: console
 ---
@@ -13,7 +15,7 @@ In this analysis, I run some experiments to explore when EBCD can find subtype G
 
 # Package and Functions for Analyses
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
@@ -90,7 +92,7 @@ set.seed(2052)
 data_norm <- generate_normal_data(0.01)
 ```
 
-```{r}
+```{r, include = FALSE, eval = FALSE}
 dim(data_norm$Y)
 ```
 
@@ -316,325 +318,325 @@ It appears that the loading estimate that EBCD converges to is something along t
 
 (and perhaps it is breaking the second vector down even further). We think that this is happening because we are using the generalized binary prior which does not force the loading vectors to be binary; it just encourages it. On the other hand, we hypothesize that GBCD is able to recovery these binary loadings vectors because of its use of the Laplace prior and then splitting -- this harkens back to ideas in Jason's thesis regarding the drift factorization and the divergence factorization.
 
-# Simulate data under EBCD model, vary standard deviation
-In the previous simulations, I chose the standard deviation of the noise such that the Gram matrix had a visible block structure. A block structure is expected due to the subtype effects modeled in the loadings matrix. For larger standard deviations, the Gram matrix does not have an apparent block structure. As the standard deviation decreases, the block structure in the Gram matrix becomes more apparent and/or clearer.
-
-In the previous setting, EBCD was able to recover both subtype factors. However, I wanted to test how the standard deviation of the noise affects this. In this section, I run the same analyses as above for different standard deviation values, and assess how well EBCD performs at each level.
-
-## Hypothesis
-
-Higher standard deviation values blur the block structure in the Gram matrix. Therefore, I suspect that in these settings, EBCD will have a more difficult time recovering both subtype factors. I am unsure if EBCD will be able to recover one of the two subtype factors or if it will struggle to find either of them. Given that the magnitude of effect for both subtypes is the same, I can't see why EBCD would be able to find one and not the other.
-
-## Analysis
-
-### Single experiment
-
-```{r}
-set.seed(2052)
-data_sd0.01 <- generate_normal_data(0.01)
-data_sd0.05 <- generate_normal_data(0.05)
-data_sd0.15 <- generate_normal_data(0.15)
-data_sd0.2 <- generate_normal_data(0.2)
-data_sd0.5 <- generate_normal_data(0.5)
-```
-
-```{r}
-observed.vals_sd0.01 <- data_sd0.01$Y %*% t(data_sd0.01$Y)/ ncol(data_sd0.01$Y)
-observed.vals_sd0.05 <- data_sd0.05$Y %*% t(data_sd0.05$Y)/ ncol(data_sd0.05$Y)
-observed.vals_sd0.15 <- data_sd0.15$Y %*% t(data_sd0.15$Y)/ ncol(data_sd0.15$Y)
-observed.vals_sd0.2 <- data_sd0.2$Y %*% t(data_sd0.2$Y)/ ncol(data_sd0.2$Y)
-observed.vals_sd0.5 <- data_sd0.5$Y %*% t(data_sd0.5$Y)/ ncol(data_sd0.5$Y)
-```
-
-This is a heatmap of the Gram matrix for standard deviation = 0.01.
-```{r}
-plot_heatmap(observed.vals_sd0.01)
-```
-
-This is a heatmap of the Gram matrix for standard deviation = 0.05.
-```{r}
-plot_heatmap(observed.vals_sd0.05)
-```
-
-This is a heatmap of the Gram matrix for standard deviation = 0.15.
-```{r}
-plot_heatmap(observed.vals_sd0.15)
-```
-
-This is a heatmap of the Gram matrix for standard deviation = 0.2.
-```{r}
-plot_heatmap(observed.vals_sd0.2)
-```
-
-This is a heatmap of the Gram matrix for standard deviation = 0.5.
-```{r}
-plot_heatmap(observed.vals_sd0.5)
-```
-
-We apply EBCD with `Kmax = 10` and the generalized binary prior over the loadings.
-```{r, eval = FALSE}
-set.seed(295)
-fit.ebcd_sd0.01 <- ebcd(X = t(data_sd0.01$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_sd0.05 <- ebcd(X = t(data_sd0.05$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_sd0.15 <- ebcd(X = t(data_sd0.15$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_sd0.2 <- ebcd(X = t(data_sd0.2$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_sd0.5 <- ebcd(X = t(data_sd0.5$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary)
-```
-
-```{r, include = FALSE}
-load('~/Desktop/EBCD_GBCD_comparison_data/ebcd_subtype_experiment_2.RData')
-```
-
-These are visualizations for standard deviation = 0.01:
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.01$EL)/apply(fit.ebcd_sd0.01$EL,2, max)))
-```
-
-```{r}
-ebcd.fitted.vals_sd0.01 <- fit.ebcd_sd0.01$EL %*% t(fit.ebcd_sd0.01$EL)
-```
-
-```{r, eval = FALSE, include = FALSE}
-set.seed(3952)
-diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
-off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
-samp.vals <- sample(off_diag_idx, size = 100000)
-```
-
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.01")
-```
-
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.01)), y = diag(ebcd.fitted.vals_sd0.01))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.01")
-```
-
-These are visualizations for standard deviation = 0.05:
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.05$EL)/apply(fit.ebcd_sd0.05$EL,2, max)))
-```
-
-```{r}
-ebcd.fitted.vals_sd0.05 <- fit.ebcd_sd0.05$EL %*% t(fit.ebcd_sd0.05$EL)
-```
-
-```{r, eval = FALSE, include = FALSE}
-set.seed(3952)
-diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
-off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
-samp.vals <- sample(off_diag_idx, size = 100000)
-```
-
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.05")
-```
-
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.05)), y = diag(ebcd.fitted.vals_sd0.05))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.05")
-```
-
-These are visualizations for standard deviation = 0.15:
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.15$EL)/apply(fit.ebcd_sd0.15$EL,2, max)))
-```
-
-```{r}
-ebcd.fitted.vals_sd0.15 <- fit.ebcd_sd0.15$EL %*% t(fit.ebcd_sd0.15$EL)
-```
-
-```{r, eval = FALSE, include = FALSE}
-set.seed(3952)
-diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
-off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
-samp.vals <- sample(off_diag_idx, size = 100000)
-```
-
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15")
-```
-
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.15)), y = diag(ebcd.fitted.vals_sd0.15))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.15")
-```
-
-These are visualizations for standard deviation = 0.2:
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.2$EL)/apply(fit.ebcd_sd0.2$EL,2, max)))
-```
-
-```{r}
-ebcd.fitted.vals_sd0.2 <- fit.ebcd_sd0.2$EL %*% t(fit.ebcd_sd0.2$EL)
-```
-
-```{r, eval = FALSE, include = FALSE}
-set.seed(3952)
-diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
-off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
-samp.vals <- sample(off_diag_idx, size = 100000)
-```
-
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.2")
-```
-
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.2)), y = diag(ebcd.fitted.vals_sd0.2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.2")
-```
-
-These are visualizations for standard deviation = 0.5:
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.5$EL)/apply(fit.ebcd_sd0.5$EL,2, max)))
-```
-
-```{r}
-ebcd.fitted.vals_sd0.5 <- fit.ebcd_sd0.5$EL %*% t(fit.ebcd_sd0.5$EL)
-```
-
-```{r, eval = FALSE, include = FALSE}
-set.seed(3952)
-diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals))
-off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx) 
-samp.vals <- sample(off_diag_idx, size = 100000)
-```
-
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.5")
-```
-
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.5)), y = diag(ebcd.fitted.vals_sd0.5))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.5")
-```
-
-### Repeated experiments
-
-In this section, we repeat the simulation workflow ten times, generating ten different datasets for each standard deviation value and applying EBCD to each. For each standard deviation value, we calculate the proportion of times that EBCD is able to recover each subtype factor.
-
-```{r, eval = FALSE}
-noise_sds <- c(0.01,0.05,0.1,0.3,0.5)
-recovery_prop_sds <- matrix(rep(0, 2*length(noise_sds)), ncol = 2)
-for (j in 1:length(noise_sds)){
-  print(noise_sds[j])
-  dataset_list <- generate_normal_datasets(noise_sds[j], 10)
-  ebcdfit_list <- lapply(dataset_list, function(x){return(ebcd(X = t(x$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary))})
-  recovery_prop <- compute_subtype_recovery_prop(dataset_list, ebcdfit_list)
-  recovery_prop_sds[j,] <- recovery_prop
-}
-```
-
-```{r, eval = FALSE, include = FALSE}
-colnames(recovery_prop_sds) <- c('Subtype 1 Proportion', 'Subtype 2 Proportion')
-recovery_prop_sds <- cbind(noise_sds, recovery_prop_sds)
-```
-
-```{r, eval = FALSE, include = FALSE}
-# maybe change this code to get better plot!
-ggplot(data = NULL, aes(x= noise_sds)) + geom_point(aes(y = recovery_prop_sds[,2]), color = 'blue') + geom_line(aes(y = recovery_prop_sds[,2]), color = 'blue') + geom_point(aes(y = recovery_prop_sds[,3]), color = 'orange') + geom_line(aes(y = recovery_prop_sds[,3]), color = 'orange') + xlab('Noise SD') + ylab('Recovery Proportion')
-```
-
-## Observations
-
-As predicted, as the standard deviation of the noise increases, the recovery proportion of the subtype decreases. For small standard deviation values, e.g. 0.01 or 0.05, EBCD is able to recover both subtypes in all instances. For larger standard deviation values, e.g. 0.5 or 1, EBCD is not able to recover both subtypes. Based off of the single experiment analysis, it looks like EBCD might just recover a bunch of shared GEPs and does not recover any GEPs that resemble subtype effects. For middle-of-the-range standard deviation values, e.g. 0.15 or 0.2, EBCD is only able to find subtype GEPs a fraction of the time. From the single experiment results, it looks like EBCD can find one of the two subtype effects, but struggles to find the second subtype effect, or the effect it finds is very sparse (too sparse to be considered an accurate recovery of the effect). I will look into this in the next section. 
-
-
-## Closer look at SD = 0.15
-
-These are some visualizations of the simulated data. This is a heatmap of the loadings matrix.
-```{r}
-plot_heatmap(data_sd0.15$LL)
-```
-
-This is a heatmap of $F^{T}F$. This is to check that it is orthogonal.
-```{r}
-plot_heatmap(t(data_sd0.15$FF) %*% data_sd0.15$FF)
-```
-
-This is a heatmap of the Gram matrix.
-```{r}
-plot_heatmap(observed.vals_sd0.15)
-```
-
-This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1. 
-```{r}
-plot_heatmap(t(t(fit.ebcd_sd0.15$EL)/apply(fit.ebcd_sd0.15$EL,2, max)))
-```
-
-```{r}
-cor(fit.ebcd_sd0.15$EL, data_sd0.15$LL[,c(2,3)])
-```
-
-```{r}
-transformed_Z <- transform_ebcd_Z(t(data_sd0.15$Y), fit.ebcd_sd0.15)
-```
-
-This is a plot of the factor matrix.
-```{r}
-plot_heatmap(transformed_Z, colors_range = c('blue', 'red'))
-```
-
-This is a heatmap of the positive part of the factor matrix.
-```{r}
-#heatmap of the positive part of the factor matrix
-plot_heatmap(pmax(transformed_Z, 0))
-```
-
-This is a heatmap of the negative part of the factor matrix.
-```{r}
-#heatmap of the negative part of the factor matrix
-plot_heatmap(pmin(transformed_Z, 0), colors_range = c('red','gray96'))
-```
-
-```{r}
-ebcd.fitted.vals <- fit.ebcd$EL %*% t(fit.ebcd$EL)
-```
-
-This is a plot of $LL^{T}$.
-```{r}
-plot_heatmap(ebcd.fitted.vals_sd0.15)
-```
-
-```{r}
-plot_heatmap(observed.vals_sd0.15)
-```
-
-This is the L2 norm of the difference between the observed values and the fitted values.
-```{r}
-sum((observed.vals_sd0.15 - ebcd.fitted.vals_sd0.15)^2)
-```
-
-This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
-```{r}
-sum((observed.vals_sd0.15 - ebcd.fitted.vals_sd0.15)^2) - sum((diag(observed.vals_sd0.15) - diag(ebcd.fitted.vals_sd0.15))^2)
-```
-
-This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values:
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15")
-```
-
-This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values:
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.15)), y = diag(ebcd.fitted.vals_sd0.15))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.15")
-```
-
-This is a plot of the progression of the objective function
-```{r}
-ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_sd0.15$vec.obj)), y = fit.ebcd_sd0.15$vec.obj)) + geom_line()
-```
-
-This is the number of iterations that the backfit did before the convergence criterion was satisfied:
-```{r}
-length(fit.ebcd_sd0.15$vec.obj)
-```
-
-This is the value of the objective function that was attained:
-```{r}
-fit.ebcd$vec.obj[length(fit.ebcd_sd0.15$vec.obj)]
-```
-
-### Observations
-It looks like perhaps in this setting (where there are subtype effects, but they are not super strong), EBCD can pick up on a subtype effect, but the loadings themselves are sparse (too sparse to be considered accurately "recovered"). 
-
-Also, in this setting, the EBCD result doesn't have a particularly good fit. This is what we would expect given that it cannot pick up on the second subtype effect. There are situations in which EBCD doesn't pick up on a subtype effect, but it still manages to get a good fit, which is confusing and counter-intuitive.
+<!-- # Simulate data under EBCD model, vary standard deviation -->
+<!-- In the previous simulations, I chose the standard deviation of the noise such that the Gram matrix had a visible block structure. A block structure is expected due to the subtype effects modeled in the loadings matrix. For larger standard deviations, the Gram matrix does not have an apparent block structure. As the standard deviation decreases, the block structure in the Gram matrix becomes more apparent and/or clearer. -->
+
+<!-- In the previous setting, EBCD was able to recover both subtype factors. However, I wanted to test how the standard deviation of the noise affects this. In this section, I run the same analyses as above for different standard deviation values, and assess how well EBCD performs at each level. -->
+
+<!-- ## Hypothesis -->
+
+<!-- Higher standard deviation values blur the block structure in the Gram matrix. Therefore, I suspect that in these settings, EBCD will have a more difficult time recovering both subtype factors. I am unsure if EBCD will be able to recover one of the two subtype factors or if it will struggle to find either of them. Given that the magnitude of effect for both subtypes is the same, I can't see why EBCD would be able to find one and not the other. -->
+
+<!-- ## Analysis -->
+
+<!-- ### Single experiment -->
+
+<!-- ```{r} -->
+<!-- set.seed(2052) -->
+<!-- data_sd0.01 <- generate_normal_data(0.01) -->
+<!-- data_sd0.05 <- generate_normal_data(0.05) -->
+<!-- data_sd0.15 <- generate_normal_data(0.15) -->
+<!-- data_sd0.2 <- generate_normal_data(0.2) -->
+<!-- data_sd0.5 <- generate_normal_data(0.5) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- observed.vals_sd0.01 <- data_sd0.01$Y %*% t(data_sd0.01$Y)/ ncol(data_sd0.01$Y) -->
+<!-- observed.vals_sd0.05 <- data_sd0.05$Y %*% t(data_sd0.05$Y)/ ncol(data_sd0.05$Y) -->
+<!-- observed.vals_sd0.15 <- data_sd0.15$Y %*% t(data_sd0.15$Y)/ ncol(data_sd0.15$Y) -->
+<!-- observed.vals_sd0.2 <- data_sd0.2$Y %*% t(data_sd0.2$Y)/ ncol(data_sd0.2$Y) -->
+<!-- observed.vals_sd0.5 <- data_sd0.5$Y %*% t(data_sd0.5$Y)/ ncol(data_sd0.5$Y) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix for standard deviation = 0.01. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.01) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix for standard deviation = 0.05. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.05) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix for standard deviation = 0.15. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.15) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix for standard deviation = 0.2. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.2) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix for standard deviation = 0.5. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.5) -->
+<!-- ``` -->
+
+<!-- We apply EBCD with `Kmax = 10` and the generalized binary prior over the loadings. -->
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd_sd0.01 <- ebcd(X = t(data_sd0.01$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_sd0.05 <- ebcd(X = t(data_sd0.05$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_sd0.15 <- ebcd(X = t(data_sd0.15$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_sd0.2 <- ebcd(X = t(data_sd0.2$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_sd0.5 <- ebcd(X = t(data_sd0.5$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
+
+<!-- ```{r, include = FALSE} -->
+<!-- load('~/Desktop/EBCD_GBCD_comparison_data/ebcd_subtype_experiment_2.RData') -->
+<!-- ``` -->
+
+<!-- These are visualizations for standard deviation = 0.01: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.01$EL)/apply(fit.ebcd_sd0.01$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_sd0.01 <- fit.ebcd_sd0.01$EL %*% t(fit.ebcd_sd0.01$EL) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.01))[samp.vals], y = c(ebcd.fitted.vals_sd0.01)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.01") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.01)), y = diag(ebcd.fitted.vals_sd0.01))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.01") -->
+<!-- ``` -->
+
+<!-- These are visualizations for standard deviation = 0.05: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.05$EL)/apply(fit.ebcd_sd0.05$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_sd0.05 <- fit.ebcd_sd0.05$EL %*% t(fit.ebcd_sd0.05$EL) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.05))[samp.vals], y = c(ebcd.fitted.vals_sd0.05)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.05") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.05)), y = diag(ebcd.fitted.vals_sd0.05))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.05") -->
+<!-- ``` -->
+
+<!-- These are visualizations for standard deviation = 0.15: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.15$EL)/apply(fit.ebcd_sd0.15$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_sd0.15 <- fit.ebcd_sd0.15$EL %*% t(fit.ebcd_sd0.15$EL) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.15)), y = diag(ebcd.fitted.vals_sd0.15))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.15") -->
+<!-- ``` -->
+
+<!-- These are visualizations for standard deviation = 0.2: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.2$EL)/apply(fit.ebcd_sd0.2$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_sd0.2 <- fit.ebcd_sd0.2$EL %*% t(fit.ebcd_sd0.2$EL) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.2") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.2)), y = diag(ebcd.fitted.vals_sd0.2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.2") -->
+<!-- ``` -->
+
+<!-- These are visualizations for standard deviation = 0.5: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.5$EL)/apply(fit.ebcd_sd0.5$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_sd0.5 <- fit.ebcd_sd0.5$EL %*% t(fit.ebcd_sd0.5$EL) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- set.seed(3952) -->
+<!-- diag_idx <- seq(1, prod(dim(observed.vals)), length.out = ncol(observed.vals)) -->
+<!-- off_diag_idx <- setdiff(c(1:prod(dim(observed.vals))), diag_idx)  -->
+<!-- samp.vals <- sample(off_diag_idx, size = 100000) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.5") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.5)), y = diag(ebcd.fitted.vals_sd0.5))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.5") -->
+<!-- ``` -->
+
+<!-- ### Repeated experiments -->
+
+<!-- In this section, we repeat the simulation workflow ten times, generating ten different datasets for each standard deviation value and applying EBCD to each. For each standard deviation value, we calculate the proportion of times that EBCD is able to recover each subtype factor. -->
+
+<!-- ```{r, eval = FALSE} -->
+<!-- noise_sds <- c(0.01,0.05,0.1,0.3,0.5) -->
+<!-- recovery_prop_sds <- matrix(rep(0, 2*length(noise_sds)), ncol = 2) -->
+<!-- for (j in 1:length(noise_sds)){ -->
+<!--   print(noise_sds[j]) -->
+<!--   dataset_list <- generate_normal_datasets(noise_sds[j], 10) -->
+<!--   ebcdfit_list <- lapply(dataset_list, function(x){return(ebcd(X = t(x$Y), Kmax = 10, ebnm_fn = ebnm::ebnm_generalized_binary))}) -->
+<!--   recovery_prop <- compute_subtype_recovery_prop(dataset_list, ebcdfit_list) -->
+<!--   recovery_prop_sds[j,] <- recovery_prop -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- colnames(recovery_prop_sds) <- c('Subtype 1 Proportion', 'Subtype 2 Proportion') -->
+<!-- recovery_prop_sds <- cbind(noise_sds, recovery_prop_sds) -->
+<!-- ``` -->
+
+<!-- ```{r, eval = FALSE, include = FALSE} -->
+<!-- # maybe change this code to get better plot! -->
+<!-- ggplot(data = NULL, aes(x= noise_sds)) + geom_point(aes(y = recovery_prop_sds[,2]), color = 'blue') + geom_line(aes(y = recovery_prop_sds[,2]), color = 'blue') + geom_point(aes(y = recovery_prop_sds[,3]), color = 'orange') + geom_line(aes(y = recovery_prop_sds[,3]), color = 'orange') + xlab('Noise SD') + ylab('Recovery Proportion') -->
+<!-- ``` -->
+
+<!-- ## Observations -->
+
+<!-- As predicted, as the standard deviation of the noise increases, the recovery proportion of the subtype decreases. For small standard deviation values, e.g. 0.01 or 0.05, EBCD is able to recover both subtypes in all instances. For larger standard deviation values, e.g. 0.5 or 1, EBCD is not able to recover both subtypes. Based off of the single experiment analysis, it looks like EBCD might just recover a bunch of shared GEPs and does not recover any GEPs that resemble subtype effects. For middle-of-the-range standard deviation values, e.g. 0.15 or 0.2, EBCD is only able to find subtype GEPs a fraction of the time. From the single experiment results, it looks like EBCD can find one of the two subtype effects, but struggles to find the second subtype effect, or the effect it finds is very sparse (too sparse to be considered an accurate recovery of the effect). I will look into this in the next section.  -->
+
+
+<!-- ## Closer look at SD = 0.15 -->
+
+<!-- These are some visualizations of the simulated data. This is a heatmap of the loadings matrix. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(data_sd0.15$LL) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of $F^{T}F$. This is to check that it is orthogonal. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(data_sd0.15$FF) %*% data_sd0.15$FF) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the Gram matrix. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.15) -->
+<!-- ``` -->
+
+<!-- This is a plot of the scaled estimate of $L$. This estimate is scaled such that the infinity norm for each column is 1, i.e. the maximum value for each column is 1.  -->
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_sd0.15$EL)/apply(fit.ebcd_sd0.15$EL,2, max))) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- cor(fit.ebcd_sd0.15$EL, data_sd0.15$LL[,c(2,3)]) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- transformed_Z <- transform_ebcd_Z(t(data_sd0.15$Y), fit.ebcd_sd0.15) -->
+<!-- ``` -->
+
+<!-- This is a plot of the factor matrix. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(transformed_Z, colors_range = c('blue', 'red')) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the positive part of the factor matrix. -->
+<!-- ```{r} -->
+<!-- #heatmap of the positive part of the factor matrix -->
+<!-- plot_heatmap(pmax(transformed_Z, 0)) -->
+<!-- ``` -->
+
+<!-- This is a heatmap of the negative part of the factor matrix. -->
+<!-- ```{r} -->
+<!-- #heatmap of the negative part of the factor matrix -->
+<!-- plot_heatmap(pmin(transformed_Z, 0), colors_range = c('red','gray96')) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals <- fit.ebcd$EL %*% t(fit.ebcd$EL) -->
+<!-- ``` -->
+
+<!-- This is a plot of $LL^{T}$. -->
+<!-- ```{r} -->
+<!-- plot_heatmap(ebcd.fitted.vals_sd0.15) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_sd0.15) -->
+<!-- ``` -->
+
+<!-- This is the L2 norm of the difference between the observed values and the fitted values. -->
+<!-- ```{r} -->
+<!-- sum((observed.vals_sd0.15 - ebcd.fitted.vals_sd0.15)^2) -->
+<!-- ``` -->
+
+<!-- This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values. -->
+<!-- ```{r} -->
+<!-- sum((observed.vals_sd0.15 - ebcd.fitted.vals_sd0.15)^2) - sum((diag(observed.vals_sd0.15) - diag(ebcd.fitted.vals_sd0.15))^2) -->
+<!-- ``` -->
+
+<!-- This is a plot of (a subset of) the off-diagonal entries of the fitted values vs. observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_sd0.15))[samp.vals], y = c(ebcd.fitted.vals_sd0.15)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Subsample of Off Diagonal entries for SD = 0.15") -->
+<!-- ``` -->
+
+<!-- This is a plot of the diagonal entries of the fitted values vs. the diagonal entries of the observed values: -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_sd0.15)), y = diag(ebcd.fitted.vals_sd0.15))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') + labs(title="Diagonal entries for SD = 0.15") -->
+<!-- ``` -->
+
+<!-- This is a plot of the progression of the objective function -->
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(1:length(fit.ebcd_sd0.15$vec.obj)), y = fit.ebcd_sd0.15$vec.obj)) + geom_line() -->
+<!-- ``` -->
+
+<!-- This is the number of iterations that the backfit did before the convergence criterion was satisfied: -->
+<!-- ```{r} -->
+<!-- length(fit.ebcd_sd0.15$vec.obj) -->
+<!-- ``` -->
+
+<!-- This is the value of the objective function that was attained: -->
+<!-- ```{r} -->
+<!-- fit.ebcd$vec.obj[length(fit.ebcd_sd0.15$vec.obj)] -->
+<!-- ``` -->
+
+<!-- ### Observations -->
+<!-- It looks like perhaps in this setting (where there are subtype effects, but they are not super strong), EBCD can pick up on a subtype effect, but the loadings themselves are sparse (too sparse to be considered accurately "recovered").  -->
+
+<!-- Also, in this setting, the EBCD result doesn't have a particularly good fit. This is what we would expect given that it cannot pick up on the second subtype effect. There are situations in which EBCD doesn't pick up on a subtype effect, but it still manages to get a good fit, which is confusing and counter-intuitive. -->
 
 # Data with patient and subtype effects
 In the previous simulations, we only consider a baseline factor and two subtype factors. In this simulation, we add "patient effects". Same as before, we simulate data from the EBCD model. The loadings matrix, $L$, is binary and consists of seven factors -- one baseline factor loaded on all samples, two subtype factors (each loaded on half of the samples) and four patient factors (each loaded on one-fourth of the samples). The factor matrix, $F$, again has a block structure and has been rescaled such that $F^{T}F = I$. Normal noise is then added to the product $L F^{T}$. The standard deviation of the noise is chosen such that the Gram matrix has a block structure corresponding to the subtype effects.
@@ -684,14 +686,16 @@ set.seed(2052)
 data_norm_patient <- generate_normal_data_patient(0.01)
 ```
 
-```{r}
+```{r, include = FALSE, eval = FALSE}
 dim(data_norm_patient$Y)
 ```
 
+This is a heatmap of the loadings matrix.
 ```{r}
 plot_heatmap(data_norm_patient$LL)
 ```
 
+This is a heatmap of $F^{T}F$:
 ```{r}
 plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)
 ```
@@ -700,6 +704,7 @@ plot_heatmap(t(data_norm_patient$FF) %*% data_norm_patient$FF)
 observed.vals_patient <- data_norm_patient$Y %*% t(data_norm_patient$Y)/ ncol(data_norm_patient$Y)
 ```
 
+This is a heatmap of the Gram matrix.
 ```{r}
 plot_heatmap(observed.vals_patient)
 ```
@@ -753,10 +758,12 @@ This is a plot of the Gram matrix.
 plot_heatmap(observed.vals_patient)
 ```
 
+This is the L2 norm of the difference between the observed values and the fitted values.
 ```{r}
 sum((observed.vals_patient - ebcd.fitted.vals_patient)^2)
 ```
 
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
 ```{r}
 sum((observed.vals_patient - ebcd.fitted.vals_patient)^2) - sum((diag(observed.vals_patient) - diag(ebcd.fitted.vals_patient))^2)
 ```
@@ -843,131 +850,131 @@ plot_heatmap(t(t(ebcd.fit$EL)/apply(ebcd.fit$EL,2, max)))
 
 In this setting, EBCD was able to recover both subtype GEPs. In addition, it looks like EBCD was also able to recover all of the patient effects in separate GEPs. When I repeated the experiment with ten simulated datasets, EBCD was able to recover both subtypes in every dataset. The EBCD estimate for the Gram matrix, $LL^{T}$ does a good job at fitting the data. In the fitted values vs. observed values plot, we see three groups of points along the `y=x` line. I think the three groups correspond to samples that do not share subtype or patient, samples that share subtype but not patient, and samples that share patient (and thus also subtype).
 
-# Data with patient and subtype effects, varying noise SD
-Similar to the subtype-only simulations, I chose the standard deviation of the noise such that the Gram matrix had a visible block structure. Again, I wanted to test how the standard deviation of the noise affects the performance of EBCD. In this section, I run the same analyses as above for different standard deviation values, and assess how well EBCD performs at each level.
+<!-- # Data with patient and subtype effects, varying noise SD -->
+<!-- Similar to the subtype-only simulations, I chose the standard deviation of the noise such that the Gram matrix had a visible block structure. Again, I wanted to test how the standard deviation of the noise affects the performance of EBCD. In this section, I run the same analyses as above for different standard deviation values, and assess how well EBCD performs at each level. -->
 
-## Hypothesis
+<!-- ## Hypothesis -->
 
-Higher standard deviation values blur the block structure in the Gram matrix. Therefore, I suspect that in these settings, EBCD will have a more difficult time recovering all of the subtype and patient effects.
+<!-- Higher standard deviation values blur the block structure in the Gram matrix. Therefore, I suspect that in these settings, EBCD will have a more difficult time recovering all of the subtype and patient effects. -->
 
-## Analysis
-### Single Analysis
+<!-- ## Analysis -->
+<!-- ### Single Analysis -->
 
-```{r}
-set.seed(2052)
-data_norm_patient_sd0.1 <- generate_normal_data_patient(0.1)
-data_norm_patient_sd0.2 <- generate_normal_data_patient(0.2)
-data_norm_patient_sd0.5 <- generate_normal_data_patient(0.5)
-```
+<!-- ```{r} -->
+<!-- set.seed(2052) -->
+<!-- data_norm_patient_sd0.1 <- generate_normal_data_patient(0.1) -->
+<!-- data_norm_patient_sd0.2 <- generate_normal_data_patient(0.2) -->
+<!-- data_norm_patient_sd0.5 <- generate_normal_data_patient(0.5) -->
+<!-- ``` -->
 
-```{r}
-observed.vals_patient_sd0.1 <- data_norm_patient_sd0.1$Y %*% t(data_norm_patient_sd0.1$Y)/ ncol(data_norm_patient_sd0.1$Y)
-observed.vals_patient_sd0.2 <- data_norm_patient_sd0.2$Y %*% t(data_norm_patient_sd0.2$Y)/ ncol(data_norm_patient_sd0.2$Y)
-observed.vals_patient_sd0.5 <- data_norm_patient_sd0.5$Y %*% t(data_norm_patient_sd0.5$Y)/ ncol(data_norm_patient_sd0.5$Y)
-```
+<!-- ```{r} -->
+<!-- observed.vals_patient_sd0.1 <- data_norm_patient_sd0.1$Y %*% t(data_norm_patient_sd0.1$Y)/ ncol(data_norm_patient_sd0.1$Y) -->
+<!-- observed.vals_patient_sd0.2 <- data_norm_patient_sd0.2$Y %*% t(data_norm_patient_sd0.2$Y)/ ncol(data_norm_patient_sd0.2$Y) -->
+<!-- observed.vals_patient_sd0.5 <- data_norm_patient_sd0.5$Y %*% t(data_norm_patient_sd0.5$Y)/ ncol(data_norm_patient_sd0.5$Y) -->
+<!-- ``` -->
 
-```{r, eval = FALSE}
-set.seed(295)
-fit.ebcd_patient_sd0.1 <- ebcd(X = t(data_norm_patient_sd0.1$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_patient_sd0.2 <- ebcd(X = t(data_norm_patient_sd0.2$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)
-fit.ebcd_patient_sd0.5 <- ebcd(X = t(data_norm_patient_sd0.5$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)
-```
+<!-- ```{r, eval = FALSE} -->
+<!-- set.seed(295) -->
+<!-- fit.ebcd_patient_sd0.1 <- ebcd(X = t(data_norm_patient_sd0.1$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_patient_sd0.2 <- ebcd(X = t(data_norm_patient_sd0.2$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- fit.ebcd_patient_sd0.5 <- ebcd(X = t(data_norm_patient_sd0.5$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary) -->
+<!-- ``` -->
 
-```{r, include = FALSE}
-load('~/Desktop/EBCD_GBCD_comparison_data/ebcd_subtype_experiment_4.RData')
-```
+<!-- ```{r, include = FALSE} -->
+<!-- load('~/Desktop/EBCD_GBCD_comparison_data/ebcd_subtype_experiment_4.RData') -->
+<!-- ``` -->
 
-These are the visualizations and analyses for standard deviation = 0.1:
-```{r}
-plot_heatmap(observed.vals_patient_sd0.1)
-```
+<!-- These are the visualizations and analyses for standard deviation = 0.1: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_patient_sd0.1) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(t(t(fit.ebcd_patient_sd0.1$EL)/apply(fit.ebcd_patient_sd0.1$EL,2, max)))
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_patient_sd0.1$EL)/apply(fit.ebcd_patient_sd0.1$EL,2, max))) -->
+<!-- ``` -->
 
-```{r}
-cor(fit.ebcd_patient_sd0.1$EL, data_norm_patient_sd0.1$LL[,c(-1)])
-```
+<!-- ```{r} -->
+<!-- cor(fit.ebcd_patient_sd0.1$EL, data_norm_patient_sd0.1$LL[,c(-1)]) -->
+<!-- ``` -->
 
-```{r}
-ebcd.fitted.vals_patient_sd0.1 <- fit.ebcd_patient_sd0.1$EL %*% t(fit.ebcd_patient_sd0.1$EL)
-```
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_patient_sd0.1 <- fit.ebcd_patient_sd0.1$EL %*% t(fit.ebcd_patient_sd0.1$EL) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(ebcd.fitted.vals_patient_sd0.1)
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(ebcd.fitted.vals_patient_sd0.1) -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.1))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.1))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.1)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.1)), y = diag(ebcd.fitted.vals_patient_sd0.1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.1)), y = diag(ebcd.fitted.vals_patient_sd0.1))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-These are the visualizations and analyses for standard deviation = 0.2:
-```{r}
-plot_heatmap(observed.vals_patient_sd0.2)
-```
+<!-- These are the visualizations and analyses for standard deviation = 0.2: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_patient_sd0.2) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(t(t(fit.ebcd_patient_sd0.2$EL)/apply(fit.ebcd_patient_sd0.2$EL,2, max)))
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_patient_sd0.2$EL)/apply(fit.ebcd_patient_sd0.2$EL,2, max))) -->
+<!-- ``` -->
 
-```{r}
-cor(fit.ebcd_patient_sd0.2$EL, data_norm_patient_sd0.2$LL[,c(-1)])
-```
+<!-- ```{r} -->
+<!-- cor(fit.ebcd_patient_sd0.2$EL, data_norm_patient_sd0.2$LL[,c(-1)]) -->
+<!-- ``` -->
 
-```{r}
-ebcd.fitted.vals_patient_sd0.2 <- fit.ebcd_patient_sd0.2$EL %*% t(fit.ebcd_patient_sd0.2$EL)
-```
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_patient_sd0.2 <- fit.ebcd_patient_sd0.2$EL %*% t(fit.ebcd_patient_sd0.2$EL) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(ebcd.fitted.vals_patient_sd0.2)
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(ebcd.fitted.vals_patient_sd0.2) -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.2))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.2)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.2)), y = diag(ebcd.fitted.vals_patient_sd0.2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.2)), y = diag(ebcd.fitted.vals_patient_sd0.2))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-These are the visualizations and analyses for standard deviation = 0.5:
-```{r}
-plot_heatmap(observed.vals_patient_sd0.5)
-```
+<!-- These are the visualizations and analyses for standard deviation = 0.5: -->
+<!-- ```{r} -->
+<!-- plot_heatmap(observed.vals_patient_sd0.5) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(t(t(fit.ebcd_patient_sd0.5$EL)/apply(fit.ebcd_patient_sd0.5$EL,2, max)))
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(t(t(fit.ebcd_patient_sd0.5$EL)/apply(fit.ebcd_patient_sd0.5$EL,2, max))) -->
+<!-- ``` -->
 
-```{r}
-cor(fit.ebcd_patient_sd0.5$EL, data_norm_patient_sd0.5$LL[,c(-1)])
-```
+<!-- ```{r} -->
+<!-- cor(fit.ebcd_patient_sd0.5$EL, data_norm_patient_sd0.5$LL[,c(-1)]) -->
+<!-- ``` -->
 
-```{r}
-ebcd.fitted.vals_patient_sd0.5 <- fit.ebcd_patient_sd0.5$EL %*% t(fit.ebcd_patient_sd0.5$EL)
-```
+<!-- ```{r} -->
+<!-- ebcd.fitted.vals_patient_sd0.5 <- fit.ebcd_patient_sd0.5$EL %*% t(fit.ebcd_patient_sd0.5$EL) -->
+<!-- ``` -->
 
-```{r}
-plot_heatmap(ebcd.fitted.vals_patient_sd0.5)
-```
+<!-- ```{r} -->
+<!-- plot_heatmap(ebcd.fitted.vals_patient_sd0.5) -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = c(as.matrix(observed.vals_patient_sd0.5))[samp.vals], y = c(ebcd.fitted.vals_patient_sd0.5)[samp.vals])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.5)), y = diag(ebcd.fitted.vals_patient_sd0.5))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
-```
+<!-- ```{r} -->
+<!-- ggplot(data = NULL, aes(x = diag(as.matrix(observed.vals_patient_sd0.5)), y = diag(ebcd.fitted.vals_patient_sd0.5))) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red') -->
+<!-- ``` -->
 
-## Observations
-As expected, as the standard deviation increased, EBCD's ability to recover the subtype and patient effects decreased. For the largest tested value, 0.5, EBCD can only recover one of the subtypes, and even then, the loadings are very sparse and don't fully capture the subtype effect. For the middle value tested, 0.2, EBCD was able to recover one of the subtype GEPs, but not both. It was able to recover effects that resemble the patient effects, but it's not a perfect recovery. For the lowest value tested, 0.1, EBCD was able to recover one subtype and all the patient effects well. It was also able to recover something that resembles the second subtype, but it is not a perfect recovery due to sparsity in the loadings. 
+<!-- ## Observations -->
+<!-- As expected, as the standard deviation increased, EBCD's ability to recover the subtype and patient effects decreased. For the largest tested value, 0.5, EBCD can only recover one of the subtypes, and even then, the loadings are very sparse and don't fully capture the subtype effect. For the middle value tested, 0.2, EBCD was able to recover one of the subtype GEPs, but not both. It was able to recover effects that resemble the patient effects, but it's not a perfect recovery. For the lowest value tested, 0.1, EBCD was able to recover one subtype and all the patient effects well. It was also able to recover something that resembles the second subtype, but it is not a perfect recovery due to sparsity in the loadings.  -->
 
-One observation is that all of the estimates have additional sparse shared GEPs. I'm not exactly sure why EBCD keeps these additional GEPs. Maybe EBCD is overfitting a little bit to the noise?
+<!-- One observation is that all of the estimates have additional sparse shared GEPs. I'm not exactly sure why EBCD keeps these additional GEPs. Maybe EBCD is overfitting a little bit to the noise? -->
 
 
 

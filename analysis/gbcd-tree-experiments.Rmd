@@ -1,0 +1,202 @@
+---
+title: "gbcd-tree-experiments"
+author: "Annie Xie"
+date: "2024-10-22"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I want to try applying GBCD to tree-structured data
+
+# Packages and Functions
+```{r, message = FALSE, warning = FALSE}
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(ggrepel)
+library(pheatmap)
+library(gridExtra)
+#library(Seurat)
+library(Matrix)
+library(ebnm)
+library(flashier)
+library(magrittr)
+library(ashr)
+library(irlba)
+library(reshape2)
+
+library(patchwork)
+library(fastTopics)
+```
+
+```{r}
+source("code/gbcd_functions.R")
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+# Example 1: 8 population balanced tree
+
+```{r}
+sim_8pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+  
+  num_pops <- length(pop_sizes)
+  K <- length(branch_sds)
+
+  FF <- matrix(rnorm(K * p, sd = rep(branch_sds, each = p)), ncol = K)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = K)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1,1,1,1,0,0,0,0), times = pop_sizes)
+  LL[, 3] <- rep(c(0,0,0,0,1,1,1,1), times = pop_sizes)
+  LL[, 4] <- rep(c(1,1,0,0,0,0,0,0), times = pop_sizes)
+  LL[, 5] <- rep(c(0,0,1,1,0,0,0,0), times = pop_sizes)
+  LL[, 6] <- rep(c(0,0,0,0,1,1,0,0), times = pop_sizes)
+  LL[, 7] <- rep(c(0,0,0,0,0,0,1,1), times = pop_sizes)
+  LL[, 8] <- rep(c(1,rep(0,7)), times = pop_sizes)
+  LL[, 9] <- rep(c(0,1,rep(0,6)), times = pop_sizes)
+  LL[, 10] <- rep(c(0,0,1,rep(0,5)), times = pop_sizes)
+  LL[, 11] <- rep(c(0,0,0,1,rep(0,4)), times = pop_sizes)
+  LL[, 12] <- rep(c(rep(0,4),1,0,0,0), times = pop_sizes)
+  LL[, 13] <- rep(c(rep(0,5),1,0,0), times = pop_sizes)
+  LL[ ,14] <- rep(c(rep(0,6),1,0), times = pop_sizes)
+  LL[, 15] <- rep(c(rep(0,7), 1), times = pop_sizes)
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, pops = pops))
+}
+```
+
+```{r}
+#seed = 666
+sim_data_8pop <- sim_8pops(pop_sizes = rep(40, 8),
+                           branch_sds = rep(2, 15),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = FALSE,
+                           seed = 4921)
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_8pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_8pop$FF))
+```
+
+```{r}
+observed.vals1 <- tcrossprod(sim_data_8pop$Y)/ ncol(sim_data_8pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## Analysis
+```{r}
+gbcd_fit1 <- ax_fit_gbcd(Y = sim_data_8pop$Y, Kmax = 15)
+```
+
+This is a heatmap of the estimate of $L$, $\hat{L}$:
+```{r}
+plot_heatmap(gbcd_fit1$res$L)
+```
+
+This is a scatter plot of the entries of $\hat{L}$, separated by factor:
+```{r}
+plot_loadings(gbcd_fit1$res$L, sim_data_8pop$pops)
+```
+
+```{r}
+cor(sim_data_8pop$LL, gbcd_fit1$res$L)
+```
+
+```{r}
+gbcd.fitted.vals1 <- tcrossprod(gbcd_fit1$scaled_L)
+```
+
+This is the L2 norm of the difference between the observed values and the fitted values.
+```{r}
+sum((observed.vals1 - gbcd.fitted.vals1)^2)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - gbcd.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(gbcd.fitted.vals1))^2)
+```
+
+This is a plot of the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[off_diag_idx], y = c(gbcd.fitted.vals1)[off_diag_idx])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+GBCD struggles in this 8 population setting. GBCD fails to find all of the population effects. Furthermore, there are some factors where populations from different branches are grouped together. My guess is there is an identifiability issue with the tree data. We saw this in the 4 population case.
+
+

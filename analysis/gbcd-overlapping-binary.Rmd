@@ -1,0 +1,286 @@
+---
+title: "gbcd-overlapping-binary"
+author: "Annie Xie"
+date: "2025-01-14"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+In my benchmarking study, I found that in the sparse, overlapping binary setting, the GBCD estimate had negative entries. This shouldn't happen because the generalized binary prior is a non-negative prior. Therefore, the estimate should have non-negative entries. The goal of this analysis is to look into that. Right now, we hypothesize that it is a bug in the code.
+
+```{r, message = FALSE, warning = FALSE}
+source('code/gbcd_functions.R')
+library(flashier)
+library(ashr)
+library(ggplot2)
+library(pheatmap)
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+# Data Generation
+
+In this analysis, we simulate data as follows:
+
+Let $X$ be an $n \times p$ matrix. $X = LF' + E$, where $L$ is an $n \times k$ matrix, $F$ is an $p \times k$ matrix, and $E$ is an $n \times p$ matrix. The entries of $E$ are independently drawn from a standard normal distribution, $E_{ij} \overset{i.i.d.}{\sim} N(0,1)$. The entries of $F$ are also drawn from a normal distribution, $F_{ij} \overset{i.i.d.}{\sim} N(0, \sigma^2)$. The entries of $L$ are drawn from a Bernoulli distribution, $L_{ij} \overset{i.i.d.}{\sim} Bernoulli(\pi_1)$. 
+
+In this setting, each sample can be a member of multiple groups. Therefore, we have overlapping structure. We usually set $\pi_1$ to be small, e.g. $\pi_1 = 0.1$ to ensure that each sample is not a member of too many groups (i.e. we want sparse structure).
+
+```{r}
+sim_binary_loadings_data <- function(args) {
+  set.seed(args$seed)
+  
+  FF <- matrix(rnorm(args$k * args$p, sd = args$group_sd), ncol = args$k)
+  LL <- matrix(rbinom(args$n*args$k, 1, args$pi1), nrow = args$n, ncol = args$k)
+  E <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = args$n)
+  
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args <- list(n = 100, p = 1000, k = 10, group_sd = 1, indiv_sd = 1, pi1 = 0.1, seed = 1)
+sim_data <- sim_binary_loadings_data(sim_args)
+```
+
+# Analysis
+
+First, we start by applying GBCD to the data.
+```{r}
+gbcd_fit <- ax_fit_gbcd(sim_data$Y, Kmax = (sim_data$K))
+```
+
+This is the minimum value of the loadings:
+```{r}
+min(gbcd_fit$scaled_L)
+```
+
+This is a heatmap of the loadings
+```{r}
+max_entry <- max(max(gbcd_fit$scaled_L), max(-1*gbcd_fit$scaled_L))
+plot_heatmap(gbcd_fit$scaled_L, colors_range = c("blue", "gray96", "red"), brks = seq(-max_entry, max_entry, length=50))
+```
+
+We see that the eighth column of the loadings estimate has negative entries (these are indicated by the blue bars).
+
+```{r}
+summary(gbcd_fit$scaled_L[,8])
+```
+
+<!-- # Comparison with GBCD package -->
+<!-- ```{r} -->
+<!-- library(gbcd) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- gbcd_pkg_fit <- fit_gbcd(Y = sim_data$Y, Kmax = (sim_data$K)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- min(gbcd_fit$res$L) -->
+<!-- min(gbcd_pkg_fit$L) -->
+<!-- ``` -->
+
+# Closer look into GBCD
+
+```{r}
+#algo settings
+prior = ebnm::ebnm_generalized_binary
+maxiter1 = 500
+maxiter2 = 200
+maxiter3 = 500
+control = list()
+verbose = 1
+Y <- sim_data$Y
+Kmax <- sim_data$K
+```
+
+```{r}
+control <- modifyList(ax_fit_gbcd_control_default(), control, keep.null = TRUE)
+extrapolate <- control$extrapolate
+warmstart <- control$warmstart
+corr_thres <- control$corr_thres
+  
+### form the covariance matrix from the cell by gene matrix of gene expression data
+if (2 * ncol(Y) * mean(Y > 0) < nrow(Y)) {
+  # Use lowrank plus sparse representation:
+  dat <- list(U = Y, D = rep(1 / ncol(Y), ncol(Y)), V = Y)
+} else {
+  # Form covariance matrix:
+  dat <- Matrix::tcrossprod(Y) / ncol(Y)
+}
+fit.init <- flash_init(dat, var_type = 0)
+  
+### fit EBMF with point laplace prior to covariance matrix without considering the diagonal component
+fit.cov <- fit.init |>
+  flash_greedy(Kmax = 1, ebnm_fn = ebnm_point_laplace) |>
+  flash_greedy(Kmax = Kmax - 1, ebnm_fn = ebnm_point_laplace) |>
+  flash_backfit(maxiter = 25, verbose = verbose)
+  
+### fit EBMF with point laplace prior to covariance matrix with the diagonal component
+fit.cov <- ax_fit_ebmf_to_YY(dat = dat, fl = fit.cov, maxiter = maxiter1, verbose = verbose)$fl
+```
+
+```{r}
+### initialize EB-NMF fit from the EBMF fit with point laplace prior
+cov.init <- ax_init_cov_ebnmf(fit.cov)
+kmax <- which.max(colSums(cov.init[[1]]))
+```
+
+The matrices used for initialization should be non-negative. We see here that they, in fact, are.
+```{r}
+min(cov.init[[1]])
+min(cov.init[[2]])
+```
+
+```{r}
+plot_heatmap(cov.init[[1]])
+```
+
+```{r}
+plot_heatmap(cov.init[[2]])
+```
+
+Here, the first factor has a point-Laplace prior over it. So it is possible to see negative entries in the first factor (and we do!)
+```{r}
+fit.cov <- fit.init |>
+  flash_factors_init(
+    init = lapply(cov.init, function(x) x[, kmax, drop = FALSE]),
+    ebnm_fn = ebnm_point_laplace
+  ) |>
+  flash_factors_init(
+    init = lapply(cov.init, function(x) x[, -c(kmax), drop = FALSE]),
+    ebnm_fn = prior
+  ) |>
+  flash_backfit(extrapolate = FALSE, warmstart = warmstart, maxiter = 25, verbose = verbose)
+```
+
+```{r}
+min(fit.cov$L_pm[,c(-1)])
+min(fit.cov$F_pm[,c(-1)])
+```
+
+```{r}
+plot_heatmap(fit.cov$L_pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.cov$L_pm)), max(abs(fit.cov$L_pm)), length=50))
+```
+
+```{r}
+plot_heatmap(fit.cov$F_pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.cov$F_pm)), max(abs(fit.cov$F_pm)), length=50))
+```
+
+```{r}
+kset <- (fit.cov$pve > 0)
+kall <- 1:fit.cov$n_factors
+if(!all(kset))
+  fit.cov <- flash_factors_remove(fit.cov, kset=kall[!kset])
+fit.cov <- ax_fit_ebmf_to_YY(dat = dat, fl = fit.cov, extrapolate = extrapolate, warmstart = warmstart, maxiter = maxiter2, verbose = verbose)$fl
+```
+
+```{r}
+min(fit.cov$L_pm)
+min(fit.cov$F_pm)
+```
+
+```{r}
+plot_heatmap(fit.cov$L_pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.cov$L_pm)), max(abs(fit.cov$L_pm)), length=50))
+```
+
+```{r}
+plot_heatmap(fit.cov$F_pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.cov$F_pm)), max(abs(fit.cov$F_pm)), length=50))
+```
+
+```{r}
+k.order <- order(fit.cov$pve, decreasing = TRUE)
+fit.L <- fit.cov$L_pm[, k.order]
+fit.L <- t(t(fit.L)/apply(fit.L, 2, max))
+corr <- diag(cor(fit.cov$L_pm[, k.order], fit.cov$F_pm[, k.order]))
+```
+
+```{r}
+min(fit.L)
+```
+
+```{r}
+plot_heatmap(fit.L, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.L)), max(abs(fit.L)), length=50))
+```
+
+```{r}
+maxiter <- maxiter3
+init.F <- t(solve(crossprod(fit.L), as.matrix(Matrix::crossprod(fit.L, Y))))
+fit.snmf <- flash_init(Y, S = 1/sqrt(nrow(Y)), var_type = 2) |>
+  flash_factors_init(
+    init = list(as.matrix(fit.L), as.matrix(init.F)),
+    ebnm_fn = c(ebnm_generalized_binary, ebnm_point_laplace)
+  ) |>
+  flash_factors_fix(kset = 1:ncol(fit.L), which_dim = "loadings") |>
+  flash_backfit(extrapolate = FALSE, maxiter = maxiter, verbose = 1)
+```
+
+```{r}
+min(fit.snmf$L_pm)
+```
+
+```{r}
+plot_heatmap(fit.snmf$L_pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(fit.snmf$L_pm)), max(abs(fit.snmf$L_pm)), length=50))
+```
+
+```{r}
+k.idx <- corr > corr_thres
+L.pm <- fit.snmf$L_pm[, k.idx]
+```
+
+```{r}
+min(L.pm)
+```
+
+```{r}
+plot_heatmap(L.pm, colors_range = c("blue", "gray96", "red"), brks = seq(-max(abs(L.pm)), max(abs(L.pm)), length=50))
+```
+
+# Conclusion
+I think the negative entries are due to a small nuance in the GBCD model. Yusha uses a point-Laplace prior over one of the loadings columns (the factor with the maximum column sum in the initialization matrix). So the negative entries appear due to the point-Laplace prior. I'm not sure I really understand the reasoning behind this choice in the model -- something to look into.
+
+I also checked GBCD on the tree data. It seems like the factor with the point-Laplace prior is all positive in this case. I also checked GBCD on the non-overlapping group data. It seems like one of the group effect factors actually has small negative values in it as well.

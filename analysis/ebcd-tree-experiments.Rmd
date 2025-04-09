@@ -1,0 +1,223 @@
+---
+title: "ebcd-tree-experiments"
+author: "Annie Xie"
+date: "2025-01-16"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+In this analysis, I want to apply ebcd to tree data. I am interested in testing if ebcd converges to a different solution than the tree structured solution, and if so, what kind of solution it prefers. Based off my prior experience applying ebcd to tree data, I expect it to converge to a different solution. I hypothesize that the algorithm will jump to sparser solutions if it is able to find one. I also hypothesize that the method will struggle with finding an overcomplete basis, which the tree-structured solution is.
+
+# Example: 8 populations
+
+```{r, message = FALSE, warning = FALSE}
+library(ebcd)
+library(ggplot2)
+library(pheatmap)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+```{r}
+#adapted from code used in Jason's thesis
+
+plot_loadings <- function(L_est, Pop){
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+      geom_point() +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      facet_grid(cols = vars(Factor)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+## Data Generation
+
+```{r}
+sim_8pops <- function(pop_sizes,
+                      branch_sds,
+                      indiv_sd,
+                      n_genes = 1000,
+                      constrain_F = FALSE,
+                      seed = 666) {
+  set.seed(seed)
+
+  n <- sum(pop_sizes)
+  p <- n_genes
+  
+  num_pops <- length(pop_sizes)
+  K <- length(branch_sds)
+
+  FF <- matrix(rnorm(K * p, sd = rep(branch_sds, each = p)), ncol = K)
+  if (constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * branch_sds * sqrt(p))
+  }
+
+  LL <- matrix(0, nrow = n, ncol = K)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1,1,1,1,0,0,0,0), times = pop_sizes)
+  LL[, 3] <- rep(c(0,0,0,0,1,1,1,1), times = pop_sizes)
+  LL[, 4] <- rep(c(1,1,0,0,0,0,0,0), times = pop_sizes)
+  LL[, 5] <- rep(c(0,0,1,1,0,0,0,0), times = pop_sizes)
+  LL[, 6] <- rep(c(0,0,0,0,1,1,0,0), times = pop_sizes)
+  LL[, 7] <- rep(c(0,0,0,0,0,0,1,1), times = pop_sizes)
+  LL[, 8] <- rep(c(1,rep(0,7)), times = pop_sizes)
+  LL[, 9] <- rep(c(0,1,rep(0,6)), times = pop_sizes)
+  LL[, 10] <- rep(c(0,0,1,rep(0,5)), times = pop_sizes)
+  LL[, 11] <- rep(c(0,0,0,1,rep(0,4)), times = pop_sizes)
+  LL[, 12] <- rep(c(rep(0,4),1,0,0,0), times = pop_sizes)
+  LL[, 13] <- rep(c(rep(0,5),1,0,0), times = pop_sizes)
+  LL[ ,14] <- rep(c(rep(0,6),1,0), times = pop_sizes)
+  LL[, 15] <- rep(c(rep(0,7), 1), times = pop_sizes)
+
+  E <- matrix(rnorm(n * p, sd = indiv_sd), nrow = n)
+
+  pops <- rep(LETTERS[1:length(pop_sizes)], times = pop_sizes)
+
+  return(list(Y = LL %*% t(FF) + E, LL = LL, FF = FF, pops = pops))
+}
+```
+
+```{r}
+#seed = 666
+sim_data_8pop <- sim_8pops(pop_sizes = rep(40, 8),
+                           branch_sds = rep(2, 15),
+                           indiv_sd = 1,
+                           n_genes = 1000,
+                           constrain_F = FALSE,
+                           seed = 4921)
+p <- 1000
+n <- 320
+```
+
+This is a heatmap of the loadings matrix, $L$:
+```{r}
+plot_heatmap(sim_data_8pop$LL)
+```
+
+This is a heatmap of $F^{T}F$:
+```{r}
+plot_heatmap(crossprod(sim_data_8pop$FF))
+```
+
+```{r}
+observed.vals1 <- tcrossprod(sim_data_8pop$Y)/ ncol(sim_data_8pop$Y)
+```
+
+This is a heatmap of the Gram matrix, $XX^{T}/p$:
+```{r}
+plot_heatmap(observed.vals1)
+```
+
+## EBCD
+
+Now, we apply ebcd to the data:
+```{r}
+set.seed(3850)
+ebcd_fit <- ebcd(X = t(sim_data_8pop$Y), Kmax = 15, ebnm_fn = ebnm::ebnm_generalized_binary)
+```
+
+This is a heatmap of the estimated loadings:
+```{r}
+plot_heatmap(ebcd_fit$EL)
+```
+
+We see that ebcd effectively only uses 8 factors to describe the data. It'd be interesting to see how well this estimate fits the data.
+
+```{r}
+ebcd.fitted.vals1 <- tcrossprod(ebcd_fit$EL)
+```
+
+This is the L2 norm of the difference between the off-diagonal entries of the observed values and fitted values.
+```{r}
+sum((observed.vals1 - ebcd.fitted.vals1)^2) - sum((diag(observed.vals1) - diag(ebcd.fitted.vals1))^2)
+```
+
+This is a plot of the off-diagonal entries of the fitted values vs. observed values:
+```{r}
+diag_idx <- seq(1, prod(dim(observed.vals1)), length.out = ncol(observed.vals1))
+off_diag_idx <- setdiff(c(1:prod(dim(observed.vals1))), diag_idx) 
+```
+
+```{r}
+ggplot(data = NULL, aes(x = c(as.matrix(observed.vals1))[off_diag_idx], y = c(ebcd.fitted.vals1)[off_diag_idx])) + geom_point() + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## EBCD initialized at true values
+
+To check if the different solution is a result of initialization, we try running the ebcd backfit procedure initialized with the true loadings and factor matrix.
+
+```{r}
+PolarU <- function(A) {
+  svdA <- svd(A)
+  out <- svdA$u %*% t(svdA$v)
+  return(out)
+}
+```
+
+```{r}
+Z.init <- PolarU(ebcd_fit$A%*%sim_data_8pop$LL)
+fitted.Y <- Z.init%*%t(sim_data_8pop$LL)
+tau.est <- prod(dim(ebcd_fit$A)) / sum((ebcd_fit$A - fitted.Y)^2)
+ebcd_obj_init <- list(
+    A = ebcd_fit$A, N = ebcd_fit$N, nrowA = ebcd_fit$nrowA,
+    tau = tau.est, Z = Z.init, EL = sim_data_8pop$LL, ebnm_fn = rep(list(ebnm::ebnm_generalized_binary), 15)
+  )
+```
+
+```{r}
+ebcd_true_init <- ebcd_backfit(ebcd_obj_init)
+```
+
+This is a heatmap of the loadings estimate we obtain when we initialize with the true values:
+```{r}
+plot_heatmap(ebcd_true_init$EL)
+```
+
+We see that this estimate looks closer to a tree. We do still see something weird in the fourth factor -- the fourth factor looks like one of the 4 vs 4 subtype factors rather than one of the 2 vs 6 subtype factors. This suggests that ebcd's greedy initialization may not be ideal with uncovering hierarchical structure. This is a little different from what we saw with the divergence factorizations. In that setting, ebcd would move away from the divergence factorization corresponding to a tree and instead converge to another solution.
+
+This is a plot of the objective function:
+```{r}
+ggplot(data = NULL, aes(x = c(1:length(ebcd_true_init$vec.obj)), y = ebcd_true_init$vec.obj)) + geom_line()
+```
+
+```{r}
+print(paste('The final objective function value:', ebcd_true_init$obj))
+```
+
+To compare with ebcd run with the greedy initialization:
+```{r}
+print(paste('The final objective function value for regular ebcd:', ebcd_fit$obj))
+```
+
+We see that ebcd initialized with the true values obtains a higher elbo than ebcd with the greedy initialization procedure.

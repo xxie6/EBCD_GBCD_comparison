@@ -116,6 +116,19 @@ This is a heatmap of the $C$ matrix used during the method:
 plot_heatmap(ebcd_fit$A, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit$A)), max(abs(ebcd_fit$A)), length.out = 50))
 ```
 
+This is a scatter plot of the sixth column of the transformed $Z$ and the first column of $X'$:
+```{r}
+transform_ebcd_Z <- function(Y, ebcd_obj){
+  Y.svd <- svd(Y)
+  Y.UV <- Y.svd$u %*% t(Y.svd$v)
+  Z_transformed <- Y.UV %*% ebcd_obj$Z
+  return(Z_transformed)
+}
+
+transformed_Z <- transform_ebcd_Z(t(sim_data$Y), ebcd_fit)
+ggplot(data = NULL, aes(x = transformed_Z[,6], y = sim_data$Y[1,])) + geom_point()
+```
+
 This is the estimate of $\tau$:
 ```{r}
 ebcd_fit$tau

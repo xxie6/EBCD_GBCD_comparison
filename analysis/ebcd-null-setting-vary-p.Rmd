@@ -1,0 +1,522 @@
+---
+title: "ebcd-null-setting-vary-p"
+author: "Annie Xie"
+date: "2025-04-24"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I want to test EBCD in the null setting for varying values of $p$. The reason I am interested in this is because it is known that as $p$ increases, the effect of the prior decreases and EBCD will return the value that optimizes the fit term of the objective function.
+
+# Packages and Functions
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+library(dplyr)
+library(ebcd)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+
+plot_loadings <- function(L_est, Pop, legendYN = TRUE, scales_option = "fixed"){
+  # options for scales_option are "fixed" and "free_y"
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+    geom_point(show.legend = legendYN) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    facet_grid(cols = vars(Factor), scales = scales_option) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+# Data Generation
+
+```{r}
+sim_null_data <- function(args) {
+  set.seed(args$seed)
+  
+  Y <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = n)
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt))
+}
+```
+
+# p = 50
+
+```{r}
+n <- 100
+p <- 50
+indiv_sd <- 1
+seed <- 1
+sim_args_p50 = list(n = n, p = p, indiv_sd = indiv_sd, seed = seed)
+sim_data_p50 <- sim_null_data(sim_args_p50)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_p50$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_p50$YYt)), max(abs(sim_data_p50$YYt)), length.out = 50))
+```
+
+## EBCD
+
+Here, I run EBCD with `Kmax` set to 16 (EBCD does not run for anything larger):
+```{r}
+set.seed(1)
+ebcd_fit_p50 <- ebcd(X = t(sim_data_p50$Y), Kmax = 16, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+These are the number of columns in the estimate:
+```{r}
+ncol(ebcd_fit_p50$EL)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(ebcd_fit_p50$EL, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p50$EL)), max(abs(ebcd_fit_p50$EL)), length.out = 50))
+```
+
+This is a heatmap of $Z$ (untransformed):
+```{r}
+plot_heatmap(ebcd_fit_p50$Z, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p50$Z)), max(abs(ebcd_fit_p50$Z)), length.out = 50))
+```
+
+This is a heatmap of the $C$ matrix used during the method (this is just $Y$'):
+```{r}
+plot_heatmap(ebcd_fit_p50$A, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p50$A)), max(abs(ebcd_fit_p50$A)), length.out = 50))
+```
+
+This is the estimate of $\tau$:
+```{r}
+ebcd_fit_p50$tau
+```
+
+This is the L2 norm of the difference:
+```{r}
+sqrt(sum((ebcd_fit_p50$A - tcrossprod(ebcd_fit_p50$Z, ebcd_fit_p50$EL))^2))
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p50$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p50$tau*(sum((ebcd_fit_p50$A - tcrossprod(ebcd_fit_p50$Z, ebcd_fit_p50$EL))^2))
+```
+
+This is the KL:
+```{r}
+sum(ebcd_fit_p50$KL)
+```
+
+If EBCD had returned a fit with 0 factors, then the objective function value would be
+```{r}
+tau_est_p50 <- prod(dim(ebcd_fit_p50$A)) / (sum((ebcd_fit_p50$A)^2))
+rank_zero_obj_p50 <- -ebcd_fit_p50$N * ncol(ebcd_fit_p50$A) / 2 * log(2 * pi / tau_est_p50) +
+      -(ebcd_fit_p50$N * tau_est_p50 / 2) * (sum(ebcd_fit_p50$A^2) / ebcd_fit_p50$nrowA) 
+rank_zero_obj_p50
+```
+
+The fit term would be:
+```{r}
+tau_est_p50*(sum(ebcd_fit_p50$A)^2)
+```
+
+## Rank one EBCD
+```{r}
+set.seed(1)
+ebcd_fit_p50_r1 <- ebcd(X = t(sim_data_p50$Y), Kmax = 1, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+This is a plot of the estimate for $\ell$:
+```{r}
+plot(ebcd_fit_p50_r1$EL[,1])
+```
+
+This is a plot of the estimate for $z$:
+```{r}
+plot(ebcd_fit_p50_r1$Z[,1])
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p50_r1$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p50_r1$tau*(sum((ebcd_fit_p50_r1$A - tcrossprod(ebcd_fit_p50_r1$Z, ebcd_fit_p50_r1$EL))^2))
+```
+
+# p = 100
+
+```{r}
+n <- 100
+p <- 100
+indiv_sd <- 1
+seed <- 1
+sim_args_p100 = list(n = n, p = p, indiv_sd = indiv_sd, seed = seed)
+sim_data_p100 <- sim_null_data(sim_args_p100)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_p100$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_p100$YYt)), max(abs(sim_data_p100$YYt)), length.out = 50))
+```
+
+## EBCD
+
+Here, I run EBCD with `Kmax` set to 42 (EBCD does not run for anything larger):
+```{r}
+set.seed(1)
+ebcd_fit_p100 <- ebcd(X = t(sim_data_p100$Y), Kmax = 42, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+These are the number of columns in the estimate:
+```{r}
+ncol(ebcd_fit_p100$EL)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(ebcd_fit_p100$EL, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p100$EL)), max(abs(ebcd_fit_p100$EL)), length.out = 50))
+```
+
+This is a heatmap of $Z$ (untransformed):
+```{r}
+plot_heatmap(ebcd_fit_p100$Z, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p100$Z)), max(abs(ebcd_fit_p100$Z)), length.out = 50))
+```
+
+This is a scatter plot of the third column of $Z$ vs the third column of $L$:
+```{r}
+ggplot(data = NULL, aes(x = ebcd_fit_p100$EL[,3], y = ebcd_fit_p100$Z[,3])) + geom_point()
+```
+
+This is a heatmap of the $C$ matrix used during the method (this is just $Y$'):
+```{r}
+plot_heatmap(ebcd_fit_p100$A, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p100$A)), max(abs(ebcd_fit_p100$A)), length.out = 50))
+```
+
+This is the estimate of $\tau$:
+```{r}
+ebcd_fit_p100$tau
+```
+
+This is the L2 norm of the difference:
+```{r}
+sqrt(sum((ebcd_fit_p100$A - tcrossprod(ebcd_fit_p100$Z, ebcd_fit_p100$EL))^2))
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p100$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p100$tau*(sum((ebcd_fit_p100$A - tcrossprod(ebcd_fit_p100$Z, ebcd_fit_p100$EL))^2))
+```
+
+This is the KL:
+```{r}
+sum(ebcd_fit_p100$KL)
+```
+
+If EBCD had returned a fit with 0 factors, then the objective function value would be
+```{r}
+tau_est_p100 <- prod(dim(ebcd_fit_p100$A)) / (sum((ebcd_fit_p100$A)^2))
+rank_zero_obj_p100 <- -ebcd_fit_p100$N * ncol(ebcd_fit_p100$A) / 2 * log(2 * pi / tau_est_p100) +
+      -(ebcd_fit_p100$N * tau_est_p100 / 2) * (sum(ebcd_fit_p100$A^2) / ebcd_fit_p100$nrowA) 
+rank_zero_obj_p100
+```
+
+The fit term would be:
+```{r}
+tau_est_p100*(sum(ebcd_fit_p100$A)^2)
+```
+
+## Rank one EBCD
+```{r}
+set.seed(1)
+ebcd_fit_p100_r1 <- ebcd(X = t(sim_data_p100$Y), Kmax = 1, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+This is a plot of the estimate for $\ell$:
+```{r}
+plot(ebcd_fit_p100_r1$EL[,1])
+```
+
+This is a plot of the estimate for $z$:
+```{r}
+plot(ebcd_fit_p100_r1$Z[,1])
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p100_r1$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p100_r1$tau*(sum((ebcd_fit_p100_r1$A - tcrossprod(ebcd_fit_p100_r1$Z, ebcd_fit_p100_r1$EL))^2))
+```
+
+# p = 200
+```{r}
+n <- 100
+p <- 200
+indiv_sd <- 1
+seed <- 1
+sim_args_p200 = list(n = n, p = p, indiv_sd = indiv_sd, seed = seed)
+sim_data_p200 <- sim_null_data(sim_args_p200)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_p200$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_p200$YYt)), max(abs(sim_data_p200$YYt)), length.out = 50))
+```
+
+## EBCD
+
+Here, I run EBCD with `Kmax` set to 94 (EBCD does not run with `Kmax` set to a higher number):
+```{r}
+set.seed(1)
+ebcd_fit_p200 <- ebcd(X = t(sim_data_p200$Y), Kmax = 94, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+These are the number of columns in the estimate:
+```{r}
+ncol(ebcd_fit_p200$EL)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(ebcd_fit_p200$EL, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p200$EL)), max(abs(ebcd_fit_p200$EL)), length.out = 50))
+```
+
+This is a heatmap of $Z$ (untransformed):
+```{r}
+plot_heatmap(ebcd_fit_p200$Z, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p200$Z)), max(abs(ebcd_fit_p200$Z)), length.out = 50))
+```
+
+This is a scatter plot of the third column of $Z$ vs the third column of $L$:
+```{r}
+ggplot(data = NULL, aes(x = ebcd_fit_p200$EL[,3], y = ebcd_fit_p200$Z[,3])) + geom_point()
+```
+
+This is a heatmap of the $C$ matrix used during the method:
+```{r}
+plot_heatmap(ebcd_fit_p200$A, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p200$A)), max(abs(ebcd_fit_p200$A)), length.out = 50))
+```
+
+This is the estimate of $\tau$:
+```{r}
+ebcd_fit_p200$tau
+```
+
+This is the L2 norm of the difference:
+```{r}
+sqrt(sum((ebcd_fit_p200$A - tcrossprod(ebcd_fit_p200$Z, ebcd_fit_p200$EL))^2))
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p200$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p200$tau*(sum((ebcd_fit_p200$A - tcrossprod(ebcd_fit_p200$Z, ebcd_fit_p200$EL))^2))
+```
+
+This is the KL:
+```{r}
+sum(ebcd_fit_p200$KL)
+```
+
+If EBCD had returned a fit with 0 factors, then the objective function value would be
+```{r}
+tau_est_p200 <- prod(dim(ebcd_fit_p200$A)) / (sum((ebcd_fit_p200$A)^2))
+rank_zero_obj_p200 <- -ebcd_fit_p200$N * ncol(ebcd_fit_p200$A) / 2 * log(2 * pi / tau_est_p200) +
+      -(ebcd_fit_p200$N * tau_est_p200 / 2) * (sum(ebcd_fit_p200$A^2) / ebcd_fit_p200$nrowA) 
+rank_zero_obj_p200
+```
+
+The fit term would be:
+```{r}
+tau_est_p200*(sum(ebcd_fit_p200$A)^2)
+```
+
+## Rank one EBCD
+```{r}
+set.seed(1)
+ebcd_fit_p200_r1 <- ebcd(X = t(sim_data_p200$Y), Kmax = 1, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+This is a plot of the estimate for $\ell$:
+```{r}
+plot(ebcd_fit_p200_r1$EL[,1])
+```
+
+This is a plot of the estimate for $z$:
+```{r}
+plot(ebcd_fit_p200_r1$Z[,1])
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p200_r1$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p200_r1$tau*(sum((ebcd_fit_p200_r1$A - tcrossprod(ebcd_fit_p200_r1$Z, ebcd_fit_p200_r1$EL))^2))
+```
+
+# p = 500
+```{r}
+n <- 100
+p <- 500
+indiv_sd <- 1
+seed <- 1
+sim_args_p500 = list(n = n, p = p, indiv_sd = indiv_sd, seed = seed)
+sim_data_p500 <- sim_null_data(sim_args_p500)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_p500$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_p500$YYt)), max(abs(sim_data_p500$YYt)), length.out = 50))
+```
+
+## EBCD
+
+Here, I run EBCD with `Kmax` set to 100.
+```{r}
+set.seed(1)
+ebcd_fit_p500 <- ebcd(X = t(sim_data_p500$Y), Kmax = 100, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+These are the number of columns in the estimate:
+```{r}
+ncol(ebcd_fit_p500$EL)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(ebcd_fit_p500$EL, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p500$EL)), max(abs(ebcd_fit_p500$EL)), length.out = 50))
+```
+
+This is a heatmap of $Z$ (untransformed):
+```{r}
+plot_heatmap(ebcd_fit_p500$Z, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p500$Z)), max(abs(ebcd_fit_p500$Z)), length.out = 50))
+```
+
+This is a scatter plot of the third column of $Z$ vs the third column of $L$:
+```{r}
+ggplot(data = NULL, aes(x = ebcd_fit_p500$EL[,3], y = ebcd_fit_p500$Z[,3])) + geom_point()
+```
+
+This is a heatmap of the $C$ matrix used during the method:
+```{r}
+plot_heatmap(ebcd_fit_p500$A, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(ebcd_fit_p500$A)), max(abs(ebcd_fit_p500$A)), length.out = 50))
+```
+
+This is the estimate of $\tau$:
+```{r}
+ebcd_fit_p500$tau
+```
+
+This is the L2 norm of the difference:
+```{r}
+sqrt(sum((ebcd_fit_p500$A - tcrossprod(ebcd_fit_p500$Z, ebcd_fit_p500$EL))^2))
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p500$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p500$tau*(sum((ebcd_fit_p500$A - tcrossprod(ebcd_fit_p500$Z, ebcd_fit_p500$EL))^2))
+```
+
+This is the KL:
+```{r}
+sum(ebcd_fit_p500$KL)
+```
+
+If EBCD had returned a fit with 0 factors, then the objective function value would be
+```{r}
+tau_est_p500 <- prod(dim(ebcd_fit_p500$A)) / (sum((ebcd_fit_p500$A)^2))
+rank_zero_obj_p500 <- -ebcd_fit_p500$N * ncol(ebcd_fit_p500$A) / 2 * log(2 * pi / tau_est_p500) +
+      -(ebcd_fit_p500$N * tau_est_p500 / 2) * (sum(ebcd_fit_p500$A^2) / ebcd_fit_p500$nrowA) 
+rank_zero_obj_p500
+```
+
+The fit term would be:
+```{r}
+tau_est_p500*(sum(ebcd_fit_p500$A)^2)
+```
+
+## Rank one EBCD
+```{r}
+set.seed(1)
+ebcd_fit_p500_r1 <- ebcd(X = t(sim_data_p500$Y), Kmax = 1, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+This is a plot of the estimate for $\ell$:
+```{r}
+plot(ebcd_fit_p500_r1$EL[,1])
+```
+
+This is a plot of the estimate for $z$:
+```{r}
+plot(ebcd_fit_p500_r1$Z[,1])
+```
+
+This is the objective function:
+```{r}
+ebcd_fit_p500_r1$obj
+```
+
+This is the fit term (up to a constant) of the objective function. Smaller is better.:
+```{r}
+ebcd_fit_p500_r1$tau*(sum((ebcd_fit_p500_r1$A - tcrossprod(ebcd_fit_p500_r1$Z, ebcd_fit_p500_r1$EL))^2))
+```
+
+# Observations
+As $p$ increases, it appears that EBCD favors adding more and more factors to obtain a better fit. This is consistent with what we know about the behavior of EBCD as $p$ increases.
+
+For the large $p$ setting, this is one way I think about this: EBCD implicitly assumes that the scaled Gram matrix can be written as the sum of a low-rank matrix and a diagonal matrix. In this case, we have no true low rank matrix; our data matrix is just composed of normal noise (and as a result, the Gram matrix follows a Wishart distribution). One way to characterize the diagonal matrix is through estimation of the noise parameter $\tau$. However, another way to represent it is through something similar to the non-overlapping groups setting. In this setting, each group is only one sample. This representation is not parsimonious with regards to the number of factors. But the columns of the loadings matrix are sparse and it obtains a very good fit to the data matrix. I wonder if this type of behavior can be avoided if we explicitly include a diagonal matrix in the $S$ model and estimate the diagonal entries.
+
+In what setting would EBCD not add a factor in the null setting?

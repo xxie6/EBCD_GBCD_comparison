@@ -533,15 +533,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee06fe34668866ae15c550001baeb34ecb9ba5eadtargetblanke06fe34a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree5e0f02b33f78e840083a4001aacab61e38865314targetblank5e0f02ba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e06fe34668866ae15c550001baeb34ecb9ba5ead" target="_blank">e06fe34</a>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/5e0f02b33f78e840083a4001aacab61e38865314" target="_blank">5e0f02b</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontreee06fe34668866ae15c550001baeb34ecb9ba5eadtargetblanke06fe34a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6EBCDGBCDcomparisontree5e0f02b33f78e840083a4001aacab61e38865314targetblank5e0f02ba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -551,7 +551,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/e06fe34668866ae15c550001baeb34ecb9ba5ead" target="_blank">e06fe34</a>.
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/tree/5e0f02b33f78e840083a4001aacab61e38865314" target="_blank">5e0f02b</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -624,6 +624,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/5e0f02b33f78e840083a4001aacab61e38865314/analysis/ebcd-null-setting.Rmd" target="_blank">5e0f02b</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+<td>
+Update EBCD null setting analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/EBCD_GBCD_comparison/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/ebcd-null-setting.html" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -722,6 +756,43 @@ sim_data &lt;- sim_null_data(sim_args)</code></pre>
 <p>This is a heatmap of the scaled Gram matrix:</p>
 <pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
 <p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-5-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="ebcd" class="section level1">
 <h1>EBCD</h1>
@@ -734,19 +805,180 @@ ebcd_fit &lt;- ebcd(X = t(sim_data$Y), Kmax = 100, ebnm_fn = ebnm::ebnm_point_ex
 <p>This is a heatmap of the loadings estimate:</p>
 <pre class="r"><code>plot_heatmap(ebcd_fit$EL, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(ebcd_fit$EL)), max(abs(ebcd_fit$EL)), length.out = 50))</code></pre>
 <p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-8-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of <span class="math inline">\(Z\)</span>
 (untransformed):</p>
 <pre class="r"><code>plot_heatmap(ebcd_fit$Z, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(ebcd_fit$Z)), max(abs(ebcd_fit$Z)), length.out = 50))</code></pre>
 <p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-9-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of the third column of <span
 class="math inline">\(Z\)</span> vs the third column of <span
 class="math inline">\(L\)</span>:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = ebcd_fit$EL[,3], y = ebcd_fit$Z[,3])) + geom_point()</code></pre>
 <p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-10-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the <span class="math inline">\(C\)</span>
 matrix used during the method:</p>
 <pre class="r"><code>plot_heatmap(ebcd_fit$A, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(ebcd_fit$A)), max(abs(ebcd_fit$A)), length.out = 50))</code></pre>
 <p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-11-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This is a scatter plot of the sixth column of the transformed <span
+class="math inline">\(Z\)</span> and the first column of <span
+class="math inline">\(X&#39;\)</span>:</p>
+<pre class="r"><code>transform_ebcd_Z &lt;- function(Y, ebcd_obj){
+  Y.svd &lt;- svd(Y)
+  Y.UV &lt;- Y.svd$u %*% t(Y.svd$v)
+  Z_transformed &lt;- Y.UV %*% ebcd_obj$Z
+  return(Z_transformed)
+}
+
+transformed_Z &lt;- transform_ebcd_Z(t(sim_data$Y), ebcd_fit)
+ggplot(data = NULL, aes(x = transformed_Z[,6], y = sim_data$Y[1,])) + geom_point()</code></pre>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the estimate of <span
 class="math inline">\(\tau\)</span>:</p>
 <pre class="r"><code>ebcd_fit$tau</code></pre>
@@ -811,7 +1043,7 @@ ebcd_fit_init &lt;- ebcd_init(X = t(sim_data$Y))
 ebcd_greedy_fit &lt;- ebcd_greedy(ebcd_fit_init, Kmax = 1, ebnm_fn = ebnm::ebnm_point_exponential)</code></pre>
 <p>This is a plot of <span class="math inline">\(\ell\)</span>:</p>
 <pre class="r"><code>plot(ebcd_greedy_fit$EL[,1])</code></pre>
-<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="backfit" class="section level2">
 <h2>Backfit</h2>
@@ -819,7 +1051,7 @@ ebcd_greedy_fit &lt;- ebcd_greedy(ebcd_fit_init, Kmax = 1, ebnm_fn = ebnm::ebnm_
 <pre class="r"><code>ebcd_backfit_fit &lt;- ebcd_backfit(ebcd_greedy_fit)</code></pre>
 <p>This is a plot of <span class="math inline">\(\ell\)</span>:</p>
 <pre class="r"><code>plot(ebcd_backfit_fit$EL[,1])</code></pre>
-<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="progression-of-estimate" class="section level2">
 <h2>Progression of estimate</h2>
@@ -841,16 +1073,90 @@ min_y &lt;- min(sapply(estimates_list, min))
 for (i in 1:12){
   plot(estimates_list[[i]], main = paste(&#39;Iter&#39;, (i-1)), ylab = &#39;L&#39;, ylim = c(min_y, max_y))
 }</code></pre>
-<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-25-1">
+Past versions of unnamed-chunk-25-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-25-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-25-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 <p>This is a scatter plot of the initial estimate vs the estimate after
 1 iteration:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = estimates_list[[1]], y = estimates_list[[2]])) + geom_point()</code></pre>
-<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/EBCD_GBCD_comparison/blob/7e5f02d1b2e036bf2038c6c83b0b29aa3afb4f05/docs/figure/ebcd-null-setting.Rmd/unnamed-chunk-26-1.png" target="_blank">7e5f02d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-25
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of the estimate after 1 iteration vs after 2
 iterations:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = estimates_list[[2]], y = estimates_list[[3]])) + geom_point()</code></pre>
-<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ebcd-null-setting.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>I also tried this with point-Laplace prior and found that the
 estimate looked very similar to the first eigenvector of the <span
 class="math inline">\(C\)</span> matrix.</p>
